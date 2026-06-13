@@ -92,13 +92,60 @@ X-Device-UUID: <device-uuid>
 
 ## 5. Localization
 
-All content endpoints accept `?lang=` parameter:
+### 5.1 Language Parameter
+
+All content endpoints accept a `?lang=` query parameter:
+
+| Code | Language |
+|------|----------|
+| `vi` | Vietnamese (default) |
+| `en` | English |
+| `ko` | Korean |
+| `zh` | Chinese |
+| `fr` | French |
+
+If omitted or invalid, defaults to `vi`.
+
+### 5.2 Fallback Chain
+
+When a field has no content in the requested language, the API falls back automatically:
 
 ```
-lang = vi (default) | en | ko | zh | fr
+requested lang → en → vi → '' (empty string)
 ```
 
-**Fallback chain:** requested lang → en → vi → ''
+Example: request `?lang=ko`, content only exists in `vi` → returns `vi` value.
+
+**Text fields** (`name`, `description`, `info`, `article`, etc.) and **audio fields** both follow this chain independently — a place may return Korean text but Vietnamese audio if Korean audio is not uploaded.
+
+### 5.3 Which Fields Are Localized
+
+Each localized field is stored in ACF with a language suffix (`_vi`, `_en`, `_ko`, `_zh`, `_fr`). The API resolves and returns a single value per field (the correct language or fallback). Fields NOT localized (always language-neutral): `id`, `latitude`, `longitude`, `sort_order`, `is_featured`, `feature_image`, `gallery`, numeric/boolean fields.
+
+**Localized fields by content type:**
+
+| CPT | Localized fields |
+|-----|-----------------|
+| Province | `name`, `description` |
+| Location | `name`, `description` |
+| Place | `name`, `info`, `article`, `audio` |
+| Sub-Place | `name`, `description`, `audio` |
+| Sub-Item | `name`, `description`, `audio` |
+| Journey | `name`, `description`, stop `note` |
+| News/Alert | `title`, `content` |
+| Story | `name`, `summary`, `content`, `audio` |
+
+### 5.4 How to Use in Flutter
+
+Pass `lang` as a query parameter on every content request. Recommended: read from app's content language setting (separate from UI language).
+
+```dart
+// Example
+final lang = ref.watch(contentLanguageProvider); // 'vi' | 'en' | 'ko' | 'zh' | 'fr'
+dio.get('/places/$id', queryParameters: {'lang': lang});
+```
+
+The app should store the user's **content language** separately from the **UI language** — a Korean-speaking user may navigate the UI in Korean but prefer Vietnamese audio for authenticity.
 
 ---
 
@@ -212,9 +259,18 @@ In-app currency for gamification:
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/provinces` | Public | List active provinces |
-| GET | `/provinces/{id}` | Public | Province detail |
+| GET | `/provinces/detect` | Public | Detect province by GPS coordinates |
+| GET | `/provinces/{id}` | Public | Province detail with description and banners |
 
 **Params:** `lang`
+
+**GET /provinces/detect params:** `lat`✓, `lng`✓, `lang`
+
+**GET /provinces/detect response:** `{ detected: bool, province: {..., distance_km} }` — if not detected, returns `available_provinces` array instead.
+
+**GET /provinces/{id} optional includes:** `?include=locations,featured_places,news`
+
+> **List vs Detail:** `GET /provinces` and `GET /provinces/detect` return compact fields only (no `description`). Full `description` and `banner_images` are only returned by `GET /provinces/{id}`.
 
 ---
 
@@ -226,6 +282,8 @@ In-app currency for gamification:
 | GET | `/locations/{id}` | Public | Location detail (`include=places`) |
 
 **Sort options:** `location_number`, `name`, `distance` (requires lat/lng)
+
+> **List vs Detail:** `GET /provinces/{province_id}/locations` returns compact fields (no `description`). Full `description` and parent `province` object are only in `GET /locations/{id}`. The `include=places` embed also omits `description` per place — place detail is fetched via `GET /places/{id}`.
 
 ---
 
@@ -239,9 +297,41 @@ In-app currency for gamification:
 | GET | `/places/qr/{code}` | Public | Look up by QR code |
 | GET | `/places/search` | Public | Full-text keyword search |
 
-**GET /places params:** `province_id`, `location_id`, `lang`, `featured`, `search`, `sort`, `lat`, `lng`, `page`, `per_page`
+**GET /places params:** `province_id`, `location_id`, `lang`, `featured`, `search`, `sort` (sort_order\|name\|distance\|place_order_number), `lat`, `lng`, `page`, `per_page`
 
-**GET /places/nearby params:** `lat`✓, `lng`✓, `province_id`, `radius` (km, default 5), `lang`
+**GET /places/nearby params:** `lat`✓, `lng`✓, `radius` (meters, default 1000), `province_id`, `limit` (default 10), `lang`
+
+**GET /places/search params:** `q`✓, `province_id`, `lang`, `page`, `per_page`
+
+**GET /places/{id} optional includes:** `?include=sub_places` — embeds sub-places (no sub_items). `?include=sub_items` — embeds sub-places with full sub_items.
+
+**List response fields** (`GET /places`):
+`id`, `order_number`, `name`, `info`, `feature_image`, `latitude`, `longitude`, `is_featured`, `sort_order`, `sub_places_count`, optional `distance_km` (when lat/lng provided)
+
+**Detail response fields** (`GET /places/{id}`):
+`id`, `hierarchical_index` (e.g. `"2.5"`), `order_number`, `name`, `info`, `article`, `feature_image`, `gallery`, `audio` (url, size, duration), `latitude`, `longitude`, `geofence_radius` (meters), `qr_code`, `is_featured`, `show_article_free`, `show_audio_free`, `article_offline`, `audio_offline`, `article_cost`, `checkin_reward`, `sort_order`, `location` (id, number, name), `user_status`
+
+**GET /places/nearby response fields:**
+`id`, `name`, `feature_image`, `latitude`, `longitude`, `distance_meters`, `geofence_radius`, `is_within_geofence`, `has_audio`, `is_featured`, `sort_order`
+
+**GET /places/search response fields:**
+`id`, `name`, `info`, `feature_image`, `latitude`, `longitude`, `is_featured`, `sort_order`, `match_score` (1 = one field match, 2 = title + name both match)
+
+**Optional user context — `user_status`:**
+
+`GET /places/{id}` is a public endpoint but accepts an optional `X-Device-UUID` header. When provided, the response includes:
+
+```json
+"user_status": {
+  "is_checked_in": false,
+  "is_article_unlocked": false,
+  "is_audio_unlocked": false
+}
+```
+
+When the header is absent, `"user_status": null`. The mobile app should always send `X-Device-UUID` so it can determine paywall state in a single call without a separate request.
+
+> **List vs Detail:** `GET /places` returns compact fields (no article, audio, gallery, location). Full content fields and `user_status` are only in `GET /places/{id}`.
 
 ---
 
@@ -249,9 +339,29 @@ In-app currency for gamification:
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/sub-places` | Public | List sub-places (`place_id`✓) |
-| GET | `/sub-places/{id}` | Public | Sub-place detail with audio |
-| GET | `/sub-items` | Public | List sub-items (`sub_place_id`✓) |
+| GET | `/places/{place_id}/sub-places` | Public | List sub-places for a place (compact) |
+| GET | `/sub-places/{id}` | Public | Sub-place detail with description, audio, full sub_items |
+| GET | `/sub-items/{id}` | Public | Sub-item detail with full gallery and audio |
+
+**Navigation flow:**
+```
+GET /places                           → returns place id (e.g. 4460)
+  ↓
+GET /places/4460/sub-places           → returns sub-place list with sub-place ids
+  ↓
+GET /sub-places/{sub_place_id}        → full detail when user opens a sub-place
+```
+
+**List response fields** (`GET /places/{place_id}/sub-places`):
+`id`, `sub_place_index`, `name`, `feature_image`, `latitude`, `longitude`, `sort_order`, `sub_items` (compact: id, item_index, name, feature_image, sort_order)
+
+**Detail response fields** (`GET /sub-places/{id}`):
+All list fields + `description`, `audio` (url, duration), `place` (id, name), `sub_items` (full: + gallery, audio, description)
+
+**Detail response fields** (`GET /sub-items/{id}`):
+`id`, `item_index`, `name`, `description`, `feature_image`, `gallery`, `audio`, `sort_order`, `sub_place` (id, name), `place` (id, name)
+
+> `description` and `audio` are only returned by the detail endpoint to keep the list response lightweight.
 
 ---
 
@@ -259,14 +369,19 @@ In-app currency for gamification:
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/journeys` | Public | List preset journeys (`province_id`✓) |
-| GET | `/journeys/{id}` | Public | Journey detail with stops |
+| GET | `/journeys` | Public | List preset journeys (`province_id`✓, `featured`) |
+| GET | `/journeys/{id}` | Public | Journey detail |
+
+**Response fields** (list and detail return the same structure):
+`id`, `type` (always `"preset"`), `name`, `description`, `feature_image`, `duration_days`, `total_places`, `difficulty`, `is_featured`, `sort_order`, `stops`
 
 **Stop object:**
 ```json
 {
-  "stop_order": 1, "day": 1, "duration_min": 30,
-  "place": { "id": 5, "name": "...", "lat": ..., "lng": ... },
+  "stop_order": 1,
+  "day": 1,
+  "duration_min": 30,
+  "place": { "id": 5, "name": "...", "lat": 23.1, "lng": 105.2 },
   "note": "..."
 }
 ```
@@ -284,24 +399,13 @@ In-app currency for gamification:
 
 **Story types:** `legend`, `history`, `culture`, `folk`, `mystery`, `nature`, `other`
 
-**Story detail response includes:**
-```json
-{
-  "content": "...",
-  "audio": { "url": "https://cdn.example.com/story-vi.mp3", "size": 0 },
-  "article": { "is_free": true, "cost": 5 },
-  "audio_info": { "is_free": true, "cost": 5, "duration": 240.5 },
-  "allow_comments": true,
-  "allow_ratings": true,
-  "enable_tracking": true,
-  "related_places": [
-    { "id": 5, "name": "Mã Pí Lèng", "feature_image": {...} }
-  ],
-  "related_provinces": [
-    { "id": 1, "name": "Hà Giang" }
-  ]
-}
-```
+**List response fields** (`GET /stories`):
+`id`, `type`, `name`, `summary`, `feature_image`, `is_featured`, `sort_order`, `article` (is_free, cost), `audio_info` (is_free, cost, duration), `allow_comments`, `allow_ratings`, `enable_tracking`
+
+**Detail response fields** (`GET /stories/{id}`):
+All list fields + `content`, `audio` (url, size), `related_places` (id, name, feature_image), `related_provinces` (id, name)
+
+> **List vs Detail:** `GET /stories` returns compact fields (no `content`, no `audio`). Full content and relationships are only in `GET /stories/{id}`.
 
 **Story paywall — article and audio controlled independently:**
 | ACF Field | Default | Effect |
@@ -324,7 +428,12 @@ In-app currency for gamification:
 |--------|------|------|-------------|
 | GET | `/news` | Public | List news/alerts |
 
-**Params:** `province_id`, `type`, `lang`, `page`, `per_page`
+**Params:** `province_id`✓, `type` (news\|alert\|warning\|event), `lang`, `page`, `per_page`
+
+**Response fields:**
+`id`, `type`, `title`, `content`, `icon`, `is_pinned`, `start_date`, `end_date`, `created_at`
+
+Sorted: pinned items first, then by `created_at` descending. Only items where `start_date ≤ today ≤ end_date` (or no `end_date`) are returned.
 
 ---
 
@@ -475,13 +584,315 @@ Configured in **WP Admin → ToursApp API → Feature Access** section.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/sync/check` | Check for updates since timestamp |
-| GET | `/sync/package/{province_id}` | Full offline data bundle |
-| GET | `/sync/media/{province_id}` | Media file manifest |
+| GET | `/sync/check` | Check for updates since a timestamp |
+| GET | `/sync/package/{province_id}` | Full offline data bundle (text + structure) |
+| GET | `/sync/media/{province_id}` | Media file manifest (images + audio URLs) |
+
+**Params:**
+
+`GET /sync/check`: `province_id`✓, `since`✓ (ISO 8601, e.g. `2025-01-01T00:00:00Z`)
+
+`GET /sync/package/{province_id}`: `lang`, `since` (ISO 8601 — omit for full sync), `include_media_urls` (bool, default true)
+
+`GET /sync/media/{province_id}`: `type` (all\|images\|audio, default all), `lang`, `since` (ISO 8601)
 
 ---
 
-## 10. API Request Logging
+## 10. Offline / SQLite Implementation Guide
+
+This section documents the complete flow for Flutter dev to implement province offline mode with local SQLite storage.
+
+### 10.1 Overview
+
+The offline system has two parts:
+
+| What | Endpoint | When |
+|------|----------|------|
+| **Text & structure** | `GET /sync/package/{province_id}` | First install + incremental update |
+| **Media files** | `GET /sync/media/{province_id}` | Download images/audio to device storage |
+| **Check if stale** | `GET /sync/check` | App foreground / periodic check |
+| **Log download** | `POST /user/downloads/start` + `/complete` | Track history (optional) |
+
+### 10.2 SQLite Schema
+
+```sql
+-- Metadata: track what's been synced
+CREATE TABLE sync_meta (
+  province_id   INTEGER PRIMARY KEY,
+  lang          TEXT    NOT NULL,
+  synced_at     TEXT    NOT NULL,  -- ISO 8601, used as `since` on next sync
+  sync_version  INTEGER NOT NULL
+);
+
+-- Core content tables (mirror server structure)
+CREATE TABLE provinces (
+  id             INTEGER PRIMARY KEY,
+  name           TEXT,
+  feature_image  TEXT,  -- JSON: {url, width, height}
+  latitude       REAL,
+  longitude      REAL
+);
+
+CREATE TABLE locations (
+  id               INTEGER PRIMARY KEY,
+  location_number  INTEGER,
+  name             TEXT,
+  description      TEXT,
+  feature_image    TEXT,  -- JSON
+  latitude         REAL,
+  longitude        REAL
+);
+
+CREATE TABLE places (
+  id                 INTEGER PRIMARY KEY,
+  place_order_number INTEGER,
+  name               TEXT,
+  information        TEXT,
+  article            TEXT,
+  feature_image      TEXT,  -- JSON
+  gallery            TEXT,  -- JSON array
+  audio_url          TEXT,
+  audio_duration     REAL,
+  latitude           REAL,
+  longitude          REAL,
+  geofence_radius    INTEGER,
+  qr_code            TEXT,
+  checkin_reward     INTEGER,
+  article_cost       INTEGER,
+  show_article_free  INTEGER,  -- 0/1
+  show_audio_free    INTEGER   -- 0/1
+);
+
+CREATE TABLE sub_places (
+  id               INTEGER PRIMARY KEY,
+  sub_place_index  TEXT,
+  name             TEXT,
+  description      TEXT,
+  feature_image    TEXT,  -- JSON
+  audio_url        TEXT,
+  audio_duration   REAL,
+  latitude         REAL,
+  longitude        REAL,
+  place_id         INTEGER REFERENCES places(id)
+);
+
+CREATE TABLE sub_items (
+  id            INTEGER PRIMARY KEY,
+  item_index    TEXT,
+  name          TEXT,
+  description   TEXT,
+  feature_image TEXT,   -- JSON
+  gallery       TEXT,   -- JSON array
+  audio_url     TEXT,
+  sub_place_id  INTEGER REFERENCES sub_places(id)
+);
+
+CREATE TABLE journeys (
+  id            INTEGER PRIMARY KEY,
+  name          TEXT,
+  description   TEXT,
+  feature_image TEXT,  -- JSON
+  duration_days INTEGER,
+  difficulty    TEXT,
+  stops         TEXT   -- JSON array of stop objects
+);
+
+CREATE TABLE news (
+  id         INTEGER PRIMARY KEY,
+  type       TEXT,
+  title      TEXT,
+  content    TEXT,
+  icon       TEXT,
+  is_pinned  INTEGER,
+  start_date TEXT,
+  end_date   TEXT,
+  created_at TEXT
+);
+
+-- Media cache: track which files are downloaded locally
+CREATE TABLE media_cache (
+  url          TEXT PRIMARY KEY,
+  local_path   TEXT NOT NULL,
+  type         TEXT NOT NULL,   -- 'image' | 'audio'
+  related_type TEXT,            -- 'place' | 'sub_place' | 'sub_item'
+  related_id   INTEGER,
+  size_bytes   INTEGER,
+  checksum     TEXT,
+  downloaded_at TEXT
+);
+```
+
+> **Field naming note:** The sync package uses different field names than the online API in a few places:
+> - `location_number` (sync) vs `number` (online `/locations` list)
+> - `information` (sync) vs `info` (online `/places/{id}`)
+> - `place_order_number` (sync) vs `order_number` (online)
+> - Sub-places include `place_id` (parent); sub-items include `sub_place_id` (parent) — these are flat arrays, not nested.
+
+### 10.3 First Install Flow
+
+```
+1. App launches for first time in a province
+   │
+   ├── POST /device/register  →  get device_uuid, wallet_balance
+   │
+   ├── GET /sync/package/{province_id}?lang=vi
+   │     Response: {
+   │       province: {...},
+   │       locations: [...],
+   │       places: [...],             ← includes article, audio, gallery
+   │       sub_places: [...],         ← flat list with place_id FK
+   │       sub_items: [...],          ← flat list with sub_place_id FK
+   │       journeys: [...],
+   │       news: [...],
+   │       media_manifest: [...],     ← list of all media URLs + sizes
+   │       sync_version: 1718000000,
+   │       total_media_size_mb: 45.2
+   │     }
+   │
+   ├── INSERT all rows into SQLite tables
+   │
+   ├── INSERT INTO sync_meta (province_id, lang, synced_at, sync_version)
+   │     VALUES (1, 'vi', '2025-06-14T08:00:00Z', 1718000000)
+   │
+   ├── (Optional) POST /user/downloads/start  →  { download_id: 123 }
+   │
+   ├── Download each file from media_manifest.files[].url
+   │     → save to local storage
+   │     → INSERT INTO media_cache (url, local_path, type, ...)
+   │
+   └── POST /user/downloads/complete  { download_id: 123, file_count: 87, total_size_mb: 45.2, status: "completed" }
+```
+
+### 10.4 Incremental Update Flow
+
+```
+App comes to foreground (or periodic check every N hours):
+   │
+   ├── GET /sync/check?province_id=1&since=<synced_at from sync_meta>
+   │     Response: {
+   │       has_updates: true,
+   │       last_modified: "2025-06-14T10:00:00Z",
+   │       changes: {
+   │         provinces:  { updated: 0, last_modified: null },
+   │         locations:  { updated: 0, last_modified: null },
+   │         places:     { updated: 2, last_modified: "2025-06-14T09:30:00Z" },
+   │         sub_places: { updated: 1, last_modified: "..." },
+   │         sub_items:  { updated: 0, last_modified: null },
+   │         journeys:   { updated: 0, last_modified: null },
+   │         news:       { updated: 3, last_modified: "..." }
+   │       },
+   │       estimated_download_size_mb: 0.4
+   │     }
+   │
+   ├── IF has_updates == false  →  done
+   │
+   ├── GET /sync/package/{province_id}?lang=vi&since=<synced_at>
+   │     Server returns ONLY records modified after `since`
+   │     (empty arrays for types with no changes)
+   │
+   ├── For each returned item: INSERT OR REPLACE INTO <table> ...
+   │
+   ├── UPDATE sync_meta SET synced_at = last_modified, sync_version = <new>
+   │
+   └── Download new/changed media files (checksum changed or not in media_cache)
+```
+
+### 10.5 `/sync/package` Response Structure
+
+```json
+{
+  "success": true,
+  "data": {
+    "province": {
+      "id": 1, "name": "Hà Giang", "feature_image": {...}, "latitude": 22.8, "longitude": 104.9
+    },
+    "locations": [
+      { "id": 10, "location_number": 1, "name": "Đồng Văn", "description": "...",
+        "feature_image": {...}, "latitude": 23.27, "longitude": 105.36 }
+    ],
+    "places": [
+      { "id": 100, "place_order_number": 1, "name": "Cột cờ Lũng Cú",
+        "information": "...", "article": "...",
+        "feature_image": {...}, "gallery": [...],
+        "audio": { "url": "https://cdn.example.com/audio.mp3", "duration": 180.5 },
+        "latitude": 23.37, "longitude": 105.33,
+        "geofence_radius": 300, "qr_code": "LCF001",
+        "checkin_reward": 10, "article_cost": 5,
+        "show_article_free": true, "show_audio_free": false }
+    ],
+    "sub_places": [
+      { "id": 200, "sub_place_index": "A", "name": "Tầng 1",
+        "description": "...", "feature_image": {...},
+        "audio": { "url": "...", "size": 0 },
+        "latitude": 23.37, "longitude": 105.33,
+        "place_id": 100 }
+    ],
+    "sub_items": [
+      { "id": 300, "item_index": "A1", "name": "Bức phù điêu",
+        "description": "...", "feature_image": {...},
+        "gallery": [...], "audio": { "url": "..." },
+        "sub_place_id": 200 }
+    ],
+    "journeys": [...],
+    "news": [...],
+    "media_manifest": [
+      { "type": "image", "url": "https://...", "size_bytes": 102400, "checksum": "abc123" },
+      { "type": "audio", "url": "https://...", "size_bytes": 2097152, "checksum": "def456" }
+    ],
+    "sync_version": 1718000000,
+    "total_media_size_mb": 45.2
+  }
+}
+```
+
+### 10.6 `/sync/check` Response Structure
+
+```json
+{
+  "success": true,
+  "data": {
+    "has_updates": true,
+    "last_modified": "2025-06-14T10:00:00Z",
+    "changes": {
+      "provinces":  { "updated": 0, "last_modified": null },
+      "locations":  { "updated": 0, "last_modified": null },
+      "places":     { "updated": 2, "last_modified": "2025-06-14T09:30:00Z" },
+      "sub_places": { "updated": 1, "last_modified": "2025-06-14T08:00:00Z" },
+      "sub_items":  { "updated": 0, "last_modified": null },
+      "journeys":   { "updated": 0, "last_modified": null },
+      "news":       { "updated": 3, "last_modified": "2025-06-14T10:00:00Z" }
+    },
+    "estimated_download_size_mb": 0.4
+  }
+}
+```
+
+### 10.7 Using Offline Data (Flutter)
+
+**Resolve local media path:**
+```dart
+// When rendering a place image:
+final url = place.featureImageUrl;
+final cached = await db.query('media_cache', where: 'url = ?', whereArgs: [url]);
+final path = cached.isNotEmpty ? cached.first['local_path'] : url; // fallback to network
+```
+
+**Online vs offline read strategy:**
+```dart
+// Content endpoint order:
+// 1. Try SQLite (instant, no network)
+// 2. On miss or if not yet synced: call API
+// User status (checkin/unlock) always from API — never cached
+```
+
+**What is NOT stored offline:**
+- `user_status` (is_checked_in, is_article_unlocked, is_audio_unlocked) — always live from API
+- Comments and ratings — always live
+- Wallet balance — always live
+
+---
+
+## 11. API Request Logging
 
 Every request in namespace `toursapp/v1` is logged asynchronously to `wp_ta_api_logs` (PHP shutdown hook — zero response time impact).
 
@@ -491,7 +902,7 @@ Use for: identifying slowest endpoints, most-used routes, traffic patterns, abus
 
 ---
 
-## 11. Plugin File Structure
+## 12. Plugin File Structure
 
 ```
 toursapp-api/
@@ -535,7 +946,7 @@ ToursApp API  (main menu)
 
 ---
 
-## 12. Future: User Account Support
+## 13. Future: User Account Support
 
 Current identity: `device_uuid` (per-device, anonymous). All tables already use `device_uuid` as the primary identity key, making the upgrade path straightforward.
 
@@ -561,7 +972,7 @@ Multiple devices linking to one user → wallet, history, comments automatically
 
 ---
 
-## 13. Changing API Version
+## 14. Changing API Version
 
 Edit one constant in `toursapp-api.php`:
 

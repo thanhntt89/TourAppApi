@@ -87,6 +87,100 @@ class TA_API_Docs {
         return implode('. ', $parts);
     }
 
+    private static function param_example(array $p): string {
+        $examples = [
+            'device_uuid'       => 'abc-uuid-123',
+            'province_id'       => '1',
+            'location_id'       => '1',
+            'place_id'          => '5',
+            'sub_place_id'      => '2',
+            'id'                => '1',
+            'lang'              => 'vi',
+            'lat'               => '22.82',
+            'lng'               => '104.98',
+            'radius'            => '5',
+            'page'              => '1',
+            'per_page'          => '20',
+            'name'              => 'My Journey',
+            'description'       => 'A great trip',
+            'status'            => 'planning',
+            'rating'            => '5',
+            'comment_text'      => 'Great place!',
+            'referral_code'     => 'HG-A1B2',
+            'share_type'        => 'social',
+            'platform'          => 'facebook',
+            'content_type'      => 'place',
+            'content_id'        => '5',
+            'event_type'        => 'page_view',
+            'method'            => 'gps',
+            'type'              => 'news',
+            'feature'           => 'cross_province',
+            'since'             => '2026-01-01T00:00:00Z',
+            'app_version'       => '1.0.0',
+            'download_type'     => 'full',
+            'source_journey_id' => '1',
+        ];
+        if (isset($examples[$p['name']])) return $examples[$p['name']];
+        switch ($p['type'] ?? 'string') {
+            case 'integer': return '1';
+            case 'boolean': return 'true';
+            case 'array':   return '[]';
+            default:        return 'value';
+        }
+    }
+
+    private static function generate_curl(array $r, string $base_url): string {
+        $method = $r['method'];
+        $url    = rtrim($base_url, '/') . $r['path'];
+
+        // Replace path placeholders with example values
+        $url = str_replace(['{province_id}', '{location_id}', '{place_id}', '{id}',
+                            '{cid}', '{type}', '{feature}', '{code}'],
+                           ['1', '1', '5', '1', '7', 'place', 'cross_province', 'MPL-001'],
+                           $url);
+
+        $params   = $r['params'] ?? [];
+        $required = array_values(array_filter($params, function ($p) { return !empty($p['required']); }));
+
+        $headers   = [];
+        $body_json = '';
+
+        if ($r['auth']) {
+            $headers[] = '-H "X-Device-UUID: your-device-uuid"';
+        }
+
+        if (in_array($method, ['POST', 'PUT', 'PATCH'], true)) {
+            if (!empty($required)) {
+                $headers[] = '-H "Content-Type: application/json"';
+                $body = [];
+                foreach ($required as $p) {
+                    $body[$p['name']] = self::param_example($p);
+                }
+                $body_json = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } else {
+                $headers[] = '-H "Content-Type: application/json"';
+            }
+        } else {
+            if (!empty($required)) {
+                $qs = [];
+                foreach ($required as $p) {
+                    $qs[] = urlencode($p['name']) . '=' . urlencode(self::param_example($p));
+                }
+                $url .= '?' . implode('&', $qs);
+            }
+        }
+
+        $cmd = 'curl -X ' . $method . " \\\n  \"" . $url . '"';
+        foreach ($headers as $h) {
+            $cmd .= " \\\n  " . $h;
+        }
+        if ($body_json !== '') {
+            $cmd .= " \\\n  -d '" . $body_json . "'";
+        }
+
+        return $cmd;
+    }
+
     public static function register_menu() {
         add_submenu_page('toursapp-api', 'API Documentation', 'API Docs', 'manage_options', 'toursapp-api-docs', [self::class, 'render_page']);
     }
@@ -183,6 +277,9 @@ class TA_API_Docs {
         /* JSON highlighting */
         .j-key{color:#9cdcfe}.j-str{color:#ce9178}.j-num{color:#b5cea8}.j-bool{color:#569cd6}
 
+        /* Curl/shell block */
+        .ta-curl{color:#98c379;white-space:pre}
+
         /* Responsive */
         @media(max-width:1200px){.ta-docs-side{width:260px;min-width:260px}}
         @media(max-width:900px){.ta-docs-body{flex-direction:column}.ta-docs-side{width:100%;min-width:100%;position:static;height:auto;max-height:300px}}
@@ -277,6 +374,12 @@ class TA_API_Docs {
                                 </tbody>
                             </table>
                             <?php endif; ?>
+
+                            <h4>Request Example</h4>
+                            <div class="ta-code-wrap">
+                                <button class="ta-copy" onclick="taCopy(this)">Copy</button>
+                                <pre class="ta-curl"><?php echo esc_html(self::generate_curl($r, $base_url)); ?></pre>
+                            </div>
 
                             <?php if ($has_sample): ?>
                             <h4>Response Example</h4>

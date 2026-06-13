@@ -586,7 +586,8 @@ class TA_Admin {
             'POST /device/register'                        => 'Register or update a device. Creates wallet on first registration.',
             // Provinces
             'GET /provinces'                               => 'List all active provinces.',
-            'GET /provinces/{id}'                          => 'Get province detail.',
+            'GET /provinces/detect'                        => 'Detect province by GPS. Returns nearest match within detection radius, or all active provinces if none detected.',
+            'GET /provinces/{id}'                          => 'Province detail with description and banner images. Optional include=locations,featured_places,news.',
             'GET /provinces/{province_id}/locations'       => 'List locations within a province. Supports distance sort with lat/lng.',
             'GET /locations/{id}'                          => 'Location detail. Add include=places to embed child places.',
             // Places
@@ -596,9 +597,9 @@ class TA_Admin {
             'GET /places/qr/{code}'                        => 'Look up a place by its QR code string.',
             'GET /places/search'                           => 'Full-text keyword search across place names.',
             // Sub-places & Sub-items
-            'GET /sub-places'                              => 'List sub-places for a place (place_id required).',
-            'GET /sub-places/{id}'                         => 'Sub-place detail with audio.',
-            'GET /sub-items'                               => 'List sub-items for a sub-place (sub_place_id required).',
+            'GET /places/{place_id}/sub-places'            => 'List sub-places for a place (compact: id, name, image, coordinates, sub_items thumbnail). Get place_id from GET /places.',
+            'GET /sub-places/{id}'                         => 'Sub-place detail with description, audio, and full sub_items (gallery + audio). Get {id} from GET /places/{place_id}/sub-places.',
+            'GET /sub-items/{id}'                          => 'Sub-item detail with full gallery and audio.',
             // Journeys
             'GET /journeys'                                => 'List preset journeys for a province.',
             'GET /journeys/{id}'                           => 'Preset journey detail with ordered stops.',
@@ -670,6 +671,34 @@ class TA_Admin {
             'GET /user/features'    => '[{"feature":"cross_province","label":"Cross-Province Journeys","enabled":true,"mode":"achievement","has_access":false,"achievement":{"required":10,"current":6,"progress":60}},{"feature":"unlimited_journeys","label":"Unlimited Custom Journeys","enabled":true,"mode":"paid","has_access":false,"cost":20,"unlocked":false}]',
             'GET /sync/check'       => '{"has_updates":true,"last_modified":"2026-06-13 10:00:00","changes":{"provinces":{"updated":0,"last_modified":null},"locations":{"updated":1,"last_modified":"2026-06-13"},"places":{"updated":3,"last_modified":"2026-06-13"},"sub_places":{"updated":0,"last_modified":null},"sub_items":{"updated":0,"last_modified":null},"journeys":{"updated":0,"last_modified":null},"news":{"updated":1,"last_modified":"2026-06-13"}},"estimated_download_size_mb":4.2}',
             'POST /user/journeys'   => '{"id":12,"type":"user","name":"3 ngày Hà Giang","description":"","province_id":1,"source_journey_id":null,"status":"planning","total_places":0,"visited_count":0,"progress_percent":0,"stops":[],"created_at":"2026-06-13 10:00:00","updated_at":"2026-06-13 10:00:00"}',
+            // Provinces
+            'GET /provinces/{id}'   => '{"id":1,"name":"Hà Giang","description":"Tỉnh địa đầu Tổ quốc...","feature_image":{"url":"https://cdn.../ha-giang.jpg","alt":"","width":800,"height":600},"latitude":22.82,"longitude":104.98,"detection_radius_km":50,"is_active":true,"total_locations":4,"total_places":24,"sort_order":1,"banner_images":[{"url":"https://cdn.../banner1.jpg","alt":""}]}',
+            'GET /provinces/detect' => '{"detected":true,"province":{"id":1,"name":"Hà Giang","feature_image":{"url":"https://cdn.../ha-giang.jpg","alt":""},"latitude":22.82,"longitude":104.98,"detection_radius_km":50,"is_active":true,"total_locations":4,"total_places":24,"sort_order":1,"distance_km":12.5}}',
+            // Locations
+            'GET /provinces/{province_id}/locations' => '[{"id":2,"number":1,"name":"Đồng Văn","feature_image":{"url":"https://cdn.../dong-van.jpg","alt":"","width":800,"height":600},"latitude":23.27,"longitude":105.36,"total_places":8,"sort_order":1,"distance_km":45.2}]',
+            'GET /locations/{id}'   => '{"id":2,"number":1,"name":"Đồng Văn","description":"Cao nguyên đá...","feature_image":{"url":"https://cdn.../dong-van.jpg","alt":"","width":800,"height":600},"latitude":23.27,"longitude":105.36,"total_places":8,"sort_order":1,"province":{"id":1,"name":"Hà Giang"}}',
+            // Places
+            'GET /places/nearby'    => '{"success":true,"data":[{"id":5,"name":"Mã Pí Lèng","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"latitude":23.12,"longitude":105.43,"distance_km":0.8,"is_featured":true,"sort_order":1}],"meta":{"total":3}}',
+            'GET /places/qr/{code}' => '{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"latitude":23.12,"longitude":105.43,"qr_code":"MPL-001","is_featured":true,"sort_order":1,"location":{"id":2,"number":1,"name":"Đồng Văn"},"user_status":{"is_checked_in":false,"is_article_unlocked":false,"is_audio_unlocked":false}}',
+            'GET /places/search'    => '{"success":true,"data":[{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"latitude":23.12,"longitude":105.43,"is_featured":true,"sort_order":1}],"meta":{"total":2,"page":1,"per_page":20,"pages":1}}',
+            // Sub-places
+            'GET /places/{place_id}/sub-places' => '[{"id":10,"sub_place_index":"1","name":"Đỉnh đèo","feature_image":{"url":"https://cdn.../sub-place.jpg","alt":"","width":800,"height":600},"latitude":23.12,"longitude":105.43,"sort_order":1,"sub_items":[{"id":20,"item_index":"1.1","name":"Bia tưởng niệm","feature_image":{"url":"https://cdn.../item.jpg","alt":""},"sort_order":1}]}]',
+            'GET /sub-places/{id}'  => '{"id":10,"sub_place_index":"1","name":"Đỉnh đèo","description":"Điểm cao nhất...","feature_image":{"url":"https://cdn.../sub-place.jpg","alt":"","width":800,"height":600},"audio":{"url":"https://cdn.../audio-vi.mp3","duration":120.5},"latitude":23.12,"longitude":105.43,"sort_order":1,"place":{"id":5,"name":"Mã Pí Lèng"},"sub_items":[{"id":20,"item_index":"1.1","name":"Bia tưởng niệm","description":"...","feature_image":{"url":"https://cdn.../item.jpg","alt":""},"gallery":[{"url":"https://cdn.../gallery1.jpg","alt":""}],"audio":{"url":"https://cdn.../item-audio.mp3","duration":60.0},"sort_order":1}]}',
+            // Journeys
+            'GET /journeys'         => '[{"id":3,"type":"preset","name":"3 ngày Hà Giang cổ điển","description":"...","feature_image":{"url":"https://cdn.../journey.jpg","alt":""},"duration_days":3,"total_places":12,"difficulty":"medium","is_featured":true,"sort_order":1}]',
+            'GET /journeys/{id}'    => '{"id":3,"type":"preset","name":"3 ngày Hà Giang cổ điển","description":"...","feature_image":{"url":"https://cdn.../journey.jpg","alt":""},"duration_days":3,"total_places":12,"difficulty":"medium","is_featured":true,"sort_order":1,"stops":[{"day_number":1,"stop_order":1,"place_id":5,"place_name":"Mã Pí Lèng","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"lat":23.12,"lng":105.43,"note":""}]}',
+            // Stories
+            'GET /stories'          => '{"success":true,"data":[{"id":3,"type":"legend","name":"Truyền thuyết Mã Pí Lèng","summary":"...","feature_image":{"url":"https://cdn.../story.jpg","alt":""},"is_featured":true,"sort_order":1}],"meta":{"total":15,"page":1,"per_page":20,"pages":1}}',
+            // News
+            'GET /news'             => '{"success":true,"data":[{"id":7,"type":"news","title":"Thông báo mùa mưa lũ","content":"...","icon":null,"is_pinned":true,"start_date":"2026-06-01","end_date":"2026-09-30","created_at":"2026-06-01 08:00:00"}],"meta":{"total":3}}',
+            // User
+            'GET /user/history'     => '{"success":true,"data":[{"checkin_id":42,"place_id":5,"place_name":"Mã Pí Lèng","method":"gps","reward":10,"created_at":"2026-06-13 10:00:00"}],"meta":{"total":6,"total_flowers_earned":60,"page":1,"per_page":20}}',
+            'GET /user/features/{feature}' => '{"feature":"cross_province","label":"Cross-Province Journeys","enabled":true,"mode":"achievement","has_access":false,"achievement":{"required":10,"current":6,"progress":60}}',
+            'GET /user/journeys'    => '{"success":true,"data":[{"id":12,"type":"user","name":"3 ngày Hà Giang","description":"","province_id":1,"status":"planning","total_places":2,"visited_count":1,"progress_percent":50,"stops":[{"place_id":5,"place_name":"Mã Pí Lèng","stop_order":1,"day_number":1,"note":"","status":"visited"}],"created_at":"2026-06-13 10:00:00","updated_at":"2026-06-13 10:00:00"}],"meta":{"total":2}}',
+            'GET /user/downloads'   => '[{"id":1,"province_id":1,"download_type":"full","lang":"vi","status":"completed","file_count":145,"total_size_mb":32.4,"started_at":"2026-06-13 09:00:00","completed_at":"2026-06-13 09:02:00"}]',
+            // Sync
+            'GET /sync/package/{province_id}' => '{"province":{"id":1,"name":"Hà Giang"},"locations":[{"id":2,"number":1,"name":"Đồng Văn"}],"places":[{"id":5,"name":"Mã Pí Lèng","audio":{"url":"...","size":1024,"duration":180}}],"sub_places":[{"id":10,"name":"Đỉnh đèo"}],"sub_items":[{"id":20,"name":"Bia tưởng niệm"}],"journeys":[{"id":3,"name":"3 ngày Hà Giang"}],"news":[{"id":7,"title":"Thông báo mùa mưa lũ"}],"sync_version":"2026-06-13T10:00:00Z","total_media_size_mb":32.4}',
+            'GET /sync/media/{province_id}' => '{"province_id":1,"total_files":145,"total_size_mb":32.4,"files":[{"type":"audio","url":"https://cdn.../audio.mp3","path":"audio/place-5-vi.mp3","size_bytes":2048000,"content_type":"place","content_id":5,"lang":"vi"}]}',
         ];
         return $s;
     }

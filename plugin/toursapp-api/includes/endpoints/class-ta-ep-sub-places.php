@@ -135,20 +135,13 @@ class TA_EP_SubPlaces {
      * Format a sub-place for the list endpoint (compact).
      */
     private static function format_list_item(WP_Post $sp, string $lang): array {
-        $id    = $sp->ID;
-        $audio = TA_Localize::get_audio_localized($id, 'sub_place_audio', $lang);
-        $duration = get_field('sub_place_audio_duration', $id);
+        $id = $sp->ID;
 
         return [
             'id'              => $id,
             'sub_place_index' => get_field('sub_place_index', $id) ?: '',
             'name'            => TA_Localize::get_field_localized($id, 'sub_place_name', $lang),
-            'description'     => TA_Localize::get_field_localized($id, 'sub_place_desc', $lang),
             'feature_image'   => TA_Localize::format_image(get_field('sub_place_feature_image', $id)),
-            'audio'           => $audio ? [
-                'url'      => $audio['url'],
-                'duration' => (float) ($duration ?: 0),
-            ] : null,
             'latitude'        => (float) (get_field('sub_place_lat', $id) ?: 0),
             'longitude'       => (float) (get_field('sub_place_lng', $id) ?: 0),
             'sort_order'      => (int) (get_field('sub_place_sort_order', $id) ?: 0),

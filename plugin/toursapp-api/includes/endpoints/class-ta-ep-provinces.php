@@ -133,6 +133,7 @@ class TA_EP_Provinces {
         }
 
         $data = self::format_province($post, $lang);
+        $data['description'] = TA_Localize::get_field_localized($id, 'province_desc', $lang);
 
         // Banner gallery.
         $data['banner_images'] = TA_Localize::format_gallery(get_field('province_banner_images', $id));
@@ -165,7 +166,6 @@ class TA_EP_Provinces {
         return [
             'id'                   => $id,
             'name'                 => TA_Localize::get_field_localized($id, 'province_name', $lang),
-            'description'          => TA_Localize::get_field_localized($id, 'province_desc', $lang),
             'feature_image'        => TA_Localize::format_image(get_field('province_feature_image', $id)),
             'latitude'             => (float) get_field('province_lat', $id),
             'longitude'            => (float) get_field('province_lng', $id),

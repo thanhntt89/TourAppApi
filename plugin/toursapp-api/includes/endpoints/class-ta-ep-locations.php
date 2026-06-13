@@ -130,7 +130,6 @@ class TA_EP_Locations {
             'id'            => $id,
             'number'        => (int) get_field('location_number', $id),
             'name'          => TA_Localize::get_field_localized($id, 'location_name', $lang),
-            'description'   => TA_Localize::get_field_localized($id, 'location_desc', $lang),
             'feature_image' => TA_Localize::format_image(get_field('location_feature_image', $id)),
             'latitude'      => $l_lat,
             'longitude'     => $l_lng,
@@ -196,7 +195,6 @@ class TA_EP_Locations {
             return [
                 'id'            => $id,
                 'name'          => TA_Localize::get_field_localized($id, 'place_name', $lang),
-                'description'   => TA_Localize::get_field_localized($id, 'place_info', $lang),
                 'feature_image' => TA_Localize::format_image(get_field('place_feature_image', $id)),
                 'latitude'      => (float) get_field('place_lat', $id),
                 'longitude'     => (float) get_field('place_lng', $id),
