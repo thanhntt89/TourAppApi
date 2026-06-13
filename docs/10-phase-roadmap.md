@@ -330,7 +330,7 @@ GPS Track + Photos + Location Visits + Notes
 
 | Tier | Nội dung |
 |------|----------|
-| **Free** | 5 location audio + 3 trip recordings + articles + nearby services + bản đồ |
+| **Free** | 5 location audio + 5 custom journeys + articles + nearby services + bản đồ |
 | **Premium Tour** | $2-5/tour — Mở khóa tất cả audio cho 1 route cụ thể |
 | **Premium Monthly** | $5-10/tháng — Full access tất cả tính năng |
 | **Premium Yearly** | $40-80/năm — Giảm giá so với monthly |

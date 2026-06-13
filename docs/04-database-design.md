@@ -4,7 +4,7 @@
 > **Prefix:** `wp_ta_` for all custom tables  
 > **Created by:** `TA_Activator::activate()` via `dbDelta()`  
 > **Removed by:** `uninstall.php` via `DROP TABLE IF EXISTS`  
-> **Total custom tables:** 14
+> **Total custom tables:** 15 (16 after archiving system)
 
 ---
 
@@ -430,7 +430,48 @@ CREATE TABLE wp_ta_error_logs (
 
 ---
 
-## Total Tables: 15
+## Schema: Planned Table (Data Archiving)
+
+### wp_ta_content_stats_daily
+Aggregated daily summary of content engagement events. Populated by `TA_Data_Archiver` before raw `ta_content_events` records are purged. Enables historical analytics even after raw data is deleted.
+
+```sql
+CREATE TABLE wp_ta_content_stats_daily (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    date           DATE NOT NULL,
+    content_type   VARCHAR(20) NOT NULL,
+    content_id     INT NOT NULL,
+    event_type     VARCHAR(30) NOT NULL,
+    event_count    INT DEFAULT 0,
+    unique_users   INT DEFAULT 0,
+    avg_duration   DECIMAL(8,2) DEFAULT 0,
+    avg_scroll     DECIMAL(5,2) DEFAULT 0,
+    avg_completion DECIMAL(5,2) DEFAULT 0,
+    UNIQUE KEY unique_daily (date, content_type, content_id, event_type),
+    INDEX idx_date (date),
+    INDEX idx_content (content_type, content_id)
+);
+```
+
+**Key properties:**
+- UNIQUE constraint prevents duplicate aggregation on re-run
+- `ON DUPLICATE KEY UPDATE` allows idempotent aggregation
+- Approximately 100x smaller than equivalent raw `ta_content_events` data
+- Queried by `TA_Analytics::top_content()` as fallback for historical periods
+
+**Data lifecycle:**
+
+```
+ta_content_events (raw, 90 days)
+    ↓ daily cron aggregates + exports
+ta_content_stats_daily (aggregated, forever)
+    ↓ optional manual purge only
+(historical data preserved indefinitely)
+```
+
+---
+
+## Total Tables: 15 (+ 1 planned)
 
 | # | Table | Purpose | Version |
 |---|-------|---------|---------|
@@ -441,6 +482,7 @@ CREATE TABLE wp_ta_error_logs (
 | 13 | `ta_api_logs` | API request infrastructure logs | v1.2.0 |
 | 14 | `ta_downloads` | Offline download tracking | v1.2.0 |
 | 15 | `ta_error_logs` | Detailed error logs (4xx/5xx only) | v1.2.6 |
+| 16 | `ta_content_stats_daily` | Aggregated daily content stats (archiving) | planned |
 
 ---
 

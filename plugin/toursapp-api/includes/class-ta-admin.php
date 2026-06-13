@@ -618,7 +618,7 @@ class TA_Admin {
             'POST /user/track'                             => 'Record content engagement event. Only logs if tracking enabled on content.',
             // User journeys
             'GET /user/journeys'                           => 'List custom journeys created by this device.',
-            'POST /user/journeys'                          => 'Create custom journey. Cross-province requires feature unlock.',
+            'POST /user/journeys'                          => 'Create custom journey. Free plan: max 5 journeys (403 journey_limit_reached if exceeded). Unlock unlimited_journeys feature to remove limit. Cross-province requires feature unlock.',
             'PUT /user/journeys/{id}'                      => 'Update custom journey name, description, status, or stops.',
             'DELETE /user/journeys/{id}'                   => 'Delete a custom journey.',
             // Features
@@ -667,7 +667,7 @@ class TA_Admin {
             'POST /user/track'      => '{"event_id":99}',
             'GET /analytics/content/{id}' => '{"total_events":150,"unique_devices":42,"by_event":{"page_view":{"total":80,"unique_devices":35,"avg_duration":0,"avg_scroll":65.2,"avg_completion":0},"article_read":{"total":50,"unique_devices":30,"avg_duration":120.5,"avg_scroll":85.0,"avg_completion":0}}}',
             'GET /analytics/top-content' => '[{"content_type":"place","content_id":"5","total_events":"150","unique_devices":"42","avg_duration":"120.5","avg_completion":"68.0"}]',
-            'GET /user/features'    => '[{"feature":"cross_province","label":"Cross-Province Journeys","enabled":true,"mode":"achievement","has_access":false,"achievement":{"required":10,"current":6,"progress":60}}]',
+            'GET /user/features'    => '[{"feature":"cross_province","label":"Cross-Province Journeys","enabled":true,"mode":"achievement","has_access":false,"achievement":{"required":10,"current":6,"progress":60}},{"feature":"unlimited_journeys","label":"Unlimited Custom Journeys","enabled":true,"mode":"paid","has_access":false,"cost":20,"unlocked":false}]',
             'GET /sync/check'       => '{"has_updates":true,"last_modified":"2026-06-13 10:00:00","changes":{"provinces":{"updated":0,"last_modified":null},"locations":{"updated":1,"last_modified":"2026-06-13"},"places":{"updated":3,"last_modified":"2026-06-13"},"sub_places":{"updated":0,"last_modified":null},"sub_items":{"updated":0,"last_modified":null},"journeys":{"updated":0,"last_modified":null},"news":{"updated":1,"last_modified":"2026-06-13"}},"estimated_download_size_mb":4.2}',
             'POST /user/journeys'   => '{"id":12,"type":"user","name":"3 ngày Hà Giang","description":"","province_id":1,"source_journey_id":null,"status":"planning","total_places":0,"visited_count":0,"progress_percent":0,"stops":[],"created_at":"2026-06-13 10:00:00","updated_at":"2026-06-13 10:00:00"}',
         ];

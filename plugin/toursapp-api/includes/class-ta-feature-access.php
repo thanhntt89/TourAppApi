@@ -15,12 +15,14 @@ class TA_Feature_Access {
 
     // Feature registry: slug => label
     const FEATURES = [
-        'cross_province' => 'Cross-Province Journeys',
+        'cross_province'     => 'Cross-Province Journeys',
+        'unlimited_journeys' => 'Unlimited Custom Journeys',
     ];
 
     // Internal IDs used in wp_ta_unlocked_content (content_type='feature')
     const FEATURE_IDS = [
-        'cross_province' => 1,
+        'cross_province'     => 1,
+        'unlimited_journeys' => 2,
     ];
 
     // ── Public API ────────────────────────────────────────────────────────

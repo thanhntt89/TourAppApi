@@ -357,9 +357,11 @@ Supported: `place`, `sub_place`, `ta_story`
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/user/journeys` | List custom journeys |
-| POST | `/user/journeys` | Create journey |
+| POST | `/user/journeys` | Create journey (free plan: max 5) |
 | PUT | `/user/journeys/{id}` | Update journey + stops |
 | DELETE | `/user/journeys/{id}` | Delete journey |
+
+**Free plan limit:** `POST /user/journeys` returns `403 journey_limit_reached` when device has 5 or more journeys and has not unlocked the `unlimited_journeys` feature. Response includes `limit`, `current`, and `feature` status to guide the Flutter app in showing the upgrade prompt.
 
 ---
 
@@ -442,6 +444,7 @@ Toggleable premium features with 3 unlock modes: **free** / **paid** (flowers) /
 | Feature | Slug | Description |
 |---------|------|-------------|
 | Cross-Province Journeys | `cross_province` | Allow user journeys spanning multiple provinces |
+| Unlimited Custom Journeys | `unlimited_journeys` | Remove the 5-journey free plan limit |
 
 **Feature status response:**
 ```json

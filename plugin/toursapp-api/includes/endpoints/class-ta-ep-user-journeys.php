@@ -3,6 +3,8 @@ defined('ABSPATH') || exit;
 
 class TA_EP_UserJourneys {
 
+    const FREE_JOURNEY_LIMIT = 5;
+
     public static function register_routes() {
         // GET /user/journeys
         register_rest_route(TA_API_NAMESPACE, '/user/journeys', [
@@ -116,6 +118,24 @@ class TA_EP_UserJourneys {
     public static function create_journey(WP_REST_Request $request): WP_REST_Response {
         $uuid  = TA_Auth::get_device_uuid($request);
         $stops = $request->get_param('stops') ?: [];
+
+        // Journey limit check (free: max 5, unlimited requires feature unlock)
+        if (!TA_Feature_Access::user_has_access($uuid, 'unlimited_journeys')) {
+            $count = TA_Journey_Model::count_for_device($uuid);
+            if ($count >= self::FREE_JOURNEY_LIMIT) {
+                return TA_API::error(
+                    'journey_limit_reached',
+                    'Free plan allows up to ' . self::FREE_JOURNEY_LIMIT . ' custom journeys.',
+                    403,
+                    [
+                        'limit'           => self::FREE_JOURNEY_LIMIT,
+                        'current'         => $count,
+                        'feature'         => TA_Feature_Access::get_status($uuid, 'unlimited_journeys'),
+                        'unlock_endpoint' => '/' . TA_API_NAMESPACE . '/user/features/unlimited_journeys/unlock',
+                    ]
+                );
+            }
+        }
 
         // Cross-province check
         $cross_check = self::check_cross_province_access($uuid, $stops, 0);

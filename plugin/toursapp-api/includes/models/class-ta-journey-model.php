@@ -119,6 +119,14 @@ class TA_Journey_Model {
         }
     }
 
+    public static function count_for_device(string $uuid): int {
+        global $wpdb;
+        return (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}ta_user_journeys WHERE device_uuid = %s",
+            $uuid
+        ));
+    }
+
     public static function get_progress(int $journey_id): array {
         global $wpdb;
         $table = $wpdb->prefix . 'ta_user_journey_stops';
