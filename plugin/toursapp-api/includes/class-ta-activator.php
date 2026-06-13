@@ -12,6 +12,7 @@ class TA_Activator {
     public static function upgrade() {
         global $wpdb;
         $installed = get_option('ta_db_version', '0');
+
         if (version_compare($installed, '1.2.1', '<')) {
             // Make province_id nullable to support cross-province user journeys
             $wpdb->query("ALTER TABLE {$wpdb->prefix}ta_user_journeys MODIFY province_id INT NULL DEFAULT NULL");
@@ -22,6 +23,11 @@ class TA_Activator {
                 update_option(TA_Signature::OPTION_SECRET, TA_Signature::generate_secret());
             }
             update_option('ta_db_version', '1.5.1');
+        }
+        if (version_compare($installed, '1.5.2', '<')) {
+            // Ensure all tables exist for installs that were updated by file copy instead of re-activation
+            self::create_tables();
+            update_option('ta_db_version', '1.5.2');
         }
     }
 

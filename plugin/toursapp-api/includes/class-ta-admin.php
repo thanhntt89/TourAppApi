@@ -929,15 +929,8 @@ class TA_Admin {
                 .ta-DELETE { background:#b32d2e; color:#fff; }
                 .ta-auth-yes  { color: #b32d2e; font-weight: bold; }
                 .ta-auth-no   { color: #555; }
-                .ta-param code { background:#f0f0f0; padding:1px 4px; border-radius:2px; margin-right:4px; }
                 .ta-toggle { display:inline-flex;align-items:center;cursor:pointer; }
                 .ta-toggle input { width:34px;height:18px;cursor:pointer; }
-            </style>
-
-            <style>
-                .ta-sample-box { display:none; background:#1e1e1e; color:#9cdcfe; font-size:11px; font-family:monospace; padding:8px 10px; border-radius:4px; margin-top:4px; white-space:pre-wrap; max-height:120px; overflow:auto; }
-                .ta-sample-btn { background:none; border:1px solid #555; color:#888; font-size:10px; padding:1px 5px; border-radius:3px; cursor:pointer; margin-top:4px; }
-                .ta-sample-btn:hover { border-color:#2271b1; color:#2271b1; }
             </style>
             <table id="ta-api-table">
                 <thead>
@@ -946,16 +939,13 @@ class TA_Admin {
                         <th style="width:65px">Method</th>
                         <th style="width:26%">Endpoint</th>
                         <th style="width:80px">Auth</th>
-                        <th style="width:22%">Parameters</th>
                         <th>Description</th>
-                        <th style="width:80px">Sample</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($routes as $ri => $route):
                     $ep_key     = '/' . TA_API_NAMESPACE . $route['path'] . ':' . $route['method'];
                     $is_enabled = !in_array($ep_key, $disabled, true);
-                    $sample_id  = 'ta-sample-' . $ri;
                 ?>
                     <tr class="<?php echo $is_enabled ? '' : 'ta-ep-disabled'; ?>">
                         <td>
@@ -970,31 +960,7 @@ class TA_Admin {
                         <td class="<?php echo $route['auth'] ? 'ta-auth-yes' : 'ta-auth-no'; ?>">
                             <?php echo $route['auth'] ? '🔒 Device UUID' : 'Public'; ?>
                         </td>
-                        <td class="ta-param">
-                            <?php foreach ($route['params'] as $param): ?>
-                                <div>
-                                    <code><?php echo esc_html($param['name']); ?></code>
-                                    <em style="font-size:11px"><?php echo esc_html($param['type']); ?></em>
-                                    <?php if ($param['required']): ?><span style="color:#c00;font-size:10px">*</span><?php endif; ?>
-                                    <?php if (!empty($param['default'])): ?><span style="color:#888;font-size:10px">=<?php echo esc_html($param['default']); ?></span><?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
-                        </td>
                         <td style="font-size:12px;color:#ccc"><?php echo esc_html($route['description']); ?></td>
-                        <td>
-                            <?php if (!empty($route['sample_output'])): ?>
-                            <button type="button" class="ta-sample-btn"
-                                onclick="var b=document.getElementById('<?php echo esc_attr($sample_id); ?>');b.style.display=b.style.display==='none'?'block':'none'">
-                                { } Preview
-                            </button>
-                            <pre class="ta-sample-box" id="<?php echo esc_attr($sample_id); ?>"><?php
-                                $decoded = json_decode($route['sample_output'], true);
-                                echo esc_html($decoded ? json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $route['sample_output']);
-                            ?></pre>
-                            <?php else: ?>
-                            <span style="color:#555;font-size:11px">—</span>
-                            <?php endif; ?>
-                        </td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -1029,19 +995,16 @@ class TA_Admin {
                 btn.innerHTML = '⏳ Building…';
 
                 try {
-                    var rows = [['Method','Endpoint','Auth Required','Parameters','Description','Sample Output']];
+                    var rows = [['Method','Endpoint','Auth Required','Description']];
                     document.querySelectorAll('#ta-api-table tbody tr').forEach(function(tr) {
                         var tds = tr.querySelectorAll('td');
-                        if (tds.length < 6) return;
+                        if (tds.length < 4) return;
                         var method  = tds[1] ? tds[1].textContent.trim() : '';
                         var ep      = tds[2] ? tds[2].textContent.trim() : '';
                         var auth    = tds[3] ? tds[3].textContent.trim().replace(/[🔒]/g,'').trim() : '';
-                        var params  = tds[4] ? tds[4].textContent.trim().replace(/\s+/g,' ') : '';
-                        var desc    = tds[5] ? tds[5].textContent.trim() : '';
-                        var pre     = tds[6] ? tds[6].querySelector('pre') : null;
-                        var sample  = pre ? pre.textContent.trim() : '';
+                        var desc    = tds[4] ? tds[4].textContent.trim() : '';
                         if (!method && !ep) return; // skip empty rows
-                        rows.push([method, ep, auth, params, desc, sample]);
+                        rows.push([method, ep, auth, desc]);
                     });
 
                     var csv = rows.map(function(row) {
