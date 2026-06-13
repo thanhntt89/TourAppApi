@@ -1,0 +1,126 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Tour Guide trong túi",
+  "@appTitle": { "description": "App title shown on splash and header" },
+
+  "tabMap": "Bản đồ",
+  "tabRoutes": "Tuyến đường",
+  "tabStories": "Câu chuyện",
+  "tabNews": "Tin tức",
+  "tabSettings": "Cài đặt",
+
+  "nearbyPlaces": "Điểm gần đây",
+  "allPlaces": "Tất cả địa điểm",
+  "featuredPlaces": "Điểm nổi bật",
+
+  "audioGuide": "Audio Guide",
+  "playAudio": "Nghe thuyết minh",
+  "pauseAudio": "Tạm dừng",
+  "audioAutoplay": "Tự động phát khi đến gần",
+
+  "scanQr": "Quét mã QR",
+  "scanQrHint": "Hướng camera vào mã QR tại điểm tham quan",
+
+  "downloadOffline": "Tải xuống offline",
+  "downloadingData": "Đang tải dữ liệu...",
+  "downloadComplete": "Tải xong!",
+  "downloadError": "Lỗi tải xuống",
+  "offlineMode": "Đang dùng offline",
+  "offlineModeHint": "Kết nối mạng để cập nhật dữ liệu mới nhất",
+
+  "distanceKm": "{distance} km",
+  "@distanceKm": {
+    "placeholders": { "distance": { "type": "String" } }
+  },
+  "distanceM": "{distance} m",
+  "@distanceM": {
+    "placeholders": { "distance": { "type": "String" } }
+  },
+
+  "checkinSuccess": "Check-in thành công! +{flowers} hoa",
+  "@checkinSuccess": {
+    "placeholders": { "flowers": { "type": "int" } }
+  },
+  "checkinAlready": "Bạn đã check-in tại đây rồi",
+  "checkinTooFar": "Bạn đang cách điểm này {distance} m, hãy đến gần hơn",
+  "@checkinTooFar": {
+    "placeholders": { "distance": { "type": "int" } }
+  },
+
+  "walletBalance": "Số dư: {balance} hoa",
+  "@walletBalance": {
+    "placeholders": { "balance": { "type": "int" } }
+  },
+  "walletTitle": "Ví Hoa Tam Giác Mạch",
+
+  "unlockArticle": "Mở bài viết ({cost} hoa)",
+  "@unlockArticle": {
+    "placeholders": { "cost": { "type": "int" } }
+  },
+  "unlockAudio": "Mở audio ({cost} hoa)",
+  "@unlockAudio": {
+    "placeholders": { "cost": { "type": "int" } }
+  },
+  "insufficientFlowers": "Không đủ hoa. Hãy check-in thêm để kiếm hoa.",
+  "contentFree": "Miễn phí",
+  "contentLocked": "Nội dung trả phí",
+
+  "chooseProvince": "Chọn tỉnh",
+  "detectProvince": "Tự động phát hiện theo GPS",
+  "provinceDetected": "Bạn đang ở {province}",
+  "@provinceDetected": {
+    "placeholders": { "province": { "type": "String" } }
+  },
+  "provinceNotDetected": "Không xác định được tỉnh, vui lòng chọn thủ công",
+
+  "routeDay": "Ngày {day}",
+  "@routeDay": {
+    "placeholders": { "day": { "type": "int" } }
+  },
+  "routeDuration": "{days} ngày",
+  "@routeDuration": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+
+  "storyTypeLegend": "Truyền thuyết",
+  "storyTypeHistory": "Lịch sử",
+  "storyTypeCulture": "Văn hóa",
+  "storyTypeFolk": "Dân gian",
+  "storyTypeMystery": "Bí ẩn",
+  "storyTypeNature": "Thiên nhiên",
+
+  "newsTypeNews": "Tin tức",
+  "newsTypeAlert": "Cảnh báo",
+  "newsTypeWarning": "Nguy hiểm",
+  "newsTypeEvent": "Sự kiện",
+
+  "settingsLanguage": "Ngôn ngữ giao diện",
+  "settingsContentLanguage": "Ngôn ngữ nội dung (audio, bài viết)",
+  "settingsTheme": "Giao diện",
+  "settingsThemeLight": "Sáng",
+  "settingsThemeDark": "Tối",
+  "settingsThemeSystem": "Theo hệ thống",
+  "settingsOfflineData": "Dữ liệu offline",
+  "settingsAbout": "Về ứng dụng",
+  "settingsVersion": "Phiên bản {version}",
+  "@settingsVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+
+  "errorGeneric": "Đã xảy ra lỗi. Vui lòng thử lại.",
+  "errorNetwork": "Không có kết nối mạng",
+  "errorNotFound": "Không tìm thấy nội dung",
+  "errorDeviceNotRegistered": "Thiết bị chưa được đăng ký",
+  "retry": "Thử lại",
+  "close": "Đóng",
+  "cancel": "Hủy",
+  "confirm": "Xác nhận",
+  "loading": "Đang tải...",
+  "noData": "Không có dữ liệu",
+  "search": "Tìm kiếm",
+  "searchHint": "Tìm địa điểm, câu chuyện...",
+
+  "locationPermissionTitle": "Cần quyền truy cập vị trí",
+  "locationPermissionBody": "ToursApp cần vị trí GPS để tự động phát audio khi bạn đến gần điểm tham quan và check-in.",
+  "openSettings": "Mở cài đặt"
+}
