@@ -78,22 +78,16 @@ class TA_API_Logger {
             ];
         }
 
-        $req_data  = $log_data;
-        $err_data  = $is_error ? $error_log_data : null;
-        $err_data_ref = &$err_data;
-
         self::$start_time  = null;
         self::$request_ref = null;
 
-        // Write asynchronously on shutdown
-        add_action('shutdown', function () use ($req_data, $err_data_ref) {
-            global $wpdb;
-            $wpdb->insert($wpdb->prefix . 'ta_api_logs', $req_data);
-            if ($err_data_ref) {
-                $err_data_ref['log_id'] = $wpdb->insert_id;
-                $wpdb->insert($wpdb->prefix . 'ta_error_logs', $err_data_ref);
-            }
-        });
+        global $wpdb;
+        $wpdb->insert($wpdb->prefix . 'ta_api_logs', $log_data);
+
+        if ($is_error) {
+            $error_log_data['log_id'] = $wpdb->insert_id;
+            $wpdb->insert($wpdb->prefix . 'ta_error_logs', $error_log_data);
+        }
 
         return $response;
     }
