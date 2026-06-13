@@ -2,784 +2,449 @@
 
 ---
 
-# 06 — Backend Services (Supabase)
+# 06 — Backend Services (WordPress Plugin)
 
-Cau hinh va su dung **Supabase Cloud** lam backend cho ToursApp — bao gom PostgreSQL, PostgREST API, Edge Functions, Storage va Realtime.
+> **Stack:** WordPress + PHP 7.4+ · ACF Free · MySQL  
+> **Plugin:** `toursapp-api` v1.2.7  
+> **Live:** `hagiang.caremycars.com/wp-json/toursapp/v1`
 
 ---
 
-## 1. Supabase Project Setup
+## Plugin Architecture
 
-### 1.1 Cac buoc thiet lap
-
-1. **Tao project** tai [supabase.com](https://supabase.com) — chon region `Southeast Asia (Singapore)`
-2. **Lay credentials**:
-   - `SUPABASE_URL`: `https://<project-ref>.supabase.co`
-   - `SUPABASE_ANON_KEY`: public key cho mobile client (an toan voi RLS)
-   - `SUPABASE_SERVICE_ROLE_KEY`: admin key cho Web Admin (KHONG BAO GIO dung trong mobile)
-3. **Enable extensions**:
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-   CREATE EXTENSION IF NOT EXISTS "earthdistance" CASCADE; -- cube + earthdistance
-   CREATE EXTENSION IF NOT EXISTS "pgvector";              -- Phase 5
-   ```
-4. **Tao database schema**: chay migration files (xem doc 04)
-5. **Cau hinh Storage buckets** (muc 7 ben duoi)
-6. **Deploy Edge Functions**: `supabase functions deploy <function-name>`
-
-### 1.2 Environment Variables (Edge Functions)
-
-```bash
-# .env.local (Edge Functions secrets)
-OPENAI_API_KEY=sk-xxx          # Phase 2 + Phase 5
-SENTRY_DSN=https://xxx@sentry.io/yyy
-APP_URL=https://hagiangtour.app
+```
+toursapp-api (WordPress Plugin)
+│
+├── Main file: toursapp-api.php
+│   ├── Defines constants (TA_VERSION, TA_API_NAMESPACE, TA_LANGUAGES)
+│   ├── Registers 8 Custom Post Types
+│   ├── Hooks: init, rest_api_init, acf/init, admin_menu
+│   └── Loads all includes on plugins_loaded
+│
+├── Activation: TA_Activator
+│   └── Creates 14 custom DB tables via dbDelta()
+│
+├── Deactivation: flush_rewrite_rules() only (data preserved)
+│
+└── Deletion: uninstall.php
+    ├── DROP TABLE IF EXISTS (all 14 tables)
+    ├── delete_option('ta_acf_fields_version')
+    └── Delete ACF field groups from DB
 ```
 
 ---
 
-## 2. PostgREST Auto-Generated API
+## Core Classes
 
-Supabase tu dong tao REST API tu PostgreSQL schema. Mobile client dung `supabase-flutter` SDK.
+### TA_API — Route Registry & Filters
+- Registers all 17 endpoint classes
+- `init_filters()` hooks `rest_endpoints` filter (priority 5, before dispatch)
+- **Strict Mode filter:** when OFF, sets `required=false` on all params in our namespace
+- **Endpoint disable filter:** replaces callback with 503 response for disabled endpoints
 
-### 2.1 Query Locations (co filtering, pagination, nested selects)
+### TA_Auth — Device Authentication
+```php
+// Check device UUID in header
+$uuid = TA_Auth::get_device_uuid($request);  // returns string
 
-```dart
-// Lay danh sach dia diem published, co audio guides
-final response = await supabase
-    .from('locations')
-    .select('''
-      id, name, slug, description, short_description,
-      latitude, longitude, altitude_meters,
-      featured_image_url, gallery_image_urls,
-      visit_duration_minutes, best_time_to_visit,
-      difficulty_level, entrance_fee_vnd,
-      status, sort_order,
-      audio_guides (
-        id, language, title, duration_seconds,
-        audio_url, transcript
-      ),
-      categories (
-        id, name, icon
-      )
-    ''')
-    .eq('status', 'published')
-    .order('sort_order', ascending: true)
-    .range(0, 19);  // Pagination: 20 items
+// Permission callback for protected routes
+'permission_callback' => ['TA_Auth', 'permission_check_device']
+// Returns WP_Error 401 if UUID not in wp_ta_devices
 ```
 
-### 2.2 Query Articles
+### TA_Localize — i18n Helpers
+```php
+// Get localized text field with fallback chain
+TA_Localize::get_field_localized($post_id, 'place_name', 'ko');
+// → place_name_ko → place_name_en → place_name_vi → ''
 
-```dart
-// Bai viet theo category, ho tro tim kiem
-final response = await supabase
-    .from('articles')
-    .select('id, title, slug, excerpt, cover_image_url, published_at, author')
-    .eq('status', 'published')
-    .eq('language', currentLanguage)  // 'vi', 'en', 'ko', 'zh'
-    .ilike('title', '%$searchQuery%')
-    .order('published_at', ascending: false)
-    .range(offset, offset + limit - 1);
+// Format image attachment
+TA_Localize::format_image($attachment_id_or_array);
+// → {url, width, height, alt}
+
+// Format gallery
+TA_Localize::format_gallery("101,102,103");
+// → [{url, width, height, alt, caption}, ...]
+
+// Get localized audio URL with fallback
+TA_Localize::get_audio_localized($post_id, 'place_audio', 'ko');
+// → {url, size}
 ```
 
-### 2.3 Query Providers (Dich vu dia phuong)
-
-```dart
-// Nha cung cap dich vu theo loai
-final response = await supabase
-    .from('service_providers')
-    .select('''
-      id, name, type, description,
-      latitude, longitude, address, phone,
-      price_range, rating, photo_urls,
-      operating_hours, amenities,
-      is_verified
-    ''')
-    .eq('status', 'active')
-    .eq('type', 'homestay')  // homestay, restaurant, motorbike, guide
-    .order('rating', ascending: false);
+### TA_Geo — Geofencing Math
+```php
+TA_Geo::distance_meters($lat1, $lng1, $lat2, $lng2);  // Haversine
+TA_Geo::distance_km($lat1, $lng1, $lat2, $lng2);
+TA_Geo::is_within_radius($user_lat, $user_lng, $place_lat, $place_lng, $radius_m);
 ```
 
-### 2.4 Nested Select cho Route + Stops
+### TA_API_Logger — Async Request Logging
+Hooks into WordPress REST API lifecycle:
+```
+rest_pre_dispatch  → record start time (microtime)
+rest_post_dispatch → capture route/method/status/response_ms
+shutdown           → INSERT into wp_ta_api_logs
+```
+Zero impact on response time. Only logs requests in `toursapp/v1` namespace.
 
-```dart
-final response = await supabase
-    .from('routes')
-    .select('''
-      id, name, description,
-      total_distance_km, estimated_duration_hours,
-      difficulty_level, route_type,
-      route_stops (
-        stop_order, location_id, notes,
-        distance_from_previous_km,
-        locations (
-          id, name, latitude, longitude,
-          featured_image_url,
-          audio_guides (id, language, audio_url, duration_seconds)
-        )
-      )
-    ''')
-    .eq('id', routeId)
-    .single();
+---
+
+## ACF Field Groups
+
+8 field groups imported into WP database via `acf_import_field_group()` on plugin activation (or version bump). Visible and editable in **ACF → Field Groups** admin UI.
+
+Re-import triggered by: `get_option('ta_acf_fields_version') !== TA_VERSION`
+
+### Tab Structure (all CPTs)
+```
+[ General ] [ VI – Tiếng Việt ] [ EN – English ] [ KO – 한국어 ] [ ZH – 中文 ] [ FR – Français ]
+```
+
+- **General:** images, GPS, settings, parent relationships, paywall toggles, tracking toggles
+- **Language tabs:** name (text), description/content (WYSIWYG), audio URL (text + Browse button)
+
+### Custom Meta Boxes (not ACF)
+| Meta Box | CPTs | Description |
+|----------|------|-------------|
+| Gallery | province, place, sub_item, ta_story | Multi-image picker with drag-reorder |
+| Journey Stops | journey | Table UI with single/multi-province mode toggle (see below) |
+
+**Journey Stops — Province Modes:**
+
+- **Single province (default):** checkbox unchecked, Province column hidden, Place dropdown auto-filtered to `journey_province` ACF field value. Stored in `journey_is_multi_province = 0`.
+- **Multi-province:** checkbox "🗺 Multi-province journey" checked, Province column visible per row, each stop can choose any province → Place dropdown re-filters. Stored in `journey_is_multi_province = 1`.
+
+Each stop serialized to JSON in `journey_stops` post meta:
+```json
+[{
+  "journey_stop_place": 123,
+  "journey_stop_province": 1,
+  "journey_stop_order": 1,
+  "journey_stop_day": 1,
+  "journey_stop_duration": 30,
+  "journey_stop_note_vi": "...",
+  "journey_stop_note_en": "..."
+}]
 ```
 
 ---
 
-## 3. Row Level Security (RLS)
+## Admin Panel
 
-### 3.1 Phase 1 — Anonymous Read Only
+**WP Admin → ToursApp API**
 
-Tat ca du lieu published duoc doc cong khai, khong can dang nhap:
+| Feature | Description |
+|---------|-------------|
+| Strict Mode toggle | ON/OFF for required param validation |
+| Endpoint enable/disable | Per-endpoint checkbox, Enable All / Disable All |
+| Export CSV | Full API reference downloadable for mobile team |
+
+Settings stored in `wp_options`:
+- `ta_api_strict_mode` (0/1)
+- `ta_api_disabled_endpoints` (serialized array of endpoint keys)
+
+---
+
+## Model Layer
+
+Each model is a static class providing DB abstraction:
+
+| Model | Key Methods |
+|-------|-------------|
+| `TA_Device_Model` | `register_or_update()`, `find_by_uuid()`, `find_by_referral_code()` |
+| `TA_Wallet_Model` | `earn()`, `spend()`, `get_balance()`, `get_recent_transactions()` |
+| `TA_Checkin_Model` | `create()`, `has_checked_in()`, `is_content_unlocked()`, `unlock_content()`, `get_stats()` |
+| `TA_Journey_Model` | `get_user_journeys()`, `create()`, `update()`, `delete()`, `get_progress()` |
+| `TA_Engagement_Model` | `record()`, `get_content_stats()`, `get_top_content()`, `is_tracking_enabled()` |
+| `TA_Comment_Model` | `create()`, `update()`, `delete()`, `get_comments()`, `count_today()`, `are_comments_allowed()` |
+| `TA_Rating_Model` | `upsert()`, `get_summary()`, `get_user_rating()`, `are_ratings_allowed()` |
+| `TA_Download_Model` | `start()`, `complete()`, `get_user_downloads()` |
+
+---
+
+## Content Paywall System
+
+Per-item paywall controlled by ACF toggles. Article and audio unlocked independently.
+
+| Post Type | Article Free Field | Article Cost Field | Audio Free Field | Audio Cost Field |
+|-----------|-------------------|-------------------|-----------------|-----------------|
+| `place` | `place_show_article_free` | `place_article_cost` | `place_show_audio_free` | `place_audio_cost` |
+| `sub_place` | — | — | `sub_place_show_audio_free` | `sub_place_audio_cost` |
+| `ta_story` | `story_show_article_free` | `story_article_cost` | `story_show_audio_free` | `story_audio_cost` |
+
+All cost fields default to **5 flowers**. All free toggles default to **ON** (free).
+
+**Flow:**
+```
+Mobile receives: article.is_free = false, article.cost = 5
+User taps "Unlock article for 5 flowers"
+→ POST /user/unlock {content_type: "article", content_id: 123}
+→ Wallet debited 5 flowers
+→ wp_ta_unlocked_content row inserted (UNIQUE: device+type+id)
+→ Content accessible
+```
+
+Unlock recorded in `wp_ta_unlocked_content` with UNIQUE constraint — can't buy twice.
+
+---
+
+## Engagement Tracking System
+
+Two separate tracking systems for different purposes:
+
+### 1. Content Quality Analytics (wp_ta_content_events)
+- **Purpose:** improve audio/article content quality
+- **Triggered by:** `POST /user/track` from mobile app
+- **Data:** scroll_depth, audio completion_pct, read duration
+- **Gated by:** `{type}_enable_tracking` ACF toggle per content item
+- **Note:** grows fast — plan to archive rows > 90 days
+
+### 2. API Infrastructure Logs (wp_ta_api_logs)
+- **Purpose:** identify slow endpoints, optimize server
+- **Triggered by:** every API request (automatic, no mobile action needed)
+- **Data:** endpoint, response_ms, status_code
+- **Async:** written on PHP shutdown, zero latency impact
+
+---
+
+## Offline Sync Architecture
+
+```
+Mobile checks:  GET /sync/check?province_id=1&since=2024-01-01T00:00:00
+                → {has_updates: true, changes: {places: 3}}
+
+Mobile downloads: GET /sync/package/1?lang=vi
+                  → all CPT content serialized for local SQLite
+
+Media download:  GET /sync/media/1?type=all
+                 → [{url, checksum, size_bytes}, ...]
+                 Mobile downloads each file to local cache
+
+Tracking:        POST /user/downloads/start  → download_id
+                 POST /user/downloads/complete → status=completed
+```
+
+---
+
+## Analytics & Observability (v1.2.x)
+
+### Analytics Dashboard (WP Admin → Analytics)
+
+7-tab dashboard querying existing tables directly. No new API endpoints needed.
+
+| Tab | Data Source | Key Metrics |
+|-----|-------------|-------------|
+| Overview | all tables | 12 KPIs + API volume chart 14 days |
+| Content | ta_content_events + ta_ratings | Top content by views/read_time/completion, top/bottom rated |
+| API | ta_api_logs | Most used endpoints, slowest, error breakdown |
+| Users | ta_devices + ta_api_logs | Most active, new registrations by day, user profiles |
+| Retention | ta_devices + ta_api_logs | 6 churn segments, weekly cohorts (Day1/7/30 retention), session frequency |
+| Feedback | ta_comments + ta_ratings | Comment moderation (approve/reject/delete), rating distributions |
+| Economy | ta_wallet + ta_wallet_txn | Transaction types, unlock stats, wallet per user |
+
+**CSV Export:** every tab has "Export This Tab" + "Export All Data" button. Uses `admin_post` hook (not `admin_init`) to avoid header-already-sent issues. UTF-8 BOM for Excel compatibility.
+
+### Churn Segments
+
+| Segment | Threshold | Action |
+|---------|-----------|--------|
+| 🟢 Active | < 7 days inactive | — |
+| 🟡 Dormant | 7–14 days | Monitor |
+| 🟠 At Risk | 15–30 days | Re-engage |
+| 🔴 Churned | 31–90 days | Recovery campaign |
+| ⚫ Lost | > 90 days | Low priority |
+| ⚪ Never Used | 0 API calls | Investigate |
+
+Calculated from `MAX(created_at)` in `wp_ta_api_logs` per device — no schema changes needed.
+
+---
+
+## API Log Viewer (WP Admin → API Logs)
+
+All requests logged to `wp_ta_api_logs`. Error responses (4xx/5xx) additionally logged to `wp_ta_error_logs` with:
+- `error_code`, `error_message`
+- `request_params` (JSON, sensitive fields redacted)
+- `response_body` (first 5000 chars)
+- `user_agent`
+
+**Log Viewer features:**
+- Filter: date range, device UUID, endpoint (partial match), method, status (2xx/4xx/5xx), errors-only
+- Error rows: click 🔍 to expand full error details inline
+- UUID links to user profile in Analytics
+- Clear logs older than 7/30/90/365 days
+- Pagination (50 per page)
+
+---
+
+## System Monitor (WP Admin → Monitor)
+
+WP-Cron runs every 5 minutes. Checks last 5 minutes of `wp_ta_api_logs`.
+
+### Alert Thresholds (all configurable)
+
+| Metric | Warning | Critical | Default Values |
+|--------|---------|----------|----------------|
+| Error rate | configurable | configurable | 5% / 20% |
+| Avg response time | configurable | configurable | 500ms / 2000ms |
+| Request volume | configurable | configurable | 500 / 2000 per 5min |
+| Server errors (5xx) | configurable | configurable | 1 / 5 per 5min |
+| Silence duration | configurable | configurable | 30min / 60min |
+
+### Alert Channels
+- **Email** — `wp_mail()`, comma-separated recipients
+- **Telegram** — Telegram Bot API (`sendMessage`), Bot Token + Chat ID
+- **Cooldown** — same alert type suppressed for N minutes (default 30min) via `wp_options`
+- **Test button** — send test notification to verify channels before going live
+
+### Cron Schedule
+- Hook: `ta_monitor_run`, interval: `every_5_minutes` (registered via `cron_schedules` filter)
+- Auto-scheduled when any alert channel is enabled, unscheduled when all disabled
+
+---
+
+## Feature Gate System (v1.2.2)
+
+Controlled via `wp_options` (`ta_feature_{name}_{setting}`):
+
+```
+ta_feature_cross_province_enabled    = 0/1
+ta_feature_cross_province_mode       = free|paid|achievement
+ta_feature_cross_province_cost       = 10  (flowers)
+ta_feature_cross_province_achievement= 10  (check-in count)
+```
+
+Access check in `TA_Feature_Access::user_has_access($uuid, 'cross_province')`:
+- `free` → always true
+- `paid` → check `wp_ta_unlocked_content` (content_type='feature', content_id=1)
+- `achievement` → count rows in `wp_ta_checkins` >= threshold
+
+Cross-province journeys: if a user creates a journey with stops from multiple provinces, `TA_EP_UserJourneys::check_cross_province_access()` validates access before saving. Returns 403 with unlock instructions if not granted.
+
+---
+
+## Plugin Update System (v1.2.7)
+
+**WP Admin → ToursApp API → Update Plugin** provides safe in-place plugin updates:
+
+1. Admin uploads new zip via drag-drop UI
+2. PHP validates MIME type (must be zip)
+3. `WP_Filesystem()` + `Plugin_Upgrader::install($tmp, ['overwrite_package' => true])` replaces plugin files
+4. Plugin auto-reactivates after update
+5. All DB tables, wp_options settings, and ACF field groups preserved
+
+No uninstall/reinstall needed. No data loss. Version bump triggers ACF field re-import and DB schema upgrades via `TA_Activator::upgrade()`.
+
+---
+
+## Data Lifecycle & Archiving System (planned)
+
+### Problem
+High-growth tables accumulate data indefinitely with no cleanup mechanism:
+
+| Table | Growth Rate | Est. 1-year Size |
+|-------|-------------|-----------------|
+| `ta_content_events` | ~100–500 rows/day | 180K–1.8M rows |
+| `ta_api_logs` | ~1K–10K rows/day | 365K–3.6M rows |
+| `ta_error_logs` | ~100–1K rows/day | 36K–365K rows |
+
+### Solution: 3-layer Data Lifecycle
+
+```
+RAW DATA (DB)              AGGREGATED (DB)              ARCHIVE (File)
+──────────────             ────────────────             ──────────────
+ta_content_events   ──►   ta_content_stats_daily  ──►  ta-events-2026-06.csv.gz
+ta_api_logs         ──►   (purged, no aggregate)  ──►  ta-api-2026-06.csv.gz
+ta_error_logs       ──►   (purged, no aggregate)  ──►  ta-errors-2026-06.csv.gz
+
+WP-Cron (daily, 2 AM) → Aggregate → Export CSV → Purge raw → Clean old archives
+```
+
+### New DB Table: `wp_ta_content_stats_daily`
+Aggregated content event data — 100x smaller than raw, analytics still work after purge.
 
 ```sql
--- Locations: ai cung doc duoc neu published
-ALTER TABLE locations ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public read published locations"
-  ON locations FOR SELECT
-  USING (status = 'published');
-
--- Audio guides: doc duoc neu location da published
-CREATE POLICY "Public read audio guides"
-  ON audio_guides FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM locations
-      WHERE locations.id = audio_guides.location_id
-      AND locations.status = 'published'
-    )
-  );
-
--- Articles: doc duoc neu published
-CREATE POLICY "Public read published articles"
-  ON articles FOR SELECT
-  USING (status = 'published');
-
--- Service providers: doc duoc neu active
-CREATE POLICY "Public read active providers"
-  ON service_providers FOR SELECT
-  USING (status = 'active');
-
--- Routes: doc duoc neu published
-CREATE POLICY "Public read published routes"
-  ON routes FOR SELECT
-  USING (status = 'published');
-
-CREATE POLICY "Public read route stops"
-  ON route_stops FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM routes
-      WHERE routes.id = route_stops.route_id
-      AND routes.status = 'published'
-    )
-  );
-```
-
-### 3.2 Phase 3+ — Authenticated Write
-
-Khi co tinh nang user account (Travel Journal, Reviews):
-
-```sql
--- User trips: chi chu so huu doc/ghi
-CREATE POLICY "Users manage own trips"
-  ON user_trips FOR ALL
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- Reviews: ai cung doc, chi owner ghi
-CREATE POLICY "Public read reviews"
-  ON reviews FOR SELECT
-  USING (true);
-
-CREATE POLICY "Users manage own reviews"
-  ON reviews FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users update own reviews"
-  ON reviews FOR UPDATE
-  USING (auth.uid() = user_id);
-
--- User photos: chi owner upload
-CREATE POLICY "Users manage own photos"
-  ON user_photos FOR ALL
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-```
-
-### 3.3 Admin Access
-
-Web Admin dung `service_role` key de bypass RLS:
-
-```dart
-// ONLY in Flutter Web Admin — KHONG BAO GIO trong mobile app
-final adminClient = SupabaseClient(
-  supabaseUrl,
-  serviceRoleKey,  // Full access, bypass RLS
+CREATE TABLE wp_ta_content_stats_daily (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    date           DATE NOT NULL,
+    content_type   VARCHAR(20) NOT NULL,
+    content_id     INT NOT NULL,
+    event_type     VARCHAR(30) NOT NULL,
+    event_count    INT DEFAULT 0,
+    unique_users   INT DEFAULT 0,
+    avg_duration   DECIMAL(8,2) DEFAULT 0,
+    avg_scroll     DECIMAL(5,2) DEFAULT 0,
+    avg_completion DECIMAL(5,2) DEFAULT 0,
+    UNIQUE KEY unique_daily (date, content_type, content_id, event_type),
+    INDEX idx_date (date),
+    INDEX idx_content (content_type, content_id)
 );
 ```
 
-**QUAN TRONG**: `service_role` key chi duoc dung phia server hoac trong Web Admin deploy noi bo. Khong bao gio embed trong mobile app binary.
+### Archiver Process (runs daily via WP-Cron)
 
----
-
-## 4. Edge Functions (Deno Runtime)
-
-Cac serverless functions viet bang TypeScript, chay tren Deno runtime.
-
-### 4.1 nearby-locations
-
-Tim dia diem gan vi tri nguoi dung su dung PostgreSQL `earthdistance` extension.
-
-```typescript
-// supabase/functions/nearby-locations/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-serve(async (req) => {
-  const { lat, lon, radius_km = 10, limit = 20 } = await req.json();
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
-
-  // earthdistance: tinh khoang cach giua 2 diem (met)
-  const { data, error } = await supabase.rpc("nearby_locations", {
-    user_lat: lat,
-    user_lon: lon,
-    radius_meters: radius_km * 1000,
-    max_results: limit,
-  });
-
-  return new Response(JSON.stringify({ data, error }), {
-    headers: { "Content-Type": "application/json" },
-  });
-});
-```
-
-**SQL function**:
+**Step 1 — Aggregate** (before any deletion):
 ```sql
-CREATE OR REPLACE FUNCTION nearby_locations(
-  user_lat DOUBLE PRECISION,
-  user_lon DOUBLE PRECISION,
-  radius_meters DOUBLE PRECISION DEFAULT 10000,
-  max_results INT DEFAULT 20
-)
-RETURNS TABLE (
-  id UUID,
-  name TEXT,
-  latitude DOUBLE PRECISION,
-  longitude DOUBLE PRECISION,
-  distance_meters DOUBLE PRECISION,
-  featured_image_url TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    l.id, l.name, l.latitude, l.longitude,
-    earth_distance(
-      ll_to_earth(user_lat, user_lon),
-      ll_to_earth(l.latitude, l.longitude)
-    ) AS distance_meters,
-    l.featured_image_url
-  FROM locations l
-  WHERE l.status = 'published'
-    AND earth_distance(
-      ll_to_earth(user_lat, user_lon),
-      ll_to_earth(l.latitude, l.longitude)
-    ) <= radius_meters
-  ORDER BY distance_meters ASC
-  LIMIT max_results;
-END;
-$$ LANGUAGE plpgsql;
+INSERT INTO ta_content_stats_daily (date, content_type, content_id, event_type,
+    event_count, unique_users, avg_duration, avg_scroll, avg_completion)
+SELECT DATE(created_at), content_type, content_id, event_type,
+    COUNT(*), COUNT(DISTINCT device_uuid),
+    AVG(duration_sec), AVG(scroll_depth), AVG(completion_pct)
+FROM ta_content_events
+WHERE created_at < DATE_SUB(NOW(), INTERVAL N DAY)
+GROUP BY DATE(created_at), content_type, content_id, event_type
+ON DUPLICATE KEY UPDATE event_count = event_count + VALUES(event_count), ...
 ```
 
-**Input/Output**:
+**Step 2 — Export** (optional, if auto-export enabled):
+- Export raw records to `wp-content/uploads/toursapp-archives/ta-{type}-{YYYY-MM}.csv`
+- Compress with gzip if available
+- Protected by `.htaccess` — only downloadable via admin AJAX handler
 
-| Field | Type | Mo ta |
-|-------|------|-------|
-| `lat` | `float` | Vi do nguoi dung |
-| `lon` | `float` | Kinh do nguoi dung |
-| `radius_km` | `float` (default: 10) | Ban kinh tim kiem (km) |
-| `limit` | `int` (default: 20) | So luong ket qua toi da |
-| **Output** | `Array<Location>` | Sap xep theo khoang cach tang dan |
+**Step 3 — Purge** raw records beyond retention period from DB.
 
-### 4.2 optimize-route
+**Step 4 — Cleanup** archive files older than keep-N-archives limit.
 
-Toi uu thu tu diem dung trong tuyen duong (Nearest-Neighbor TSP heuristic).
+### Configurable Retention (stored in wp_options)
 
-```typescript
-// supabase/functions/optimize-route/index.ts
-serve(async (req) => {
-  const { location_ids, start_lat, start_lon } = await req.json();
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `ta_archive_content_events_days` | 90 | Days to keep raw content events in DB |
+| `ta_archive_api_logs_days` | 30 | Days to keep API request logs in DB |
+| `ta_archive_error_logs_days` | 90 | Days to keep error logs in DB |
+| `ta_archive_auto_export` | 1 | Export CSV before purging |
+| `ta_archive_keep_files` | 12 | Number of monthly archive sets to keep |
 
-  // 1. Lay toa do cac dia diem
-  const { data: locations } = await supabase
-    .from("locations")
-    .select("id, latitude, longitude, name")
-    .in("id", location_ids);
+### New Files
 
-  // 2. Nearest-neighbor TSP
-  const optimized = nearestNeighborTSP(
-    { lat: start_lat, lon: start_lon },
-    locations
-  );
+| File | Purpose |
+|------|---------|
+| `includes/class-ta-data-archiver.php` | Cron job: aggregate → export → purge → cleanup |
+| `includes/class-ta-archive-page.php` | WP Admin page: settings + archive file list + manual trigger |
 
-  // 3. Tinh tong khoang cach
-  const totalDistanceKm = calculateTotalDistance(optimized);
+### Admin UI: WP Admin → Archive (submenu under ToursApp API)
 
-  return new Response(JSON.stringify({
-    optimized_order: optimized.map(l => l.id),
-    locations: optimized,
-    total_distance_km: totalDistanceKm,
-    estimated_duration_hours: totalDistanceKm / 30, // trung binh 30km/h duong nui
-  }));
-});
-```
+- **Status panel**: rows per table, oldest record date, next scheduled run, total archive size
+- **Settings form**: retention days per table, auto-export toggle, keep-N-archives
+- **Archive files list**: filename, size, date, download/delete buttons
+- **"Archive Now" button**: manual trigger (runs same logic as cron)
+- **"Test Run" button**: dry-run showing what would be exported/deleted without actual changes
 
-**Input**:
-```json
-{
-  "location_ids": ["uuid-1", "uuid-2", "uuid-3", "uuid-4"],
-  "start_lat": 23.2735,
-  "start_lon": 105.2542
-}
-```
+### Analytics Impact After Purge
 
-**Output**:
-```json
-{
-  "optimized_order": ["uuid-2", "uuid-4", "uuid-1", "uuid-3"],
-  "locations": [
-    {"id": "uuid-2", "name": "Dinh Ma Pi Leng", "lat": ..., "lon": ...},
-    ...
-  ],
-  "total_distance_km": 87.3,
-  "estimated_duration_hours": 2.9
-}
-```
-
-### 4.3 generate-qr
-
-Tao QR code cho dia diem, luu vao Storage.
-
-```typescript
-// supabase/functions/generate-qr/index.ts
-import QRCode from "https://esm.sh/qrcode@1.5.3";
-
-serve(async (req) => {
-  const { location_id } = await req.json();
-
-  // 1. Tao URL
-  const url = `https://hagiangtour.app/location/${location_id}`;
-
-  // 2. Generate QR code PNG buffer
-  const qrBuffer = await QRCode.toBuffer(url, {
-    width: 512,
-    margin: 2,
-    color: { dark: "#1a1a2e", light: "#ffffff" },
-  });
-
-  // 3. Upload vao Storage
-  const filePath = `qr-codes/${location_id}.png`;
-  await supabase.storage
-    .from("images")
-    .upload(filePath, qrBuffer, {
-      contentType: "image/png",
-      upsert: true,
-    });
-
-  // 4. Lay public URL
-  const { data: { publicUrl } } = supabase.storage
-    .from("images")
-    .getPublicUrl(filePath);
-
-  // 5. Update location record
-  await supabase
-    .from("locations")
-    .update({ qr_code_url: publicUrl })
-    .eq("id", location_id);
-
-  return new Response(JSON.stringify({ url: publicUrl }));
-});
-```
-
-### 4.4 track-analytics
-
-Thu thap su kien analytics nhe (khong dung service ben ngoai).
-
-```typescript
-// supabase/functions/track-analytics/index.ts
-serve(async (req) => {
-  const events = await req.json(); // Array of events
-
-  // Batch insert vao bang analytics_events
-  const { error } = await supabase
-    .from("analytics_events")
-    .insert(events.map((e: any) => ({
-      event_type: e.type,       // 'page_view', 'audio_play', 'qr_scan', 'download'
-      entity_type: e.entity,    // 'location', 'route', 'article'
-      entity_id: e.entity_id,
-      metadata: e.metadata,     // JSON: {language, duration, source, ...}
-      device_id: e.device_id,   // anonymous device fingerprint
-      created_at: new Date().toISOString(),
-    })));
-
-  return new Response(JSON.stringify({ success: !error }));
-});
-```
-
-**Event types**:
-
-| Event | Mo ta | Metadata |
-|-------|-------|----------|
-| `page_view` | Xem man hinh | `{screen, language}` |
-| `audio_play` | Phat audio guide | `{location_id, language, duration_seconds}` |
-| `audio_complete` | Nghe het audio | `{location_id, language}` |
-| `qr_scan` | Quet QR code | `{location_id, source: 'camera'}` |
-| `download_start` | Bat dau tai offline | `{region_id, type}` |
-| `search` | Tim kiem | `{query, results_count}` |
-
-### 4.5 ai-tts (Phase 2)
-
-Chuyen van ban thanh audio bang OpenAI TTS API.
-
-```typescript
-// supabase/functions/ai-tts/index.ts
-serve(async (req) => {
-  const { text, language, voice, location_id } = await req.json();
-
-  // 1. Goi OpenAI TTS API
-  const ttsResponse = await fetch("https://api.openai.com/v1/audio/speech", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "tts-1",           // hoac "tts-1-hd" cho chat luong cao
-      voice: voice || "nova",   // alloy, echo, fable, onyx, nova, shimmer
-      input: text,
-      response_format: "mp3",
-    }),
-  });
-
-  const audioBuffer = await ttsResponse.arrayBuffer();
-
-  // 2. Upload vao Storage
-  const filePath = `audio-guides/${location_id}/${language}.mp3`;
-  await supabase.storage
-    .from("audio-guides")
-    .upload(filePath, audioBuffer, {
-      contentType: "audio/mpeg",
-      upsert: true,
-    });
-
-  // 3. Lay public URL va update audio_guides table
-  const { data: { publicUrl } } = supabase.storage
-    .from("audio-guides")
-    .getPublicUrl(filePath);
-
-  await supabase
-    .from("audio_guides")
-    .upsert({
-      location_id,
-      language,
-      audio_url: publicUrl,
-      duration_seconds: estimateDuration(text),
-      generated_by: "openai-tts",
-      status: "review",  // Can human review truoc khi publish
-    });
-
-  return new Response(JSON.stringify({ audio_url: publicUrl }));
-});
-```
-
-### 4.6 ai-chat (Phase 5)
-
-RAG pipeline: embed query → pgvector search → GPT response.
-
-```typescript
-// supabase/functions/ai-chat/index.ts
-serve(async (req) => {
-  const { message, conversation_history, language } = await req.json();
-
-  // 1. Embed user query
-  const embeddingResponse = await fetch(
-    "https://api.openai.com/v1/embeddings",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "text-embedding-3-small",
-        input: message,
-      }),
-    }
-  );
-
-  const { data } = await embeddingResponse.json();
-  const queryEmbedding = data[0].embedding;
-
-  // 2. pgvector similarity search — top 5 chunks
-  const { data: chunks } = await supabase.rpc("match_content", {
-    query_embedding: queryEmbedding,
-    match_threshold: 0.7,
-    match_count: 5,
-  });
-
-  // 3. Compose context
-  const context = chunks.map((c: any) =>
-    `[${c.entity_type}: ${c.title}]\n${c.content}`
-  ).join("\n\n");
-
-  // 4. GPT response
-  const chatResponse = await fetch(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `Ban la huong dan vien du lich Ha Giang. Tra loi bang ${language}.
-            Su dung thong tin sau:\n\n${context}`,
-          },
-          ...conversation_history,
-          { role: "user", content: message },
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-        stream: true,
-      }),
-    }
-  );
-
-  // 5. Stream response back
-  return new Response(chatResponse.body, {
-    headers: { "Content-Type": "text/event-stream" },
-  });
-});
-```
+Raw data in `ta_content_events` is replaced by aggregated `ta_content_stats_daily`:
+- **Lost**: individual device events, scroll depth per-session
+- **Preserved**: total counts, unique users, averages per day per content item
+- Analytics tabs continue to work using the daily stats table
+- `TA_Analytics::top_content()` must be updated to fallback to `ta_content_stats_daily` when raw data is outside retention window
 
 ---
 
-## 5. Storage Buckets
+## Security Notes
 
-### 5.1 Bucket Configuration
-
-| Bucket | Mo ta | Public | Max file size |
-|--------|-------|--------|---------------|
-| `audio-guides` | MP3 files audio huong dan | Yes | 50 MB |
-| `images` | Anh dia diem, QR codes | Yes | 10 MB |
-| `banners` | Banner quang cao, su kien | Yes | 5 MB |
-| `offline-packs` | Goi data offline (zip) | Yes | 200 MB |
-| `user-photos` | Anh nguoi dung (Phase 3) | No | 10 MB |
-| `trip-exports` | PDF export chuyen di (Phase 3) | No | 20 MB |
-
-### 5.2 Storage Policies
-
-```sql
--- Public read cho audio-guides, images, banners
-CREATE POLICY "Public read audio" ON storage.objects
-  FOR SELECT USING (bucket_id = 'audio-guides');
-
-CREATE POLICY "Public read images" ON storage.objects
-  FOR SELECT USING (bucket_id = 'images');
-
-CREATE POLICY "Public read banners" ON storage.objects
-  FOR SELECT USING (bucket_id = 'banners');
-
-CREATE POLICY "Public read offline packs" ON storage.objects
-  FOR SELECT USING (bucket_id = 'offline-packs');
-
--- Authenticated write cho user-photos (Phase 3)
-CREATE POLICY "Auth users upload photos" ON storage.objects
-  FOR INSERT WITH CHECK (
-    bucket_id = 'user-photos'
-    AND auth.role() = 'authenticated'
-    AND (storage.foldername(name))[1] = auth.uid()::text
-  );
-
-CREATE POLICY "Users read own photos" ON storage.objects
-  FOR SELECT USING (
-    bucket_id = 'user-photos'
-    AND (storage.foldername(name))[1] = auth.uid()::text
-  );
-```
-
-### 5.3 File Path Convention
-
-```
-audio-guides/
-├── {location_id}/
-│   ├── vi.mp3
-│   ├── en.mp3
-│   ├── ko.mp3
-│   └── zh.mp3
-
-images/
-├── locations/
-│   ├── {location_id}/
-│   │   ├── featured.jpg
-│   │   ├── gallery-1.jpg
-│   │   └── gallery-2.jpg
-├── providers/
-│   └── {provider_id}/
-│       └── photo-1.jpg
-├── qr-codes/
-│   └── {location_id}.png
-└── categories/
-    └── {category_id}.svg
-
-banners/
-├── {banner_id}.jpg
-
-user-photos/           # Phase 3
-├── {user_id}/
-│   └── {trip_id}/
-│       └── {timestamp}.jpg
-```
-
----
-
-## 6. Realtime Subscriptions (Phase 3+)
-
-### 6.1 Banner Rotation
-
-```dart
-// Subscribe to banner changes — hien thi banner moi nhat tren Home
-final bannerChannel = supabase
-    .channel('banners')
-    .onPostgresChanges(
-      event: PostgresChangeEvent.all,
-      schema: 'public',
-      table: 'banners',
-      callback: (payload) {
-        ref.invalidate(bannersProvider); // Refresh banner list
-      },
-    )
-    .subscribe();
-```
-
-### 6.2 Provider Availability
-
-```dart
-// Cap nhat trang thai nha cung cap dich vu theo thoi gian thuc
-final providerChannel = supabase
-    .channel('providers')
-    .onPostgresChanges(
-      event: PostgresChangeEvent.update,
-      schema: 'public',
-      table: 'service_providers',
-      filter: PostgresChangeFilter(
-        type: PostgresChangeFilterType.eq,
-        column: 'type',
-        value: 'homestay',
-      ),
-      callback: (payload) {
-        // Update availability status in UI
-      },
-    )
-    .subscribe();
-```
-
----
-
-## 7. Database Webhooks (Phase 5)
-
-### 7.1 Content Change → Embedding Sync
-
-Khi noi dung (locations, articles) thay doi, tu dong cap nhat embeddings:
-
-```sql
--- Webhook trigger khi content thay doi
-CREATE OR REPLACE FUNCTION notify_content_change()
-RETURNS TRIGGER AS $$
-BEGIN
-  PERFORM net.http_post(
-    url := current_setting('app.settings.edge_function_url')
-        || '/sync-embeddings',
-    body := jsonb_build_object(
-      'entity_type', TG_TABLE_NAME,
-      'entity_id', NEW.id,
-      'action', TG_OP
-    )
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER locations_content_change
-  AFTER INSERT OR UPDATE ON locations
-  FOR EACH ROW EXECUTE FUNCTION notify_content_change();
-
-CREATE TRIGGER articles_content_change
-  AFTER INSERT OR UPDATE ON articles
-  FOR EACH ROW EXECUTE FUNCTION notify_content_change();
-```
-
----
-
-## 8. Admin Access
-
-### 8.1 Flutter Web Admin
-
-Web Admin dung `service_role` key de quan ly noi dung:
-
-| Chuc nang | API |
-|-----------|-----|
-| CRUD locations | PostgREST voi service_role (bypass RLS) |
-| Upload audio/images | Storage API |
-| Manage routes | PostgREST |
-| Generate QR codes | Edge Function: generate-qr |
-| View analytics | Query analytics_events table |
-| AI TTS generation | Edge Function: ai-tts |
-| Publish/unpublish | Update status field |
-
-### 8.2 Security Rules
-
-- `service_role` key chi ton tai trong Web Admin (Flutter Web, deploy noi bo)
-- Mobile app chi dung `anon` key — moi truy cap qua RLS
-- Web Admin dat sau VPN hoac IP whitelist
-- Moi thao tac admin ghi log vao `admin_audit_log` table
-
----
-
-## 9. Supabase Free Tier Limits va Monitoring
-
-### 9.1 Free Tier Limits
-
-| Resource | Free Tier | Ghi chu |
-|----------|-----------|---------|
-| Database | 500 MB | Du cho Phase 1 (~50 MB data) |
-| Storage | 1 GB | Can nang cap som khi co nhieu audio |
-| Edge Functions | 500K invocations/month | Du cho Phase 1 |
-| Bandwidth | 2 GB/month | Can CDN cho audio streaming |
-| Realtime | 200 concurrent connections | Du cho Phase 1-2 |
-
-### 9.2 Khi nao can nang cap
-
-- **Storage > 1 GB**: khi co ~100+ audio files (4 ngon ngu) → Pro plan $25/month
-- **Bandwidth > 2 GB**: khi co ~500+ nguoi dung hang ngay → them Cloudflare R2 CDN
-- **Database > 500 MB**: khi Phase 5 embeddings → Pro plan
-
-### 9.3 Monitoring
-
-- **Supabase Dashboard**: query performance, storage usage, function logs
-- **pg_stat_statements**: slow query detection
-- **Edge Function logs**: `supabase functions logs <name> --follow`
-- **Custom monitoring**: analytics_events table cho business metrics
-- **Alerts**: cau hinh webhook khi usage dat 80% limit
-
----
-
-**Tong ket**: Supabase cung cap tat ca nhung gi can cho backend — API tu dong, auth, storage, realtime, serverless functions — ma khong can quan ly server. Chien luoc la: bat dau voi free tier, chi nang cap khi thuc su can.
+- **No WP authentication for API** — uses device UUID system instead
+- **Nonces** on all admin forms (wp_nonce_field / wp_verify_nonce)
+- **Input sanitization:** `sanitize_text_field()`, `absint()`, `sanitize_textarea_field()` throughout
+- **Photo uploads:** MIME type validated server-side via `finfo` (not just extension), 2MB limit
+- **Comment rate limiting:** 10/day per device via DB COUNT query
+- **SQL:** all queries via `$wpdb->prepare()` — no raw SQL interpolation
+- **Admin capability:** all admin actions check `current_user_can('manage_options')`

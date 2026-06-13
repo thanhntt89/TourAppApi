@@ -28,9 +28,9 @@ class TA_EP_UserJourneys {
             'permission_callback' => [TA_Auth::class, 'permission_check_device'],
             'args'                => [
                 'province_id' => [
-                    'required'          => true,
                     'type'              => 'integer',
                     'sanitize_callback' => 'absint',
+                    'default'           => 0,
                 ],
                 'name' => [
                     'required'          => true,
@@ -114,14 +114,24 @@ class TA_EP_UserJourneys {
     // POST /user/journeys
     // ──────────────────────────────────────────────
     public static function create_journey(WP_REST_Request $request): WP_REST_Response {
-        $uuid = TA_Auth::get_device_uuid($request);
+        $uuid  = TA_Auth::get_device_uuid($request);
+        $stops = $request->get_param('stops') ?: [];
+
+        // Cross-province check
+        $cross_check = self::check_cross_province_access($uuid, $stops, 0);
+        if (is_wp_error($cross_check)) {
+            $d = $cross_check->get_error_data();
+            return TA_API::error($cross_check->get_error_code(), $cross_check->get_error_message(), $d['status'] ?? 403, $d);
+        }
+
+        $province_id = $cross_check['province_id'];
 
         $data = [
-            'province_id'      => (int) $request->get_param('province_id'),
-            'name'             => $request->get_param('name'),
-            'description'      => $request->get_param('description') ?? '',
+            'province_id'       => $province_id,
+            'name'              => $request->get_param('name'),
+            'description'       => $request->get_param('description') ?? '',
             'source_journey_id' => $request->get_param('source_journey_id'),
-            'stops'            => $request->get_param('stops') ?: [],
+            'stops'             => $stops,
         ];
 
         $journey_id = TA_Journey_Model::create($uuid, $data);
@@ -158,7 +168,17 @@ class TA_EP_UserJourneys {
             $data['status'] = $request->get_param('status');
         }
         if ($request->get_param('stops') !== null) {
-            $data['stops'] = $request->get_param('stops');
+            $stops = $request->get_param('stops');
+
+            // Cross-province check when stops are being updated
+            $cross_check = self::check_cross_province_access($uuid, $stops, (int) $journey['province_id']);
+            if (is_wp_error($cross_check)) {
+                $d = $cross_check->get_error_data();
+                return TA_API::error($cross_check->get_error_code(), $cross_check->get_error_message(), $d['status'] ?? 403, $d);
+            }
+
+            $data['stops']       = $stops;
+            $data['province_id'] = $cross_check['province_id'];
         }
 
         TA_Journey_Model::update($id, $data);
@@ -190,6 +210,72 @@ class TA_EP_UserJourneys {
     // ──────────────────────────────────────────────
     // Format helpers
     // ──────────────────────────────────────────────
+
+    /**
+     * Check if stops span multiple provinces and validate cross-province access.
+     * Returns array ['province_id' => int] on success, WP_Error on failure.
+     */
+    private static function check_cross_province_access(string $uuid, array $stops, int $current_province_id) {
+        if (empty($stops)) {
+            return ['province_id' => $current_province_id];
+        }
+
+        $province_ids = self::detect_provinces($stops);
+        $unique_count = count($province_ids);
+
+        // Single province — always allowed
+        if ($unique_count <= 1) {
+            $province_id = !empty($province_ids) ? reset($province_ids) : $current_province_id;
+            return ['province_id' => $province_id ?: $current_province_id];
+        }
+
+        // Multiple provinces — check feature access
+        if (!TA_Feature_Access::user_has_access($uuid, 'cross_province')) {
+            $status = TA_Feature_Access::get_status($uuid, 'cross_province');
+
+            if (!$status['enabled']) {
+                return new WP_Error('cross_province_disabled',
+                    'Cross-province journeys are not available.', ['status' => 403]);
+            }
+
+            $details = ['feature' => $status];
+
+            if ($status['mode'] === 'paid') {
+                $details['message'] = 'Unlock cross-province journeys for ' . $status['cost'] . ' flowers.';
+                $details['unlock_endpoint'] = '/' . TA_API_NAMESPACE . '/user/features/cross_province/unlock';
+            } elseif ($status['mode'] === 'achievement') {
+                $ach = $status['achievement'];
+                $details['message'] = 'Check in at ' . $ach['required'] . ' places to unlock cross-province journeys. Currently: ' . $ach['current'] . '/' . $ach['required'];
+            }
+
+            return new WP_Error('cross_province_locked',
+                'You need to unlock cross-province journeys first.', array_merge(['status' => 403], $details));
+        }
+
+        // Access granted — use 0 as province_id for cross-province journeys
+        return ['province_id' => 0];
+    }
+
+    /**
+     * Get unique province IDs from a stops array.
+     * Each stop has place_id; we trace place → location → province.
+     */
+    private static function detect_provinces(array $stops): array {
+        $province_ids = [];
+        foreach ($stops as $stop) {
+            $place_id = (int) ($stop['place_id'] ?? 0);
+            if (!$place_id) continue;
+
+            $loc_id = get_field('place_location', $place_id);
+            if (!$loc_id) continue;
+
+            $prov_id = (int) get_field('location_province', $loc_id);
+            if ($prov_id) {
+                $province_ids[$prov_id] = $prov_id;
+            }
+        }
+        return $province_ids;
+    }
 
     /**
      * Format a user journey row from the custom table,

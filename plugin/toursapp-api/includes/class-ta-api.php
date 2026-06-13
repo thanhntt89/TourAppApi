@@ -3,6 +3,64 @@ defined('ABSPATH') || exit;
 
 class TA_API {
 
+    public static function init_filters() {
+        add_filter('rest_endpoints', [self::class, 'apply_settings'], 20);
+    }
+
+    public static function apply_settings($endpoints) {
+        $strict   = (int) get_option('ta_api_strict_mode', 0);
+        $disabled = (array) get_option('ta_api_disabled_endpoints', []);
+
+        foreach ($endpoints as $route => &$handlers) {
+            if (strpos($route, '/' . TA_API_NAMESPACE) !== 0) continue;
+
+            // Convert raw regex route → readable form (matches what admin saves)
+            // e.g. /toursapp/v1/places/(?P<id>\d+) → /toursapp/v1/places/{id}
+            $readable_route = preg_replace('/\(\?P<([^>]+)>[^)]+\)/', '{$1}', $route);
+
+            foreach ($handlers as $idx => &$handler) {
+                if (!is_array($handler) || !isset($handler['callback'])) continue;
+
+                // Get individual methods from this handler
+                $raw_methods = $handler['methods'] ?? [];
+                $method_list = is_array($raw_methods)
+                    ? array_keys(array_filter($raw_methods))
+                    : array_map('trim', explode(',', (string) $raw_methods));
+
+                // Check each method individually — admin saves one key per method
+                $all_disabled = true;
+                foreach ($method_list as $m) {
+                    $key = $readable_route . ':' . strtoupper($m);
+                    if (!in_array($key, $disabled, true)) {
+                        $all_disabled = false;
+                        break;
+                    }
+                }
+
+                // Disable endpoint (replace callback + allow all)
+                if ($all_disabled && !empty($method_list)) {
+                    $handler['callback'] = function () {
+                        return new WP_REST_Response(
+                            ['success' => false, 'error' => ['code' => 'endpoint_disabled', 'message' => 'This endpoint is currently disabled.']],
+                            503
+                        );
+                    };
+                    $handler['permission_callback'] = '__return_true';
+                    continue;
+                }
+
+                // Strict mode OFF → all required params become optional
+                if (!$strict && isset($handler['args'])) {
+                    foreach ($handler['args'] as &$arg) {
+                        $arg['required'] = false;
+                    }
+                }
+            }
+        }
+
+        return $endpoints;
+    }
+
     public static function register() {
         $endpoint_dir = TA_PLUGIN_DIR . 'includes/endpoints/';
 
@@ -24,6 +82,7 @@ class TA_API {
             'class-ta-ep-engagement.php',
             'class-ta-ep-comments.php',
             'class-ta-ep-downloads.php',
+            'class-ta-ep-features.php',
         ];
 
         foreach ($files as $file) {
@@ -47,6 +106,7 @@ class TA_API {
         TA_EP_Engagement::register_routes();
         TA_EP_Comments::register_routes();
         TA_EP_Downloads::register_routes();
+        TA_EP_Features::register_routes();
     }
 
     public static function success($data, array $meta = []): WP_REST_Response {

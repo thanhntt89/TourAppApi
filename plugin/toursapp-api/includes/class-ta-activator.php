@@ -5,7 +5,24 @@ class TA_Activator {
 
     public static function activate() {
         self::create_tables();
+        self::upgrade();
         flush_rewrite_rules();
+    }
+
+    public static function upgrade() {
+        global $wpdb;
+        $installed = get_option('ta_db_version', '0');
+        if (version_compare($installed, '1.2.1', '<')) {
+            // Make province_id nullable to support cross-province user journeys
+            $wpdb->query("ALTER TABLE {$wpdb->prefix}ta_user_journeys MODIFY province_id INT NULL DEFAULT NULL");
+            update_option('ta_db_version', '1.2.1');
+        }
+        if (version_compare($installed, '1.5.1', '<')) {
+            if (!get_option(TA_Signature::OPTION_SECRET)) {
+                update_option(TA_Signature::OPTION_SECRET, TA_Signature::generate_secret());
+            }
+            update_option('ta_db_version', '1.5.1');
+        }
     }
 
     public static function deactivate() {
@@ -203,6 +220,42 @@ class TA_Activator {
             completed_at    DATETIME,
             INDEX idx_device (device_uuid),
             INDEX idx_province (province_id)
+        ) $charset;
+
+        CREATE TABLE {$wpdb->prefix}ta_error_logs (
+            id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+            log_id          BIGINT,
+            device_uuid     VARCHAR(64),
+            endpoint        VARCHAR(200) NOT NULL,
+            method          VARCHAR(10) NOT NULL,
+            status_code     SMALLINT NOT NULL,
+            error_code      VARCHAR(100),
+            error_message   TEXT,
+            request_params  TEXT,
+            response_body   TEXT,
+            ip_address      VARCHAR(45),
+            user_agent      VARCHAR(500),
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_device (device_uuid),
+            INDEX idx_status (status_code),
+            INDEX idx_error_code (error_code),
+            INDEX idx_created (created_at)
+        ) $charset;
+
+        CREATE TABLE {$wpdb->prefix}ta_content_stats_daily (
+            id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+            date           DATE NOT NULL,
+            content_type   VARCHAR(20) NOT NULL,
+            content_id     INT NOT NULL,
+            event_type     VARCHAR(30) NOT NULL,
+            event_count    INT DEFAULT 0,
+            unique_users   INT DEFAULT 0,
+            avg_duration   DECIMAL(8,2) DEFAULT 0,
+            avg_scroll     DECIMAL(5,2) DEFAULT 0,
+            avg_completion DECIMAL(5,2) DEFAULT 0,
+            UNIQUE KEY unique_daily (date, content_type, content_id, event_type),
+            INDEX idx_date (date),
+            INDEX idx_content (content_type, content_id)
         ) $charset;
         ";
 

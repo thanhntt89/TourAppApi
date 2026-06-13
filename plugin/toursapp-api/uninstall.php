@@ -21,6 +21,18 @@ $tables = [
     'ta_ratings',
     'ta_api_logs',
     'ta_downloads',
+    'ta_error_logs',
+    'ta_content_stats_daily',
+];
+
+// Remove archiving options
+$archive_options = [
+    'ta_archive_content_events_days',
+    'ta_archive_api_logs_days',
+    'ta_archive_error_logs_days',
+    'ta_archive_auto_export',
+    'ta_archive_keep_files',
+    'ta_db_version',
 ];
 
 foreach ($tables as $table) {
@@ -29,6 +41,16 @@ foreach ($tables as $table) {
 
 // Remove plugin options.
 delete_option('ta_acf_fields_version');
+foreach ($archive_options as $opt) {
+    delete_option($opt);
+}
+
+// Remove archive files directory
+$archive_dir = WP_CONTENT_DIR . '/uploads/toursapp-archives/';
+if (is_dir($archive_dir)) {
+    array_map('unlink', glob($archive_dir . '*'));
+    @rmdir($archive_dir);
+}
 
 // Remove ACF field groups created by this plugin.
 $group_keys = [

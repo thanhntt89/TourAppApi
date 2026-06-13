@@ -13,7 +13,7 @@ class TA_Comment_Model {
             'content_id'   => $content_id,
             'comment_text' => $text,
             'photo_id'     => $photo_id,
-            'status'       => 'approved',
+            'status'       => 'pending', // Admin must approve before public display
         ]);
         return (int) $wpdb->insert_id;
     }

@@ -39,12 +39,31 @@ class TA_Gallery_Meta {
             return;
         }
         $screen = get_current_screen();
-        if (!$screen || !array_key_exists($screen->post_type, self::$galleries)) {
-            return;
-        }
+        if (!$screen) return;
+
+        $our_post_types = array_merge(
+            array_keys(self::$galleries),
+            ['journey', 'news_alert', 'ta_story', 'place', 'sub_place', 'sub_item']
+        );
+        if (!in_array($screen->post_type, $our_post_types, true)) return;
+
         wp_enqueue_media();
         wp_enqueue_style('ta-gallery-meta', TA_PLUGIN_URL . 'assets/gallery-meta.css', [], TA_VERSION);
-        wp_enqueue_script('ta-gallery-meta', TA_PLUGIN_URL . 'assets/gallery-meta.js', ['jquery', 'media-upload', 'media-views'], TA_VERSION, true);
+
+        if (array_key_exists($screen->post_type, self::$galleries)) {
+            wp_enqueue_script('ta-gallery-meta', TA_PLUGIN_URL . 'assets/gallery-meta.js', ['jquery', 'media-upload', 'media-views'], TA_VERSION, true);
+        }
+
+        // Audio URL browse button — CPTs that have audio fields
+        $audio_types = ['place', 'sub_place', 'sub_item', 'ta_story'];
+        if (in_array($screen->post_type, $audio_types, true)) {
+            wp_enqueue_script('ta-audio-url', TA_PLUGIN_URL . 'assets/audio-url.js', ['jquery', 'media-upload', 'media-views'], TA_VERSION, true);
+        }
+
+        // News & Alerts: auto-fill icon when type changes
+        if ($screen->post_type === 'news_alert') {
+            wp_enqueue_script('ta-news-icon', TA_PLUGIN_URL . 'assets/news-icon.js', ['jquery', 'acf-input'], TA_VERSION, true);
+        }
     }
 
     public static function render($post, string $meta_key) {

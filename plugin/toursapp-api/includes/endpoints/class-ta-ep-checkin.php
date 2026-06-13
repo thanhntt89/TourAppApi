@@ -111,12 +111,16 @@ class TA_EP_Checkin {
 
         // Validate by method
         if ($method === 'gps') {
-            $lat = (float) $request->get_param('latitude');
-            $lng = (float) $request->get_param('longitude');
+            $lat = $request->get_param('latitude');
+            $lng = $request->get_param('longitude');
 
-            if (!$lat || !$lng) {
+            // Use null check — lat/lng = 0 are valid coordinates (equator/prime meridian)
+            if ($lat === null || $lng === null) {
                 return TA_API::error('INVALID_PARAMS', 'Latitude and longitude are required for GPS check-in.', 400);
             }
+
+            $lat = (float) $lat;
+            $lng = (float) $lng;
 
             $place_lat = (float) get_field('place_lat', $place_id);
             $place_lng = (float) get_field('place_lng', $place_id);
@@ -218,13 +222,13 @@ class TA_EP_Checkin {
 
     private static function get_unlock_cost(string $post_type, string $content_type, int $content_id): int {
         if ($post_type === 'ta_story') {
-            return (int) get_field('story_content_cost', $content_id) ?: 5;
+            $field = $content_type === 'audio' ? 'story_audio_cost' : 'story_article_cost';
+            return (int) get_field($field, $content_id) ?: 5;
         }
         if ($content_type === 'audio') {
             $field = $post_type === 'sub_place' ? 'sub_place_audio_cost' : 'place_audio_cost';
             return (int) get_field($field, $content_id) ?: 5;
         }
-        // article
         return (int) get_field('place_article_cost', $content_id) ?: 5;
     }
 

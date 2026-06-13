@@ -11,7 +11,7 @@
 
 defined('ABSPATH') || exit;
 
-define('TA_VERSION', '1.2.0');
+define('TA_VERSION', '1.5.1');
 define('TA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TA_API_NAMESPACE', 'toursapp/v1');
@@ -35,22 +35,60 @@ final class ToursApp {
         add_action('rest_api_init', [$this, 'register_api']);
         add_action('acf/init', ['TA_Fields', 'register']);
         add_action('rest_api_init', ['TA_API_Logger', 'init']);
+        add_action('init', ['TA_Activator', 'upgrade']);
+        add_action('rest_api_init', ['TA_Signature', 'init'], 3);
+        add_action('rest_api_init', ['TA_API', 'init_filters'], 5);
+        add_action('rest_api_init', ['TA_Output_Fields', 'init'], 20);
+        add_filter('cron_schedules',      ['TA_Monitor', 'add_cron_interval']);
+        add_action(TA_Monitor::CRON_HOOK, ['TA_Monitor', 'run']);
+        add_filter('cron_schedules',           ['TA_Data_Archiver', 'add_cron_interval']);
+        add_action(TA_Data_Archiver::CRON_HOOK, ['TA_Data_Archiver', 'run']);
+        // AJAX for archive page
+        add_action('wp_ajax_ta_archive_now',     ['TA_Archive_Page', 'ajax_archive_now']);
+        add_action('wp_ajax_ta_archive_dry_run', ['TA_Archive_Page', 'ajax_dry_run']);
+        add_action('wp_ajax_ta_archive_delete',  ['TA_Archive_Page', 'ajax_delete_file']);
+        // AJAX handlers must be registered before admin_menu fires (admin-ajax.php skips admin_menu)
+        add_action('wp_ajax_ta_plugin_update', ['TA_Admin', 'ajax_plugin_update']);
+
         if (is_admin()) {
+            TA_Admin_Font::register();
             add_action('load-post.php',     ['TA_Gallery_Meta', 'register']);
             add_action('load-post-new.php', ['TA_Gallery_Meta', 'register']);
+            add_action('load-post.php',     ['TA_Journey_Stops_Meta', 'register']);
+            add_action('load-post-new.php', ['TA_Journey_Stops_Meta', 'register']);
             add_action('admin_menu',        ['TA_Admin', 'register_menu']);
+            add_action('admin_menu',        ['TA_Analytics_Page', 'register_menu']);
+            add_action('admin_menu',        ['TA_Log_Viewer', 'register_menu']);
+            add_action('admin_menu',        ['TA_Monitor_Page', 'register_menu']);
+            add_action('admin_menu',        ['TA_Archive_Page', 'register_menu']);
+            add_action('admin_menu',        ['TA_API_Docs', 'register_menu']);
+            add_action('admin_menu',        ['TA_Output_Fields_Page', 'register_menu']);
         }
     }
 
     private function load_includes() {
         require_once TA_PLUGIN_DIR . 'includes/class-ta-activator.php';
         require_once TA_PLUGIN_DIR . 'includes/class-ta-auth.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-signature.php';
         require_once TA_PLUGIN_DIR . 'includes/class-ta-localize.php';
         require_once TA_PLUGIN_DIR . 'includes/class-ta-geo.php';
         require_once TA_PLUGIN_DIR . 'includes/class-ta-fields.php';
         require_once TA_PLUGIN_DIR . 'includes/class-ta-gallery-meta.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-admin-font.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-journey-stops-meta.php';
         require_once TA_PLUGIN_DIR . 'includes/class-ta-api-logger.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-feature-access.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-analytics.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-analytics-page.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-log-viewer.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-monitor.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-monitor-page.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-data-archiver.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-archive-page.php';
         require_once TA_PLUGIN_DIR . 'includes/class-ta-admin.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-api-docs.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-output-fields.php';
+        require_once TA_PLUGIN_DIR . 'includes/class-ta-output-fields-page.php';
 
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-device-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-wallet-model.php';

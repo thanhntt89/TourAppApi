@@ -65,23 +65,24 @@ class TA_Wallet_Model {
     }
 
     public static function spend(string $uuid, int $amount, string $ref_type, int $ref_id, string $note = '') {
-        $balance = self::get_balance($uuid);
-
-        if ($balance < $amount) {
-            return new WP_Error('INSUFFICIENT_BALANCE', 'Not enough Buckwheat Flowers', [
-                'status'  => 400,
-                'required' => $amount,
-                'current_balance' => $balance,
-            ]);
-        }
-
         global $wpdb;
         $table = $wpdb->prefix . 'ta_wallet';
 
-        $wpdb->query($wpdb->prepare(
-            "UPDATE $table SET balance = balance - %d, total_spent = total_spent + %d WHERE device_uuid = %s",
-            $amount, $amount, $uuid
+        // Atomic UPDATE: deduct only if balance is sufficient — prevents race condition
+        $rows_affected = $wpdb->query($wpdb->prepare(
+            "UPDATE $table SET balance = balance - %d, total_spent = total_spent + %d
+             WHERE device_uuid = %s AND balance >= %d",
+            $amount, $amount, $uuid, $amount
         ));
+
+        if (!$rows_affected) {
+            $current = self::get_balance($uuid);
+            return new WP_Error('INSUFFICIENT_BALANCE', 'Not enough Buckwheat Flowers', [
+                'status'          => 400,
+                'required'        => $amount,
+                'current_balance' => $current,
+            ]);
+        }
 
         $new_balance = self::get_balance($uuid);
 

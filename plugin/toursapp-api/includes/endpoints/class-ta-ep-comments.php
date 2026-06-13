@@ -79,7 +79,11 @@ class TA_EP_Comments {
         $photo_id = (int) ($request->get_param('photo_id') ?? 0);
 
         $cid = TA_Comment_Model::create($uuid, $type, $id, $text, $photo_id);
-        return TA_API::created(['comment_id' => $cid]);
+        return TA_API::created([
+            'comment_id' => $cid,
+            'status'     => 'pending',
+            'message'    => 'Your comment has been submitted and is awaiting approval.',
+        ]);
     }
 
     public static function update_comment(WP_REST_Request $request): WP_REST_Response {
@@ -157,12 +161,25 @@ class TA_EP_Comments {
 
         $file = $_FILES['photo'];
 
-        // Validate type server-side via MIME sniffing.
+        // Validate extension first — blocks double-extension attacks (e.g. shell.php.jpg)
         $allowed_mime = ['image/jpeg', 'image/png', 'image/webp'];
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime  = $finfo->file($file['tmp_name']);
-        if (!in_array($mime, $allowed_mime, true)) {
-            return TA_API::error('invalid_type', 'Only jpg, png, webp images allowed.', 400);
+        $allowed_ext  = ['jpg', 'jpeg', 'png', 'webp'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed_ext, true)) {
+            return TA_API::error('invalid_extension', 'Invalid file extension. Only jpg, png, webp allowed.', 400);
+        }
+        // Validate MIME type via server-side sniffing — with fallback for servers without fileinfo
+        if (class_exists('finfo')) {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime  = $finfo->file($file['tmp_name']);
+            if (!in_array($mime, $allowed_mime, true)) {
+                return TA_API::error('invalid_type', 'Only jpg, png, webp images allowed.', 400);
+            }
+        } elseif (function_exists('mime_content_type')) {
+            $mime = mime_content_type($file['tmp_name']);
+            if (!in_array($mime, $allowed_mime, true)) {
+                return TA_API::error('invalid_type', 'Only jpg, png, webp images allowed.', 400);
+            }
         }
 
         // 2MB limit.

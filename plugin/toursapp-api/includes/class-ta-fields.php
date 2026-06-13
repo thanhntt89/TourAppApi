@@ -88,12 +88,13 @@ class TA_Fields {
 
     private static function one_file($prefix, $label, $lang) {
         return [
-            'key'           => self::k($prefix . '_' . $lang),
-            'label'         => $label,
-            'name'          => $prefix . '_' . $lang,
-            'type'          => 'file',
-            'return_format' => 'array',
-            'mime_types'    => 'mp3,m4a,ogg,wav',
+            'key'          => self::k($prefix . '_' . $lang),
+            'label'        => $label,
+            'name'         => $prefix . '_' . $lang,
+            'type'         => 'text',
+            'instructions' => 'Paste URL or click Browse to select from server',
+            'placeholder'  => 'https://',
+            'wrapper'      => ['class' => 'ta-audio-url-field'],
         ];
     }
 
@@ -262,7 +263,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('journey_difficulty'),     'label' => 'Difficulty',         'name' => 'journey_difficulty',     'type' => 'select',      'choices' => ['easy' => 'Easy', 'medium' => 'Medium', 'hard' => 'Hard'], 'default_value' => 'easy'];
         $f[] = ['key' => self::k('journey_is_featured'),    'label' => 'Featured',           'name' => 'journey_is_featured',    'type' => 'true_false',  'ui' => 1];
         $f[] = ['key' => self::k('journey_sort_order'),     'label' => 'Sort Order',         'name' => 'journey_sort_order',     'type' => 'number',      'default_value' => 0];
-        $f[] = ['key' => self::k('journey_stops'),          'label' => 'Stops (JSON)',       'name' => 'journey_stops',          'type' => 'textarea',    'rows' => 10, 'instructions' => 'JSON array. Each stop: {"journey_stop_place": POST_ID, "journey_stop_order": 1, "journey_stop_day": 1, "journey_stop_duration": 30, "journey_stop_note_vi": "", "journey_stop_note_en": ""}'];
 
         $f = array_merge($f, self::append_lang_tabs('jrn', [
             ['prefix' => 'journey_name', 'label' => 'Journey Name', 'type' => 'text'],
@@ -301,23 +301,35 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f = [];
 
         $f[] = self::tab('story', 'General');
-        $f[] = ['key' => self::k('story_type'),               'label' => 'Story Type',          'name' => 'story_type',               'type' => 'select',      'choices' => ['legend' => 'Legend', 'history' => 'History', 'culture' => 'Culture', 'folk' => 'Folklore', 'mystery' => 'Mystery', 'nature' => 'Nature', 'other' => 'Other'], 'default_value' => 'legend'];
-        $f[] = ['key' => self::k('story_is_featured'),        'label' => 'Featured',                   'name' => 'story_is_featured',        'type' => 'true_false',  'ui' => 1];
-        $f[] = ['key' => self::k('story_sort_order'),         'label' => 'Sort Order',                 'name' => 'story_sort_order',         'type' => 'number',      'default_value' => 0];
-        $f[] = ['key' => self::k('story_show_content_free'),  'label' => 'Show Content Free',          'name' => 'story_show_content_free',  'type' => 'true_false',  'ui' => 1, 'default_value' => 1];
-        $f[] = ['key' => self::k('story_content_cost'),       'label' => 'Content Unlock Cost',        'name' => 'story_content_cost',       'type' => 'number',      'default_value' => 5];
-        $f[] = ['key' => self::k('story_enable_tracking'),    'label' => 'Enable Engagement Tracking', 'name' => 'story_enable_tracking',    'type' => 'true_false',  'ui' => 1, 'default_value' => 1];
-        $f[] = ['key' => self::k('story_allow_comments'),     'label' => 'Allow Comments',             'name' => 'story_allow_comments',     'type' => 'true_false',  'ui' => 1, 'default_value' => 1];
-        $f[] = ['key' => self::k('story_allow_ratings'),      'label' => 'Allow Ratings',              'name' => 'story_allow_ratings',      'type' => 'true_false',  'ui' => 1, 'default_value' => 1];
-        $f[] = ['key' => self::k('story_available_offline'),  'label' => 'Available Offline',          'name' => 'story_available_offline',  'type' => 'true_false',  'ui' => 1];
-        $f[] = ['key' => self::k('story_feature_image'),      'label' => 'Feature Image',              'name' => 'story_feature_image',      'type' => 'image',       'return_format' => 'id', 'preview_size' => 'medium'];
-$f[] = ['key' => self::k('story_related_provinces'),  'label' => 'Related Provinces',   'name' => 'story_related_provinces',  'type' => 'post_object', 'post_type' => ['province'], 'return_format' => 'id', 'multiple' => 1, 'ui' => 1];
-        $f[] = ['key' => self::k('story_related_places'),     'label' => 'Related Places',      'name' => 'story_related_places',     'type' => 'post_object', 'post_type' => ['place'],    'return_format' => 'id', 'multiple' => 1, 'ui' => 1];
+        $f[] = ['key' => self::k('story_type'),               'label' => 'Story Type',          'name' => 'story_type',               'type' => 'select',     'choices' => ['legend' => 'Legend', 'history' => 'History', 'culture' => 'Culture', 'folk' => 'Folklore', 'mystery' => 'Mystery', 'nature' => 'Nature', 'other' => 'Other'], 'default_value' => 'legend'];
+        $f[] = ['key' => self::k('story_is_featured'),        'label' => 'Featured',            'name' => 'story_is_featured',        'type' => 'true_false', 'ui' => 1];
+        $f[] = ['key' => self::k('story_sort_order'),         'label' => 'Sort Order',          'name' => 'story_sort_order',         'type' => 'number',     'default_value' => 0];
+        $f[] = ['key' => self::k('story_feature_image'),      'label' => 'Feature Image',       'name' => 'story_feature_image',      'type' => 'image',      'return_format' => 'id', 'preview_size' => 'medium'];
+        $f[] = ['key' => self::k('story_related_provinces'),  'label' => 'Related Provinces',   'name' => 'story_related_provinces',  'type' => 'post_object','post_type' => ['province'], 'return_format' => 'id', 'multiple' => 1, 'ui' => 1];
+        $f[] = ['key' => self::k('story_related_places'),     'label' => 'Related Places',      'name' => 'story_related_places',     'type' => 'post_object','post_type' => ['place'],    'return_format' => 'id', 'multiple' => 1, 'ui' => 1];
+
+        $f[] = self::tab('story', 'Article Settings');
+        $f[] = ['key' => self::k('story_show_article_free'),  'label' => 'Article Free',        'name' => 'story_show_article_free',  'type' => 'true_false', 'ui' => 1, 'default_value' => 1, 'instructions' => 'ON = free to read. OFF = requires flowers.'];
+        $f[] = ['key' => self::k('story_article_cost'),       'label' => 'Article Unlock Cost', 'name' => 'story_article_cost',       'type' => 'number',     'default_value' => 5];
+        $f[] = ['key' => self::k('story_article_offline'),    'label' => 'Article Offline',     'name' => 'story_article_offline',    'type' => 'true_false', 'ui' => 1];
+
+        $f[] = self::tab('story', 'Audio Settings');
+        $f[] = ['key' => self::k('story_show_audio_free'),    'label' => 'Audio Free',          'name' => 'story_show_audio_free',    'type' => 'true_false', 'ui' => 1, 'default_value' => 1, 'instructions' => 'ON = free to play. OFF = requires flowers.'];
+        $f[] = ['key' => self::k('story_audio_cost'),         'label' => 'Audio Unlock Cost',   'name' => 'story_audio_cost',         'type' => 'number',     'default_value' => 5];
+        $f[] = ['key' => self::k('story_audio_duration'),     'label' => 'Audio Duration (sec)','name' => 'story_audio_duration',     'type' => 'number',     'step' => '0.1'];
+        $f[] = ['key' => self::k('story_audio_offline'),      'label' => 'Audio Offline',       'name' => 'story_audio_offline',      'type' => 'true_false', 'ui' => 1];
+
+        $f[] = self::tab('story', 'Tracking & UGC');
+        $f[] = ['key' => self::k('story_enable_tracking'),    'label' => 'Enable Tracking',     'name' => 'story_enable_tracking',    'type' => 'true_false', 'ui' => 1, 'default_value' => 1, 'instructions' => 'Collect page views, read time, audio completion data.'];
+        $f[] = ['key' => self::k('story_allow_comments'),     'label' => 'Allow Comments',      'name' => 'story_allow_comments',     'type' => 'true_false', 'ui' => 1, 'default_value' => 1];
+        $f[] = ['key' => self::k('story_allow_ratings'),      'label' => 'Allow Ratings',       'name' => 'story_allow_ratings',      'type' => 'true_false', 'ui' => 1, 'default_value' => 1];
+        $f[] = ['key' => self::k('story_available_offline'),  'label' => 'Available Offline',   'name' => 'story_available_offline',  'type' => 'true_false', 'ui' => 1];
 
         $f = array_merge($f, self::append_lang_tabs('story', [
             ['prefix' => 'story_name',    'label' => 'Story Title', 'type' => 'text'],
             ['prefix' => 'story_summary', 'label' => 'Summary',     'type' => 'wysiwyg'],
             ['prefix' => 'story_content', 'label' => 'Content',     'type' => 'wysiwyg'],
+            ['prefix' => 'story_audio',   'label' => 'Audio File',  'type' => 'file'],
         ]));
 
         return $f;

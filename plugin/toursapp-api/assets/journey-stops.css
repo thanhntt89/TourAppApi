@@ -1,0 +1,49 @@
+#ta-stops-wrap { margin-top: 6px; }
+
+#ta-stops-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+#ta-stops-table th {
+    background: #2271b1;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+}
+
+#ta-stops-table td {
+    padding: 5px 6px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+.ta-stop-row:hover td { background: #f0f6fc; }
+
+.ta-drag-handle {
+    cursor: grab;
+    color: #999;
+    font-size: 16px;
+    text-align: center;
+    user-select: none;
+}
+
+.ta-drag-handle:active { cursor: grabbing; }
+
+.ta-stop-row.ta-dragging { opacity: 0.4; }
+.ta-stop-row.ta-drag-over td { border-top: 2px solid #2271b1; }
+
+#ta-stops-table select,
+#ta-stops-table input[type="text"],
+#ta-stops-table input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ta-remove-stop {
+    color: #b32d2e !important;
+    border-color: #b32d2e !important;
+    padding: 2px 6px !important;
+}

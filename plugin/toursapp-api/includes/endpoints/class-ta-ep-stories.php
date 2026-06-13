@@ -128,6 +128,23 @@ class TA_EP_Stories {
             'feature_image' => TA_Localize::format_image(get_field('story_feature_image', $id)),
             'is_featured'   => (bool) get_field('story_is_featured', $id),
             'sort_order'    => (int) get_field('story_sort_order', $id),
+            'article'       => [
+                'is_free' => (bool) get_field('story_show_article_free', $id) !== false
+                             ? (bool) get_field('story_show_article_free', $id) : true,
+                'cost'    => (int) get_field('story_article_cost', $id) ?: 5,
+            ],
+            'audio_info'    => [
+                'is_free'  => (bool) get_field('story_show_audio_free', $id) !== false
+                              ? (bool) get_field('story_show_audio_free', $id) : true,
+                'cost'     => (int) get_field('story_audio_cost', $id) ?: 5,
+                'duration' => (float) get_field('story_audio_duration', $id) ?: 0,
+            ],
+            'allow_comments'   => (bool) get_field('story_allow_comments', $id) !== false
+                                  ? (bool) get_field('story_allow_comments', $id) : true,
+            'allow_ratings'    => (bool) get_field('story_allow_ratings', $id) !== false
+                                  ? (bool) get_field('story_allow_ratings', $id) : true,
+            'enable_tracking'  => (bool) get_field('story_enable_tracking', $id) !== false
+                                  ? (bool) get_field('story_enable_tracking', $id) : true,
         ];
     }
 
@@ -136,6 +153,7 @@ class TA_EP_Stories {
         $data = self::format_story_compact($post, $lang);
 
         $data['content'] = TA_Localize::get_field_localized($id, 'story_content', $lang);
+        $data['audio']   = TA_Localize::get_audio_localized($id, 'story_audio', $lang);
 
         // Related places.
         $place_ids = (array) get_field('story_related_places', $id);
