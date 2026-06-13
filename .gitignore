@@ -1,0 +1,11 @@
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.zip
+*.rar
+*.gif
+.vs/
+.vscode/
+node_modules/
+vendor/
