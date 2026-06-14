@@ -1,0 +1,218 @@
+{
+  "status_code": 200,
+  "json": {
+    "success": true,
+    "data": {
+      "province": {
+        "id": 144,
+        "name": "HÀ GIANG",
+        "feature_image": null,
+        "latitude": 0,
+        "longitude": 0
+      },
+      "locations": [
+        {
+          "id": 4462,
+          "location_number": 5,
+          "name": "VI XUYEN",
+          "description": "",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/vixuyen.jpg",
+            "width": 1024,
+            "height": 434,
+            "alt": ""
+          },
+          "latitude": 22.66690829526326,
+          "longitude": 104.98459957361442
+        },
+        {
+          "id": 4458,
+          "location_number": 5,
+          "name": "MEO VAC",
+          "description": "",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/MEOVAC.jpg",
+            "width": 1024,
+            "height": 572,
+            "alt": ""
+          },
+          "latitude": 23.165596580395864,
+          "longitude": 105.40956721533266
+        },
+        {
+          "id": 4456,
+          "location_number": 4,
+          "name": "DONG VAN",
+          "description": "",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/DONGVAN.png",
+            "width": 1376,
+            "height": 768,
+            "alt": ""
+          },
+          "latitude": 23.277038916982704,
+          "longitude": 105.35834720430695
+        },
+        {
+          "id": 4454,
+          "location_number": 3,
+          "name": "YEN MINH",
+          "description": "",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/YEN-MINH.png",
+            "width": 1376,
+            "height": 768,
+            "alt": ""
+          },
+          "latitude": 23.11979028992626,
+          "longitude": 105.13821095041504
+        },
+        {
+          "id": 4450,
+          "location_number": 1,
+          "name": "HA GIANG",
+          "description": "<p>Discover Ha Giang City, the perfect starting point for your adventure through the Dong Van Karst Plateau. Explore top attractions, local culture, and tips for your trip to this hidden gem.</p>\n",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/HA-GIANG.png",
+            "width": 1408,
+            "height": 768,
+            "alt": ""
+          },
+          "latitude": 22.802698573826827,
+          "longitude": 104.97775011989194
+        },
+        {
+          "id": 830,
+          "location_number": 2,
+          "name": "Mèo Vạc",
+          "description": "<p>Mèo Vạc</p>\n",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/quanba-scaled.png",
+            "width": 2560,
+            "height": 1429,
+            "alt": ""
+          },
+          "latitude": 23.064738838871016,
+          "longitude": 104.99097866668748
+        }
+      ],
+      "places": [
+        {
+          "id": 5236,
+          "place_order_number": 30,
+          "name": "Hmong King's Palace",
+          "information": "<h2><b>The Vương Family Mansion:</b></h2>\n<h3><b>A Journey Through Power, Change, and Legacy </b></h3>\n",
+          "article": "<h2><b>The Vương Family Mansion:</b></h2>\n<h3><b>A Journey Through Power, Change, and Legacy </b></h3>\n",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/Vuameo-palace.png",
+            "width": 1264,
+            "height": 841,
+            "alt": ""
+          },
+          "gallery": [],
+          "audio": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+            "duration": 0
+          },
+          "latitude": 23.256314329324645,
+          "longitude": 105.26212570031649,
+          "geofence_radius": 100,
+          "qr_code": null,
+          "checkin_reward": 10,
+          "article_cost": 5,
+          "show_article_free": false,
+          "show_audio_free": false
+        },
+        {
+          "id": 4460,
+          "place_order_number": 4,
+          "name": "Nho quế",
+          "information": "<h3><b>SECTION 1: NHO QUẾ AT A GLANCE</b></h3>\n<p><span style=\"font-weight: 400;\">Located in Hà Giang Province, the Nho Quế River is the defining geographical feature of the Đồng Văn Karst Plateau. Originating from the Nghiem Son mountains in China, the river has a total length of 192 kilometres, with a 46-kilometre stretch winding through Việt Nam. Entering the country near the northernmost point of Lũng Cú, it travels through the rugged districts of Đồng Văn and Mèo Vạc before joining the Gâm River.</span></p>\n<p><span style=\"font-weight: 400;\">The river is most famous for its relationship with Tu Sản Canyon, carving a deep, dramatic path directly through the base of towering limestone cliffs. Its striking emerald-green water creates a sharp visual contrast against the surrounding grey mountains. When viewed from the Mã Pí Lèng Pass above, this vivid ribbon of water provides one of Việt Nam’s most iconic landscapes, serving as a vital geographical lifeline in an otherwise arid and rocky region.</span></p>\n<h3><b>SECTION 2: UNDERSTANDING THE NHO QUẾ RIVER</b></h3>\n<p><span style=\"font-weight: 400;\">Fed by mountain springs and surface runoff from the high-altitude limestone plateau, the Nho Quế River is defined by its extreme entrenchment. Rather than flowing through a broad, open valley, the river is confined within a steep, V-shaped gorge. For visitors, this means the river is rarely seen at eye level until completing a long descent; it is primarily experienced as a distant, winding feature far below the mountain roads.</span></p>\n<p><span style=\"font-weight: 400;\">The river’s character shifts distinctly with the seasons. During the rainy months (May to September), water volume increases and the flow turns muddy due to sediment washed down from the peaks. In the dry season (October to April), the flow slows and the sediment settles. This calmer environment allows the river to take on its famous emerald or turquoise hue—a result of high water clarity, specific mineral content, and algae reflecting the sunlight. This seasonal transformation means visitors in winter and spring experience a drastically different, much calmer river than those visiting during the summer rains.</span></p>\n<h3><b>SECTION 3: TU SẢN CANYON</b></h3>\n<p><span style=\"font-weight: 400;\">Situated between the Đồng Văn and Mèo Vạc districts, Tu Sản Canyon is a massive fault line and the most significant natural feature along the Nho Quế River. It holds the distinction of being the deepest canyon in Southeast Asia.</span></p>\n<p><span style=\"font-weight: 400;\">The scale of the canyon is extraordinary. It stretches for roughly 1.7 kilometres, flanked by sheer, near-vertical limestone walls. The depth of the gorge, measured from the highest mountain peaks down to the water surface, reaches between 700 and 800 metres. These towering cliffs slope at extreme angles, sometimes reaching 90 degrees, creating a highly enclosed, corridor-like environment. For visitors on the water, these dimensions mean that navigating the canyon feels remarkably isolating; the sheer height of the walls blocks out much of the sky and dramatically alters the sense of scale.</span></p>\n<p><span style=\"font-weight: 400;\">Geologically, Tu Sản Canyon is the centrepiece of the Đồng Văn UNESCO Global Geopark. While the specific geology is complex, its formation is essentially the result of two combined forces: the earth’s crust splitting apart millions of years ago, and the river continuously carving downward into that fracture ever since.</span></p>\n<p><span style=\"font-weight: 400;\">Because the canyon is so immense, the high mountain passes provide the best panoramic views. However, the true magnitude of Tu Sản is best understood from the water level. Looking up from a boat at the base of the gorge offers a humbling perspective, revealing the staggering height of the cliffs and the sheer power of the water that shaped them.</span></p>\n<h3><b>SECTION 4: HYDROPOWER AND THE MODERN RIVER</b></h3>\n<p><span style=\"font-weight: 400;\">The Nho Quế River as experienced by visitors today has been significantly altered by modern infrastructure. Beginning in 2007, a cascade of hydroelectric dams was constructed along the river&#8217;s route to harness its energy. The largest of the local facilities is the Nho Quế 3 Hydropower Project, completed in 2012 with an installed capacity of 110 megawatts (MW), which operates alongside other stations like Nho Quế 1 and Nho Quế 2.</span></p>\n<p><span style=\"font-weight: 400;\">This network of dams fundamentally changed the river’s natural behaviour. Historically, the Nho Quế was a swift, turbulent mountain river characterized by dangerous rapids. Today, the damming process has raised water levels and significantly reduced current speeds, transforming long stretches of the river into calm, deep reservoirs.</span></p>\n<p><span style=\"font-weight: 400;\">This environmental shift has directly shaped current tourism access. Before the hydropower projects, navigating the base of the river was hazardous and highly restricted. The calm waters created by the dams now make the river easily accessible year-round. This stabilized water level is precisely what allows modern visitors to safely take passenger boats and kayaks directly into the deepest sections of Tu Sản Canyon.</span></p>\n<h3><b>SECTION 5: VISITING THE NHO QUẾ RIVER</b></h3>\n<p><span style=\"font-weight: 400;\">To experience the river at water level, visitors typically take a guided boat tour. Most journeys begin from either the Tà Làng or Xín Cái boat piers. Reaching these starting points requires descending from the main towns of Đồng Văn or Mèo Vạc via steep, winding local roads that branch off the main highway.</span></p>\n<p><span style=\"font-weight: 400;\">Standard motorised boat tours take between 45 and 90 minutes, allowing ample time to travel through the canyon and back. Kayaks and small self-rowing boats are also available to rent for an independent pace. Because the canyon is exceptionally deep, direct sunlight only reaches the water level during the middle of the day. Visiting between mid-morning and early afternoon provides the best lighting for photography, avoiding the heavy shadows cast by the cliffs.</span></p>\n<p><span style=\"font-weight: 400;\">The dry season (October to April) offers the best overall conditions, as the water maintains its signature emerald colour. In February and March, blooming red Bombax ceiba trees along the banks provide an additional visual contrast. For an aerial perspective, the Mã Pí Lèng Pass remains the premier viewpoint for photography without descending to the water.</span></p>\n<h3><b>SECTION 6: PRACTICAL TIPS</b></h3>\n<ul>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Accessing the Piers:</b><span style=\"font-weight: 400;\"> The descent routes to the river are extremely narrow with sharp hairpin turns. It is highly recommended to hire an experienced local motorbike taxi (</span><i><span style=\"font-weight: 400;\">xe ôm</span></i><span style=\"font-weight: 400;\">) or a dedicated driver rather than self-driving.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Footwear:</b><span style=\"font-weight: 400;\"> Wear sturdy, slip-resistant shoes. The walking paths from the parking areas down to the boats can be uneven and wet.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Microclimate:</b><span style=\"font-weight: 400;\"> The canyon floor is often noticeably cooler and windier than the surrounding plateau; bringing a light jacket or windbreaker is advised.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Safety:</b><span style=\"font-weight: 400;\"> Standard safety regulations apply. Life jackets are provided at the piers and are mandatory for all boat and kayak trips.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Ticketing:</b><span style=\"font-weight: 400;\"> Purchase boat or kayak tickets directly at the official pier stations to ensure standard, regulated pricing.</span></li>\n</ul>\n",
+          "article": "<p><b>1</b> <b>Looking Down Into Another World</b><span style=\"font-weight: 400;\"> Standing above the Tu Sản Canyon, the eye is almost inevitably drawn downward. Far beneath the limestone cliffs, the Nho Quế River winds through the gorge, a narrow ribbon of green at the base of an immense vertical landscape. The view is striking not only for its beauty, but for the sense of scale it reveals—a landscape shaped as much by height and depth as by distance.</span></p>\n<p><span style=\"font-weight: 400;\">But to view this vast gorge simply as a piece of dramatic scenery is to miss its most profound significance. The Nho Quế River valley is not just a natural wonder; it is a vital historical archive. This deep trench reveals far more than the physical shape of the earth—it reveals the different layers of human life that have existed here for centuries.</span></p>\n<p><span style=\"font-weight: 400;\">In a region defined by extreme topography, the valley offers a rare opportunity to see multiple human worlds simultaneously. As you look from the cloud-wrapped peaks down to the emerald water below, you are looking across a vertical map of human settlement. The sheer scale of the landscape—from the high ridges of the plateau to the narrow canyon floor—helps explain how geography influenced where people lived, how they traveled, what they could cultivate, and whom they regularly encountered. The river below is not merely a body of water; it marks the lowest layer of a deeply stratified human landscape, the foundation of a region where height and distance often shaped the boundaries between communities.</span></p>\n<p>&nbsp;</p>\n<p><b>2</b> <b>A Landscape Built on Separation</b><span style=\"font-weight: 400;\"> In many parts of the world, geography facilitates movement. Rivers serve as natural highways, valleys provide sweeping corridors for trade, and flat plains encourage the sprawling expansion of societies. But in the steep karst plateau of Hà Giang, the landscape often resisted connectivity. Here, the terrain was a primary governing force, defining the practical limits of human mobility and the scope of daily communication.</span></p>\n<p><span style=\"font-weight: 400;\">The sheer verticality of the mountains and the profound depth of the valleys created formidable physical barriers. The Nho Quế River itself functioned as a profound geographic divider. Before modern dams altered its flow, the river was a fierce torrent of raging rapids and sharp rocks carving through the canyon. This made longitudinal navigation—traveling up or down the waterway to connect distant settlements—exceedingly dangerous and generally impossible. The river corridor, rather than serving as an artery of trade, acted as a turbulent natural moat that separated the high plateaus.</span></p>\n<p><span style=\"font-weight: 400;\">Because movement was so punishingly difficult, isolation became a defining characteristic of life. The steep mountains fractured human society into localized pockets, separated by towering walls of stone and perilous chasms. Communication between neighboring peaks or across the river valley could take weeks. This fragmentation meant that different groups developed highly self-reliant communities, deeply adapted to the precise constraints of their immediate surroundings.</span></p>\n<p><span style=\"font-weight: 400;\">The terrain shaped human interaction just as forcefully. For many communities living on the highest peaks, the river canyon far below was a formidable obstacle to be bypassed rather than utilized. Historical trade routes and migratory paths frequently snaked along high mountain ridges, bridging the peaks rather than following the valleys. Even when formal political borders were drawn along the Nho Quế riverbed below, the people of the region often maintained fluid networks of kinship and highland trade high above the water. The landscape effectively encouraged a disconnect—separating the world of the high peaks from the world of the deep valley floor, and creating distinct spheres of existence that rarely intersected despite sharing the same geographic coordinates.</span></p>\n<p>&nbsp;</p>\n<p><b>3</b> <b>Different Heights, Different Lives</b><span style=\"font-weight: 400;\"> Because the landscape of Hà Giang is so severely stratified, human settlement adapted vertically. The result is a region where distinct cultures tended to establish themselves at different elevations, inhabiting the same geographic column but living in fundamentally different realities. Elevation heavily influenced daily life, shaping everything from the crops a family could harvest to the transportation methods they used.</span></p>\n<p><span style=\"font-weight: 400;\">High above the river, at altitudes exceeding a thousand meters, the environment is defined by sheer limestone peaks, biting winds, and a scarcity of surface water. In this harsh, vertical terrain, highland communities like the H&#8217;Mông and Lô Lô generally established their settlements. Because the exhausting descent to the river was often impractical, they relied heavily on rainfall and natural rock basins for survival. Their agriculture was adapted to the extreme conditions, cultivating swidden corn in tiny pockets of soil wedged between jagged stones. For many of these high-altitude residents, the Nho Quế River was a distant physical reality rather than a daily resource; their migration patterns into the region often favored the seamless crossing of high-altitude ridges.</span></p>\n<p><span style=\"font-weight: 400;\">Further down the mountainside, clinging to the mid-slope terraces, the environment softened slightly but remained challenging. Here, communities such as the Dao and Nùng frequently cultivated dry crops, upland rice, and resilient grains like buckwheat. They largely relied on small mountain streams and springs rather than the distant river below. Their movement was still restricted by the steep inclines, keeping them largely separated from both the highest peaks and the valley floor.</span></p>\n<p><span style=\"font-weight: 400;\">At the very bottom of the gorge, a different world existed along the banks of the Nho Quế. Where the steep canyon walls retreated just enough to leave narrow strips of relatively flat land, lowland communities such as the Giáy and Tày often established enduring settlements. Shielded from the harsh winds of the plateau, these communities engaged in localized wet rice cultivation, small-scale aquaculture, and river fishing. While the highlanders largely bypassed the valley floor, these riverbank dwellers intimately utilized the water for their immediate needs. However, because the river&#8217;s violent rapids restricted long-distance travel, their world remained highly localized. They occasionally relied on small ferries for perilous transverse crossings to reach immediate neighbors across the water, but extended trade along the river was essentially blocked.</span></p>\n<p><span style=\"font-weight: 400;\">While these elevation zones were rarely absolute, they created prevailing patterns of life. Families living just a few kilometers apart horizontally could be separated by a thousand meters vertically, their daily struggles dictated primarily by their altitude.</span></p>\n<p>&nbsp;</p>\n<p><b>4</b> <b>The Valley as a Window</b><span style=\"font-weight: 400;\"> To understand why the Nho Quế River is an essential part of understanding Hà Giang, one must recognize how the valley functions as living historical evidence. In a rugged region where the chaotic terrain often obscures the past, the Nho Quế corridor provides rare, tangible insight into how geography dictated the boundaries of society.</span></p>\n<p><span style=\"font-weight: 400;\">Looking into the Tu Sản Canyon, an observer does not merely see beautiful scenery; they see the physical constraints that forced human adaptation. The sheer walls of the canyon visually explain why highland farmers and riverbank dwellers maintained such separate lives. The immense scale of the gorge clarifies why empires might draw political borders along the deep riverbed, while local communities maintained their own practical networks on the ridges above, largely unaffected by the artificial lines below.</span></p>\n<p><span style=\"font-weight: 400;\">The valley effectively serves as a physical record of human limits. It demonstrates how the Nho Quế River functioned not just as water, but as a profound geographic threshold. By cutting so deeply into the earth, the canyon anchored a complex, multi-layered society. It shows us how a single, dramatic natural feature could shape the expansion of settlements, separate neighbors, and define the edges of their respective worlds for centuries.</span></p>\n<p>&nbsp;</p>\n<p><b>5</b> <b>From Isolation to Connection</b><span style=\"font-weight: 400;\"> For centuries, the vertical worlds surrounding the Nho Quế largely maintained their distinct and distant spheres. But the landscape that once encouraged such profound separation has slowly been bridged. The transformation began not with a change in the mountains themselves, but with a shift in human mobility.</span></p>\n<p><span style=\"font-weight: 400;\">The construction of modern infrastructure fundamentally altered the relationship between the heights and the depths. The creation of the Happiness Road and the carving of the Mã Pì Lèng Pass represented the first major triumphs over the region&#8217;s isolating geography. For the first time, the fragmented communities of the plateau were connected by a reliable, navigable artery that bypassed the punishing peaks and valleys.</span></p>\n<p><span style=\"font-weight: 400;\">Later, the damming of the Nho Quế River further transformed the environment. The completion of hydroelectric projects submerged the hostile rapids, turning a historically violent barrier into the calm, emerald waterway visible today. This engineering feat not only altered the river&#8217;s hydrology but also brought modern connectivity to the historically isolated villages along its banks.</span></p>\n<p><span style=\"font-weight: 400;\">As transportation improved, the boundaries between the elevations began to soften. The worlds above and below are no longer strictly divided. Highlanders can now descend to the valley more easily, and river dwellers can reach the plateau. The goods, ideas, and people that were once separated by days of perilous climbing now move swiftly across paved roads and navigable waters.</span></p>\n<p><span style=\"font-weight: 400;\">Yet, the fundamental geography remains largely unchanged. The mountains are just as steep, the canyon just as deep. The Nho Quế River continues to flow as the defining baseline of this extreme terrain. While modern engineering has eased the isolation, it has not erased the landscape&#8217;s history. The distinct worlds above and below still exist, quietly visible in the terraces, the architecture, and the agricultural rhythms of the people. They are no longer as distant from one another as they once were, but they stand as a permanent testament to the power of the land to shape human life.</span></p>\n",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/NHO-QUE-RIVER.png",
+            "width": 1584,
+            "height": 672,
+            "alt": ""
+          },
+          "gallery": [],
+          "audio": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+            "duration": 0
+          },
+          "latitude": 23.23088156188252,
+          "longitude": 105.42660419193106,
+          "geofence_radius": 100,
+          "qr_code": null,
+          "checkin_reward": 10,
+          "article_cost": 5,
+          "show_article_free": true,
+          "show_audio_free": true
+        }
+      ],
+      "sub_places": [
+        {
+          "id": 6265,
+          "sub_place_index": "1",
+          "name": "MAIN GATE - The Origins of Highland Power",
+          "description": "<h2><b>WHY THIS PLACE MATTERS</b></h2>\n<p><span style=\"font-weight: 400;\">Standing before the Main Gate of the Vương family mansion, visitors cross a physical and historical threshold. The stone steps beneath your feet and the heavy gateway before you were designed to establish structured authority.</span></p>\n<p><span style=\"font-weight: 400;\">While the Audio Guide for this location introduces the family’s world by sparking curiosity, this Historical Companion is designed to answer a foundational question: Who were the Vương family, and how did they become the dominant power of the Đồng Văn plateau?</span></p>\n<p><span style=\"font-weight: 400;\">This location is essential because it represents the origins of the family&#8217;s regional authority. The Main Gate is the primary access point to an extensive administrative and defensive center. As you prepare to pass through this controlled entrance, you are observing the recurring historical theme of &#8220;Geography as Destiny&#8221;. To understand the heavily fortified mansion that lies beyond, visitors must first understand the centuries of migration, regional conflict, and political organization that necessitated the construction of this specific gateway.</span></p>\n<h2><b>HISTORICAL BACKGROUND</b></h2>\n<h3><b>Migration and Settlement</b></h3>\n<p>&nbsp;</p>\n<p><span style=\"font-weight: 400;\">To understand the location of this administrative center, one must trace the historical origins of the family from Yunnan, China. The presence of the Hmong people in the Đồng Văn plateau was the result of a gradual, generational migration southward into the extreme altitudes of the region.</span></p>\n<p><span style=\"font-weight: 400;\">Upon arriving in the northern territories of present-day Vietnam, migrating communities found the fertile lowlands already occupied. As a result, they settled in the rugged, high-altitude limestone terrains of the plateau. By the time the Vương family emerged as the ruling authority, the local population had already undergone approximately 350 years of settlement in the area. Three and a half centuries of cultivating crops and surviving in this isolated, rocky environment established a deeply rooted, self-reliant agricultural society that would later be consolidated into a unified political domain.</span></p>\n<h2><b>KEY PEOPLE</b></h2>\n<h3><b>Vương Chính Đức (c. 1864/1865 – 1947)</b></h3>\n<p>&nbsp;</p>\n<p><span style=\"font-weight: 400;\">The individual responsible for centralizing these scattered settlements into a unified regional power was Vương Chính Đức. His authority was not inherited; rather, it emerged in response to frontier instability.</span></p>\n<p><span style=\"font-weight: 400;\">During the late 19th century, the northern borderlands were severely disrupted by the incursions of the Black Flag Army (Hắc Kỳ Quân). These armed groups crossed into northern Vietnam, extracting resources and threatening local populations. Recognizing that decentralized villages could not withstand these incursions independently, Vương Chính Đức joined and eventually led a local self-defense militia known as the Hươu Nai (Deer) organization.</span></p>\n<h3><b>The Hươu Nai Organization</b></h3>\n<p><b>[PROBABLE INTERPRETATION]</b></p>\n<p><span style=\"font-weight: 400;\">The Hươu Nai organization served as a critical catalyst for regional unification. Prior to its formation, Hmong communities operated primarily as independent, localized settlements. The Hươu Nai demanded a new level of military coordination, organizing disparate villages into a unified fighting force capable of defending their shared territory.</span></p>\n<p><span style=\"font-weight: 400;\">Participation in this militia was historically significant because it established a centralized chain of command. Under his leadership, the Hươu Nai successfully repelled the Black Flag forces. Through this organized resistance, Vương Chính Đức proved the efficacy of unified leadership. He emerged from this conflict as the recognized leader of the Hmong population. The Hươu Nai was therefore not just a militia; it was the structural foundation upon which his later political administration was built.</span></p>\n<h2><b>POWER, ECONOMY &amp; POLITICS</b></h2>\n<h3><b>The Four-District Administration</b></h3>\n<p>&nbsp;</p>\n<p><span style=\"font-weight: 400;\">Following his military success, Vương Chính Đức established an administrative network that spanned four distinct districts: Quản Bạ, Yên Minh, Đồng Văn, and Mèo Vạc.</span></p>\n<p><span style=\"font-weight: 400;\">Controlling these four districts was a remarkable logistical achievement. The mountainous geography of the frontier is heavily fragmented by limestone peaks and deep valleys. Maintaining authority over this expanse meant controlling vital trade routes, securing the Sino-Vietnamese border, and coordinating agricultural production across isolated settlements. The Main Gate was constructed to serve as the administrative nerve center for managing this vast territorial expanse.</span></p>\n<h3><b>Governing a Population of 70,000</b></h3>\n<p>&nbsp;</p>\n<p><span style=\"font-weight: 400;\">Within these four districts, Vương Chính Đức held authority over a population of approximately 70,000 residents. Governing a population of this size indicated substantial political influence.</span></p>\n<p><span style=\"font-weight: 400;\">Managing 70,000 people across a challenging landscape required far more than military strength. It involved complex administrative responsibilities, including maintaining regional security, resolving local disputes, regulating the cross-border economy, and organizing labor. This demographic scale transformed his role from a local militia commander into an active regional governor, requiring a headquarters capable of handling civic administration alongside military defense.</span></p>\n<h3><b>The Khải Định Decree of 1923</b></h3>\n<p>&nbsp;</p>\n<p><span style=\"font-weight: 400;\">While territorial control secured his borders, long-term stability required formal political legitimacy. In 1923, Vương Chính Đức&#8217;s authority was officially recognized by the Nguyễn Dynasty through a royal decree (sắc phong) issued by Emperor Khải Định.</span></p>\n<p><span style=\"font-weight: 400;\">The significance of being recognized by the central imperial court was profound. This decree formally acknowledged his jurisdiction over the four districts, legally validating his rule. By accepting this recognition, Vương Chính Đức secured crucial diplomatic leverage. It ensured that both the central Vietnamese government and the French colonial authorities were compelled to interact with him as a state-sanctioned regional administrator rather than an insurgent leader.</span></p>\n<h3><b>Xà Phìn as the Center of Power</b></h3>\n<p>&nbsp;</p>\n<p><span style=\"font-weight: 400;\">To govern this territory, Vương Chính Đức selected the valley of Xà Phìn as his power center. The geographic advantages of Xà Phìn are evident. Surrounded by towering karst peaks that act as natural defensive walls, the valley provided clear sightlines and a single, easily defensible entry route. Xà Phìn allowed the administration to consolidate governance, wealth, and military operations in a highly secure location.</span></p>\n<h2><b>OBJECTS &amp; FEATURES TO NOTICE</b></h2>\n<p><span style=\"font-weight: 400;\">Before walking through the entrance, observe the physical evidence of defense and administration designed into this gateway:</span></p>\n<ul>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>The Stone Approach:</b><span style=\"font-weight: 400;\"> Notice the deliberate elevation of the steps leading to the Main Gate. In defensive architecture, forcing arrivals to make a slow, upward ascent provides the compound&#8217;s guards with clear visibility and a physical advantage over anyone approaching the complex.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>The Controlled Access Point:</b><span style=\"font-weight: 400;\"> Observe how the gate functions as a strict architectural bottleneck. Managing a region of 70,000 people required total control over who could enter the administrative center. This heavy threshold was designed to filter access, separating the external frontier from the internal government.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Visibility Over the Valley:</b><span style=\"font-weight: 400;\"> Turn to look back down into the valley from the gate&#8217;s vantage point. This view demonstrates the strategic surveillance capabilities of Xà Phìn. From this elevation, guards could continuously monitor the primary approach route.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>The Imperial Plaque (Preview):</b><span style=\"font-weight: 400;\"> The most important physical artifact representing the family&#8217;s political legitimacy—the Khải Định imperial plaque (Hoành phi Khải Định)—is not located on the exterior gate, but is housed safely inside. As you pass through this gate, prepare to look for this object at the Tiền Dinh (Stop 2), where it was displayed to visiting dignitaries.</span></li>\n</ul>\n<h2><b>STORIES, LEGENDS &amp; LOCAL BELIEFS</b></h2>\n<h3><b>The Legend of Turtle Hill</b></h3>\n<p><b>[LOCAL BELIEF]</b></p>\n<p><span style=\"font-weight: 400;\">While historians emphasize the military strategy behind the selection of Xà Phìn, local oral history provides a spiritual context. According to pervasive regional legends, the location of the mansion is intimately tied to the &#8220;Turtle Hill&#8221; (Đồi Rùa). In traditional folklore, a prominent mound within the valley resembles the shell of a massive turtle, a creature symbolizing enduring strength, stability, and longevity.</span></p>\n<h3><b>Master Trương Chiếu</b></h3>\n<p><b>[LOCAL BELIEF]</b></p>\n<p><span style=\"font-weight: 400;\">Local belief states that to properly harness this geography, Vương Chính Đức enlisted Trương Chiếu, a highly respected feng shui master. The oral history claims that Master Trương Chiếu surveyed the terrain and advised that constructing the headquarters upon the &#8220;turtle&#8217;s back&#8221; would guarantee the family&#8217;s unbroken authority. While unverified as historical fact, this legend illustrates how the local population understood the Vương family’s dominance, viewing it as sanctioned by the landscape itself.</span></p>\n<h2><b>OPEN QUESTIONS &amp; HISTORICAL DEBATES</b></h2>\n<p><b>[OPEN QUESTION]</b></p>\n<p><span style=\"font-weight: 400;\">Historical research relies on available documentation, which is often incomplete for early borderland histories. One historical debate surrounding the origins of the Vương dynasty concerns the exact birth year of Vương Chính Đức. Existing historical sources contain contradictory accounts, debating whether he was born in 1864 or 1865. This uncertainty reflects the challenges of documenting the early decades of the Hmong migration before formal administrative records were consistently established in the highlands.</span></p>\n<h2><b>RELATED LOCATIONS</b></h2>\n<p><span style=\"font-weight: 400;\">The administrative and military foundations established here at the Main Gate connect directly to the following stops:</span></p>\n<ul>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Tiền Dinh (Stop 2):</b><span style=\"font-weight: 400;\"> After moving through the gate, you will encounter the family&#8217;s primary reception area. Here, you will see the physical artifact of the 1923 royal decree—the Khải Định imperial plaque (Hoành phi Khải Định).</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Blockhouses (Stop 6):</b><span style=\"font-weight: 400;\"> The strategic geographic vision that led to the fortification of the Xà Phìn valley is physically demonstrated by the defensive watchtowers and loopholes deeper in the complex.</span></li>\n</ul>\n",
+          "feature_image": null,
+          "audio": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+            "size": 0
+          },
+          "latitude": 23.256728327319404,
+          "longitude": 105.26214716617693,
+          "place_id": 5236
+        }
+      ],
+      "sub_items": [],
+      "journeys": [
+        {
+          "id": 6523,
+          "name": "",
+          "description": "",
+          "feature_image": null,
+          "duration_days": 1,
+          "difficulty": "hard",
+          "stops": []
+        }
+      ],
+      "news": [],
+      "media_manifest": [
+        {
+          "type": "image",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/Vuameo-palace.png",
+          "size_bytes": 0,
+          "checksum": "9869c943f66a4c35c24de2b11a31451e"
+        },
+        {
+          "type": "audio",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+          "size_bytes": 0,
+          "checksum": "458391978b17fe79e33a4a6a321d3bd5"
+        },
+        {
+          "type": "image",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/NHO-QUE-RIVER.png",
+          "size_bytes": 0,
+          "checksum": "dc0b4cf45edc867ff734734c6a3c10ce"
+        },
+        {
+          "type": "audio",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+          "size_bytes": 0,
+          "checksum": "458391978b17fe79e33a4a6a321d3bd5"
+        },
+        {
+          "type": "audio",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+          "size_bytes": 0,
+          "checksum": "458391978b17fe79e33a4a6a321d3bd5"
+        }
+      ],
+      "sync_version": 1781408163,
+      "total_media_size_mb": 0
+    }
+  }
+}
