@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KM0 - Detail Mockup</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; height: 100vh; }
+        .device { width: 375px; height: 812px; background: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 40px; border: 8px solid #222; margin-top: 20px; }
+        .map-bg { height: 100%; width: 100%; background: #ccc; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 150px; color: #757575; }
+        .btn-back { position: absolute; top: 60px; left: 20px; background: white; width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
+        .bottom-sheet { position: absolute; bottom: 0; width: 100%; height: 60%; background: white; border-radius: 24px 24px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .drag-handle { width: 40px; height: 4px; background: #E0E0E0; border-radius: 2px; margin: 15px auto; }
+        .sheet-header { padding: 0 20px 15px; border-bottom: 1px solid #EEEEEE; }
+        .sheet-title { font-size: 22px; font-weight: bold; margin: 0; color: #333; }
+        .sheet-sub { font-size: 14px; color: #757575; margin: 5px 0 0; }
+        .sheet-content { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .story-text { font-size: 15px; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        .blurred-text { color: transparent; text-shadow: 0 0 8px rgba(0,0,0,0.3); user-select: none; margin-bottom: 30px; }
+        .unlock-card { background: #FFF3E0; border: 1px solid #FFE0B2; border-radius: 12px; padding: 15px; text-align: center; margin: 20px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .unlock-card h4 { margin: 0 0 5px 0; color: #E65100; font-size: 16px; }
+        .unlock-card p { margin: 0 0 15px 0; font-size: 13px; color: #E65100; opacity: 0.9; }
+        .btn-unlock { background: #FF9800; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; width: 100%; }
+        .audio-player { position: absolute; bottom: 20px; left: 20px; right: 20px; background: white; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #eee; }
+        .play-btn { width: 40px; height: 40px; background: #E0E0E0; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #9E9E9E; }
+        .audio-info { flex-grow: 1; margin: 0 15px; }
+        .audio-title { font-size: 14px; font-weight: bold; color: #333; margin: 0; }
+        .audio-lock { font-size: 12px; color: #D84315; margin: 4px 0 0; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="map-bg">
+            <p>Embedded Detail Map</p>
+            <p>Marker: Dinh Vua Mèo</p>
+        </div>
+        <div class="btn-back">←</div>
+        
+        <div class="bottom-sheet">
+            <div class="drag-handle"></div>
+            <div class="sheet-header">
+                <h2 class="sheet-title">French Bunker Ruins</h2>
+                <p class="sheet-sub">Núi Cấm • 0.8 km away</p>
+            </div>
+            <div class="sheet-content">
+                <p class="story-text">
+                    The French bunker ruins on Núi Cấm are concrete structures located on the prominent hill directly overlooking the center of Hà Giang city. They exist as a functional stopping point along the uphill walking tracks...
+                </p>
+                <p class="story-text blurred-text">
+                    Rather than a separate, cordoned-off historical monument, these remains are a natural extension of a regular walk up the mountain. From up here on the ridge, the entire layout of Hà Giang becomes much easier to understand.
+                </p>
+                
+                <div class="unlock-card">
+                    <h4>Content Locked</h4>
+                    <p>Visit this location or use 5 Buckwheat Flowers to unlock the full reading and audio.</p>
+                    <button class="btn-unlock">🌸 Unlock for 5 Flowers</button>
+                </div>
+            </div>
+            
+            <div class="audio-player">
+                <div class="audio-info">
+                    <p class="audio-title">The Eye Over The Valley</p>
+                    <p class="audio-lock">🔒 Audio locked</p>
+                </div>
+                <div class="play-btn">▶</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

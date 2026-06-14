@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KM0 - Location Hub Mockup</title>
+    <style>
+        :root {
+            --primary: #D81B60;
+            --bg-light: #FFFFFF;
+            --text-dark: #212529;
+            --text-muted: #6C757D;
+            --border-light: #E9ECEF;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: #E5E5E5; 
+            display: flex; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+        .device { 
+            width: 375px; 
+            height: 812px; 
+            background: var(--bg-light); 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            border-radius: 40px; 
+            border: 8px solid #222; 
+            margin-top: 20px; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        .header {
+            background: white;
+            padding: 50px 20px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            z-index: 10;
+        }
+        .btn-back {
+            font-size: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        /* --- Mini Map --- */
+        .mini-map {
+            height: 220px;
+            background: #A3D1C6;
+            position: relative;
+            background-image: radial-gradient(#8FBC8F 15%, transparent 16%), radial-gradient(#8FBC8F 15%, transparent 16%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            border-bottom: 2px solid var(--primary);
+        }
+        .map-marker {
+            position: absolute;
+            width: 24px; height: 24px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        .marker-1 { top: 80px; left: 120px; }
+        .marker-2 { top: 130px; left: 200px; }
+        .marker-3 { top: 160px; left: 100px; border-color: var(--text-muted); color: var(--text-muted); }
+
+        /* --- Content Area --- */
+        .content-scroll {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #F8F9FA;
+        }
+        .location-info {
+            margin-bottom: 25px;
+        }
+        .location-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 5px;
+            color: var(--text-dark);
+        }
+        .location-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* --- Story List --- */
+        .list-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .story-item {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            align-items: center;
+            border: 1px solid transparent;
+        }
+        .story-item.active {
+            border-color: var(--primary);
+        }
+        .story-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            background: #D3D3D3;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            background-size: cover;
+            background-position: center;
+        }
+        .img-1 { background-image: url('https://images.unsplash.com/photo-1540202404-b711142289cb?w=200&q=80'); }
+        .img-2 { background-image: url('https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=200&q=80'); }
+        
+        .story-details {
+            flex-grow: 1;
+        }
+        .story-index {
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .story-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin: 0 0 4px;
+            line-height: 1.2;
+        }
+        .story-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .status-unlocked { background: #E8F5E9; color: #2E7D32; }
+        .status-locked { background: #FFF3E0; color: #E65100; }
+
+        /* Floating Audio Bar (Contextual) */
+        .mini-audio {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 30px;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(216,27,96,0.3);
+            z-index: 20;
+        }
+        .mini-audio-title { font-size: 14px; font-weight: bold; margin: 0; }
+        .mini-audio-btn { font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="header">
+            <div class="btn-back">←</div>
+            <h1 class="header-title">Hà Giang City</h1>
+        </div>
+
+        <div class="mini-map">
+            <div class="map-marker marker-1">1</div>
+            <div class="map-marker marker-2">2</div>
+            <div class="map-marker marker-3">3</div>
+        </div>
+
+        <div class="content-scroll">
+            <div class="location-info">
+                <h2 class="location-title">Overview</h2>
+                <p class="location-desc">The gateway to the loop. Built inside a narrow valley and compressed by steep limestone mountains, the city is shaped by the Lô and Miện Rivers.</p>
+            </div>
+
+            <div class="list-header">
+                <span>Stories (3)</span>
+                <span style="font-size: 12px; color: var(--primary); cursor: pointer;">Sort by Distance</span>
+            </div>
+
+            <div class="story-list">
+                <div class="story-item active">
+                    <div class="story-img img-1">0%</div>
+                    <div class="story-details">
+                        <div class="story-index">Stop 1</div>
+                        <h3 class="story-title">KM0 Milestone</h3>
+                        <div class="story-meta">
+                            <span>0.1 km</span>
+                            <span class="status-badge status-unlocked">🔓 Unlocked</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-item">
+                    <div class="story-img img-2"></div>
+                    <div class="story-details">
+                        <div class="story-index">Stop 2</div>
+                        <h3 class="story-title">French Bunker Ruins (Núi Cấm)</h3>
+                        <div class="story-meta">
+                            <span>0.8 km</span>
+                            <span class="status-badge status-locked">🔒 Locked</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-item" style="opacity: 0.7;">
+                    <div class="story-img"></div>
+                    <div class="story-details">
+                        <div class="story-index">Stop 3</div>
+                        <h3 class="story-title">Lô River Bridge</h3>
+                        <div class="story-meta">
+                            <span>1.2 km</span>
+                            <span class="status-badge status-locked">🔒 Locked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Padding for bottom audio player -->
+            <div style="height: 60px;"></div>
+        </div>
+
+        <div class="mini-audio">
+            <p class="mini-audio-title">Now Playing: KM0 Milestone</p>
+            <div class="mini-audio-btn">⏸</div>
+        </div>
+    </div>
+</body>
+</html>

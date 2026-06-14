@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KM0 - Interactive Map & Tour Sheet Mockup</title>
+    <style>
+        :root {
+            --primary: #D81B60; /* Crimson Red */
+            --bg-light: #FFFFFF;
+            --bg-sheet: #F8F9FA;
+            --text-dark: #212529;
+            --text-muted: #6C757D;
+            --border-light: #E9ECEF;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-lg: 0 -4px 16px rgba(0,0,0,0.15);
+        }
+
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: #E5E5E5; 
+            display: flex; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        .device { 
+            width: 375px; 
+            height: 812px; 
+            background: #A3D1C6; /* Map background placeholder color */
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            border-radius: 40px; 
+            border: 8px solid #222; 
+            margin-top: 20px; 
+            background-image: radial-gradient(#8FBC8F 15%, transparent 16%), radial-gradient(#8FBC8F 15%, transparent 16%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+
+        /* --- Map Overlays & FABs --- */
+        .fab {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+            font-weight: bold;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+        .fab-close { top: 50px; left: 20px; }
+        .fab-more { top: 50px; right: 20px; }
+        .fab-gps { bottom: 350px; right: 20px; } /* Above bottom sheet */
+
+        .map-route-line {
+            position: absolute;
+            top: 250px; left: 50px;
+            width: 200px; height: 100px;
+            border: 4px dashed var(--primary);
+            border-radius: 50%;
+            transform: rotate(-15deg);
+            z-index: 5;
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 28px; height: 28px;
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--primary);
+            z-index: 6;
+        }
+        .marker-1 { top: 220px; left: 100px; }
+        .marker-2 { top: 320px; left: 250px; }
+
+        /* --- Bottom Sheet --- */
+        .bottom-sheet { 
+            position: absolute; 
+            bottom: 0; 
+            width: 100%; 
+            height: 320px; /* Reduced to show more map */
+            background: var(--bg-light); 
+            border-radius: 24px 24px 0 0; 
+            box-shadow: var(--shadow-lg); 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 20;
+            transition: transform 0.3s ease-out;
+        }
+
+        .drag-handle-container {
+            width: 100%;
+            padding: 12px 0;
+            display: flex;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .drag-handle { 
+            width: 40px; 
+            height: 5px; 
+            background: var(--border-light); 
+            border-radius: 3px; 
+        }
+
+        /* --- Sheet Header --- */
+        .sheet-header {
+            padding: 0 20px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .header-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .sheet-title { font-size: 18px; font-weight: 800; margin: 0; color: var(--text-dark); }
+        .sheet-sub { font-size: 12px; color: var(--text-muted); margin: 4px 0 0; }
+        .btn-start { 
+            background: white; 
+            color: var(--primary); 
+            border: 2px solid var(--primary); 
+            padding: 8px 16px; 
+            border-radius: 25px; 
+            font-weight: bold; 
+            font-size: 14px;
+        }
+
+        /* --- Horizontal Carousel --- */
+        .carousel-container {
+            padding: 15px 0 15px 20px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+        }
+        .carousel-container::-webkit-scrollbar { display: none; }
+        
+        .tour-card {
+            min-width: 150px;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tour-card-img {
+            height: 90px;
+            background: #D3D3D3;
+            border-radius: 12px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+        .tour-card.active .tour-card-img {
+            border: 3px solid var(--primary);
+            box-sizing: border-box;
+        }
+        .img-1 { background-image: url('https://images.unsplash.com/photo-1540202404-b711142289cb?w=400&q=80'); }
+        .img-2 { background-image: url('https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400&q=80'); }
+        .img-3 { background-image: url('https://images.unsplash.com/photo-1559586616-361e18714958?w=400&q=80'); }
+        
+        /* Progress Ring Overlay */
+        .progress-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px; height: 40px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border: 3px solid var(--primary);
+        }
+
+        .tour-card-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tour-card.active .tour-card-title {
+            color: var(--primary);
+        }
+
+        /* --- Contextual Alert (Too Far) --- */
+        .alert-box {
+            margin: 0 20px 15px;
+            background: #FFF3CD;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .alert-icon { font-size: 20px; }
+        .alert-content p { margin: 0; font-size: 12px; color: #856404; line-height: 1.4; }
+        .alert-content strong { display: block; margin-bottom: 2px; font-size: 13px; }
+
+        /* --- Audio Player Dock --- */
+        .audio-dock {
+            margin: auto 20px 20px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+        }
+        .audio-btn { color: var(--text-muted); font-size: 16px; cursor: pointer; }
+        .audio-play {
+            width: 44px; height: 44px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(216,27,96,0.3);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="device">
+        <!-- Map Background Elements -->
+        <div class="map-route-line"></div>
+        <div class="map-marker marker-1">1</div>
+        <div class="map-marker marker-2" style="border-color: #6C757D; color: #6C757D;">2</div>
+
+        <!-- Floating Action Buttons on Map -->
+        <div class="fab fab-close">✕</div>
+        <div class="fab fab-more">⋮</div>
+        <div class="fab fab-gps">🎯</div>
+        
+        <!-- Bottom Sheet -->
+        <div class="bottom-sheet">
+            <div class="drag-handle-container">
+                <div class="drag-handle"></div>
+            </div>
+            
+            <div class="sheet-header">
+                <div class="header-info">
+                    <h2 class="sheet-title">Ha Giang Loop: Day 1</h2>
+                    <p class="sheet-sub">Tour progress (1 of 12)</p>
+                </div>
+                <button class="btn-start">Stop Tour</button>
+            </div>
+
+            <!-- Horizontal Carousel -->
+            <div class="carousel-container">
+                <div class="tour-card active">
+                    <div class="tour-card-img img-1">
+                        <div class="progress-ring">0%</div>
+                    </div>
+                    <p class="tour-card-title">1. KM0 Milestone</p>
+                </div>
+                <div class="tour-card">
+                    <div class="tour-card-img img-2"></div>
+                    <p class="tour-card-title">2. French Bunker Ruins</p>
+                </div>
+                <div class="tour-card">
+                    <div class="tour-card-img img-3"></div>
+                    <p class="tour-card-title">3. Fairy Bosom (Nui Doi)</p>
+                </div>
+            </div>
+
+            <!-- Contextual Overlay / Warning -->
+            <div class="alert-box">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <strong>Too Far from Location</strong>
+                    <p>You need to be physically present at the location to unlock the full audio story, or you can use your Buckwheat Flowers.</p>
+                </div>
+            </div>
+
+            <!-- Persistent Audio Player -->
+            <div class="audio-dock">
+                <div class="audio-controls">
+                    <div class="audio-btn">⏮</div>
+                    <div class="audio-btn">⏪ 10</div>
+                    <div class="audio-play">▶</div>
+                    <div class="audio-btn">10 ⏩</div>
+                    <div class="audio-btn">⏭</div>
+                    <div class="audio-btn" style="margin-left: 10px;">⋮</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
