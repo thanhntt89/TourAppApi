@@ -1,0 +1,71 @@
+{
+  "status_code": 200,
+  "json": {
+    "success": true,
+    "data": {
+      "files": [
+        {
+          "id": "img_5236_feature",
+          "type": "image",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/Vuameo-palace.png",
+          "size_bytes": 3696211,
+          "checksum": "9869c943f66a4c35c24de2b11a31451e",
+          "related_to": {
+            "type": "place",
+            "id": 5236
+          }
+        },
+        {
+          "id": "audio_5236",
+          "type": "audio",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+          "size_bytes": 0,
+          "checksum": "458391978b17fe79e33a4a6a321d3bd5",
+          "related_to": {
+            "type": "place",
+            "id": 5236
+          }
+        },
+        {
+          "id": "img_4460_feature",
+          "type": "image",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/NHO-QUE-RIVER.png",
+          "size_bytes": 2807230,
+          "checksum": "dc0b4cf45edc867ff734734c6a3c10ce",
+          "related_to": {
+            "type": "place",
+            "id": 4460
+          }
+        },
+        {
+          "id": "audio_4460",
+          "type": "audio",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+          "size_bytes": 0,
+          "checksum": "458391978b17fe79e33a4a6a321d3bd5",
+          "related_to": {
+            "type": "place",
+            "id": 4460
+          }
+        },
+        {
+          "id": "audio_6265",
+          "type": "audio",
+          "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/ElevenLabs_2026-05-07T12_19_11_Peter_pvc_sp85_s39_sb75_se0_b_m2.mp3",
+          "size_bytes": 0,
+          "checksum": "458391978b17fe79e33a4a6a321d3bd5",
+          "related_to": {
+            "type": "sub_place",
+            "id": 6265
+          }
+        }
+      ],
+      "summary": {
+        "total_files": 5,
+        "total_images": 2,
+        "total_audio": 3,
+        "total_size_mb": 6.2
+      }
+    }
+  }
+}
