@@ -106,6 +106,13 @@ class TA_Archive_Page {
                 .ta-file-table td { padding:6px 10px; border-bottom:1px solid #eee; }
                 .ta-log-box { background:#1e1e1e; color:#9cdcfe; font-size:12px; padding:12px; border-radius:4px; max-height:200px; overflow:auto; font-family:monospace; white-space:pre; }
                 #ta-dry-result { background:#f8f9fa; border:1px solid #ddd; border-radius:4px; padding:12px; font-size:12px; font-family:monospace; max-height:300px; overflow:auto; white-space:pre-wrap; }
+                /* Tables: horizontal scroll on small screens */
+                .ta-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:16px; }
+                .ta-table-wrap table { min-width:600px; margin-bottom:0 !important; }
+                @media (max-width: 782px) {
+                    .ta-section { padding:12px 14px; }
+                    .ta-arch-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
+                }
             </style>
 
             <!-- Status Dashboard -->
@@ -151,7 +158,7 @@ class TA_Archive_Page {
                 <h2>⚙️ Retention Settings</h2>
                 <form method="post">
                     <?php wp_nonce_field('ta_archive_save', 'ta_archive_save_nonce'); ?>
-                    <table class="widefat" style="font-size:13px;margin-bottom:16px">
+                    <div class="ta-table-wrap"><table class="widefat" style="font-size:13px;margin-bottom:16px">
                         <thead><tr>
                             <th>Table</th>
                             <th>Keep in DB for</th>
@@ -179,7 +186,7 @@ class TA_Archive_Page {
                         </tr>
                         <?php endforeach; ?>
                         </tbody>
-                    </table>
+                    </table></div>
 
                     <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
                         <label style="font-size:13px">
@@ -219,7 +226,7 @@ class TA_Archive_Page {
                 <?php if (empty($stats['archives']['files'])): ?>
                 <p style="color:#888">No archive files yet. Files are created automatically during archive runs.</p>
                 <?php else: ?>
-                <table class="ta-file-table">
+                <div class="ta-table-wrap"><table class="ta-file-table">
                     <thead><tr><th>Filename</th><th>Size</th><th>Created</th><th>Action</th></tr></thead>
                     <tbody>
                     <?php foreach (array_reverse($stats['archives']['files']) as $file): ?>
@@ -235,7 +242,7 @@ class TA_Archive_Page {
                     </tr>
                     <?php endforeach; ?>
                     </tbody>
-                </table>
+                </table></div>
                 <?php endif; ?>
             </div>
         </div>

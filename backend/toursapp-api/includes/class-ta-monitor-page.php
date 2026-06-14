@@ -73,7 +73,7 @@ class TA_Monitor_Page {
             <?php endif; ?>
 
             <style>
-                .ta-health-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-bottom:24px; }
+                .ta-health-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:24px; }
                 .ta-health-box { background:#fff; border:1px solid #ddd; border-radius:6px; padding:14px 16px; }
                 .ta-health-box .val { font-size:26px; font-weight:700; display:block; }
                 .ta-health-box .lbl { font-size:12px; color:#666; display:block; margin-top:4px; }
@@ -81,6 +81,12 @@ class TA_Monitor_Page {
                 .ta-health-box .bar-fill { height:4px; border-radius:2px; }
                 .ta-section-box { background:#fff; border:1px solid #ddd; border-radius:6px; padding:18px 20px; margin-bottom:20px; }
                 .ta-section-box h2 { margin-top:0; font-size:16px; border-bottom:1px solid #eee; padding-bottom:10px; }
+                /* Threshold table: horizontal scroll */
+                .ta-threshold-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:16px; }
+                .ta-threshold-wrap .widefat { min-width:600px; }
+                .ta-threshold-wrap .widefat th { white-space:nowrap; }
+                /* Inputs: no fixed width, use max-width */
+                .ta-wide-input { width:100%; max-width:400px; box-sizing:border-box; }
                 .ta-threshold-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
                 .ta-threshold-item { display:flex; flex-direction:column; gap:4px; }
                 .ta-threshold-item label { font-size:13px; font-weight:600; }
@@ -88,6 +94,14 @@ class TA_Monitor_Page {
                 .ta-threshold-item input { width:100%; font-size:14px; padding:5px 8px; }
                 .ta-level-warn { color:#856404; font-weight:bold; }
                 .ta-level-crit { color:#721c24; font-weight:bold; }
+                /* form-table: stack on mobile */
+                @media (max-width: 782px) {
+                    .ta-section-box .form-table th,
+                    .ta-section-box .form-table td { display:block; width:100%; padding:6px 0; }
+                    .ta-section-box .form-table th { font-weight:600; }
+                    .ta-wide-input { max-width:100%; }
+                    .ta-health-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+                }
             </style>
 
             <!-- Health Status -->
@@ -142,7 +156,7 @@ class TA_Monitor_Page {
                         These values define when alerts are triggered. Checked every 5 minutes.
                     </p>
 
-                    <table class="widefat" style="font-size:13px;margin-bottom:16px">
+                    <div class="ta-threshold-wrap"><table class="widefat" style="font-size:13px">
                         <thead>
                             <tr>
                                 <th>Metric</th>
@@ -211,7 +225,7 @@ class TA_Monitor_Page {
                         </tr>
                         <?php endforeach; ?>
                         </tbody>
-                    </table>
+                    </table></div><!-- /.ta-threshold-wrap -->
 
                     <div style="display:flex;gap:20px;align-items:center">
                         <label style="font-size:13px">
@@ -237,7 +251,7 @@ class TA_Monitor_Page {
                             <td>
                                 <input type="text" name="ta_monitor_email_recipients"
                                     value="<?php echo esc_attr(TA_Monitor::get('email_recipients')); ?>"
-                                    style="width:400px" placeholder="admin@example.com, ops@example.com">
+                                    class="ta-wide-input" placeholder="admin@example.com, ops@example.com">
                                 <p class="description">Comma-separated email addresses.</p>
                             </td>
                         </tr>
@@ -268,14 +282,14 @@ class TA_Monitor_Page {
                             <th style="padding:8px 0">Bot Token</th>
                             <td><input type="text" name="ta_monitor_telegram_bot_token"
                                 value="<?php echo esc_attr(TA_Monitor::get('telegram_bot_token')); ?>"
-                                style="width:400px" placeholder="1234567890:ABCdef..."></td>
+                                class="ta-wide-input" placeholder="1234567890:ABCdef..."></td>
                         </tr>
                         <tr>
                             <th style="padding:8px 0">Chat ID</th>
                             <td>
                                 <input type="text" name="ta_monitor_telegram_chat_id"
                                     value="<?php echo esc_attr(TA_Monitor::get('telegram_chat_id')); ?>"
-                                    style="width:200px" placeholder="-1001234567890 or @channelname">
+                                    class="ta-wide-input" style="max-width:220px" placeholder="-1001234567890 or @channelname">
                                 <p class="description">Group/channel chat ID. Use negative ID for groups.</p>
                             </td>
                         </tr>

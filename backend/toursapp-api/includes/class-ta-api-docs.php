@@ -195,10 +195,10 @@ class TA_API_Docs {
         ?>
         <style>
         .ta-docs *{box-sizing:border-box}
-        .ta-docs{margin:-1px -20px 0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+        .ta-docs{margin:-1px -20px 0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;height:calc(100vh - 32px);display:flex;flex-direction:column}
 
         /* Header */
-        .ta-docs-hdr{background:#0b0e11;color:#eaecef;padding:20px 28px;display:flex;align-items:center;justify-content:space-between}
+        .ta-docs-hdr{background:#0b0e11;color:#eaecef;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
         .ta-docs-hdr h1{margin:0;font-size:20px;font-weight:600;color:#fff}
         .ta-docs-hdr .ta-base{font-size:12px;color:#848e9c;margin-top:4px}
         .ta-docs-hdr .ta-base code{background:#1e2329;padding:3px 8px;border-radius:4px;color:#f0b90b;font-size:12px}
@@ -206,10 +206,10 @@ class TA_API_Docs {
         .ta-docs-hdr .ta-stats strong{color:#eaecef}
 
         /* Layout */
-        .ta-docs-body{display:flex;min-height:calc(100vh - 120px)}
+        .ta-docs-body{display:flex;flex:1;overflow:hidden;min-height:0}
 
         /* Sidebar */
-        .ta-docs-side{width:300px;min-width:300px;background:#1e2329;border-right:1px solid #2b3139;position:sticky;top:32px;height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3b4149 #1e2329}
+        .ta-docs-side{width:300px;min-width:300px;background:#1e2329;border-right:1px solid #2b3139;height:100%;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3b4149 #1e2329}
         .ta-docs-side::-webkit-scrollbar{width:5px}
         .ta-docs-side::-webkit-scrollbar-track{background:#1e2329}
         .ta-docs-side::-webkit-scrollbar-thumb{background:#3b4149;border-radius:3px}
@@ -237,7 +237,7 @@ class TA_API_Docs {
         .ta-m-DELETE{background:#b32d2e;color:#fff}
 
         /* Main content */
-        .ta-docs-main{flex:1;background:#fff;min-width:0}
+        .ta-docs-main{flex:1;background:#fff;min-width:0;height:100%;overflow-y:auto;position:relative;scroll-behavior:smooth}
 
         /* Section */
         .ta-docs-sect{padding:28px 36px;border-bottom:2px solid #eaecef}
@@ -255,7 +255,8 @@ class TA_API_Docs {
         .ta-ep-desc{color:#555;margin:10px 0 20px;font-size:14px;line-height:1.6}
 
         /* Params */
-        .ta-params{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0 20px}
+        .ta-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:12px 0 20px}
+        .ta-params{width:100%;border-collapse:collapse;font-size:13px;margin:0;min-width:600px}
         .ta-params th{text-align:left;padding:10px 14px;background:#f8f9fa;border:1px solid #e9ecef;font-weight:600;color:#495057;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
         .ta-params td{padding:9px 14px;border:1px solid #e9ecef;vertical-align:top;color:#333}
         .ta-params tr:hover td{background:#f8f9fa}
@@ -280,9 +281,21 @@ class TA_API_Docs {
         /* Curl/shell block */
         .ta-curl{color:#98c379;white-space:pre}
 
+        /* SPA Placeholder */
+        .ta-docs-placeholder{padding:60px 20px;text-align:center;color:#848e9c}
+        .ta-docs-placeholder h3{color:#eaecef;font-size:20px;margin:16px 0 8px}
+
         /* Responsive */
         @media(max-width:1200px){.ta-docs-side{width:260px;min-width:260px}}
-        @media(max-width:900px){.ta-docs-body{flex-direction:column}.ta-docs-side{width:100%;min-width:100%;position:static;height:auto;max-height:300px}}
+        @media(max-width:900px){
+            .ta-docs{height:auto;display:block}
+            .ta-docs-hdr{flex-direction:column;align-items:flex-start;gap:8px}
+            .ta-docs-body{flex-direction:column;display:block;overflow:visible}
+            .ta-docs-side{width:100%;min-width:100%;position:static;height:auto;max-height:400px;border-right:none;border-bottom:2px solid #2b3139}
+            .ta-docs-sect{padding:20px 16px}
+            .ta-docs-ep h4{margin-top:16px}
+            .ta-docs-main{display:block;width:100%;height:auto;overflow:visible}
+        }
         </style>
 
         <div class="ta-docs">
@@ -325,7 +338,13 @@ class TA_API_Docs {
                 </nav>
 
                 <!-- Content -->
-                <main class="ta-docs-main">
+                <main class="ta-docs-main" id="ta-main-content">
+                    <div id="ta-docs-welcome" class="ta-docs-placeholder">
+                        <div style="font-size:48px;opacity:0.5">📚</div>
+                        <h3>Select an endpoint</h3>
+                        <p>Choose an API endpoint from the sidebar to view its documentation.</p>
+                    </div>
+
                     <?php foreach ($grouped as $group_name => $group_routes): ?>
                     <section class="ta-docs-sect" id="group-<?php echo esc_attr(sanitize_title($group_name)); ?>">
                         <h2><?php echo esc_html($group_name); ?></h2>
@@ -351,7 +370,7 @@ class TA_API_Docs {
 
                             <?php if ($has_params): ?>
                             <h4>Request Parameters</h4>
-                            <table class="ta-params">
+                            <div class="ta-table-wrap"><table class="ta-params">
                                 <thead>
                                     <tr>
                                         <th style="width:22%">Name</th>
@@ -372,7 +391,7 @@ class TA_API_Docs {
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
-                            </table>
+                            </table></div>
                             <?php endif; ?>
 
                             <h4>Request Example</h4>
@@ -446,42 +465,71 @@ class TA_API_Docs {
                 });
             });
 
-            // Smooth scroll + active tracking
+            // SPA Master-Detail View
             var navLinks = document.querySelectorAll('.ta-nav-link');
+            var sections = document.querySelectorAll('.ta-docs-sect');
+            var articles = document.querySelectorAll('.ta-docs-ep');
+            var welcome  = document.getElementById('ta-docs-welcome');
+
+            function showEndpoint(targetId) {
+                var targetEp = document.getElementById(targetId);
+                if (!targetEp) return;
+                
+                // Hide welcome & all sections/articles
+                if (welcome) welcome.style.display = 'none';
+                sections.forEach(function(s) { s.style.display = 'none'; });
+                articles.forEach(function(a) { a.style.display = 'none'; });
+
+                // Show target and its parent section
+                targetEp.style.display = 'block';
+                var parentSect = targetEp.closest('.ta-docs-sect');
+                if (parentSect) parentSect.style.display = 'block';
+
+                // Update active nav link
+                navLinks.forEach(function(a) { a.classList.remove('active'); });
+                var activeLink = document.querySelector('.ta-nav-link[data-target="' + targetId + '"]');
+                if (activeLink) activeLink.classList.add('active');
+
+                // Scroll behavior
+                var main = document.getElementById('ta-main-content');
+                if (!main) return;
+                
+                if (window.innerWidth <= 900) {
+                    // Mobile: scroll the page to main content
+                    main.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    // Desktop: scroll the inner pane to top, window doesn't move
+                    main.scrollTop = 0;
+                }
+            }
+
             navLinks.forEach(function(a){
                 a.addEventListener('click', function(e){
                     e.preventDefault();
-                    var target = document.getElementById(this.getAttribute('data-target'));
-                    if(target){
-                        target.scrollIntoView({behavior:'smooth',block:'start'});
-                        history.replaceState(null,null,'#'+this.getAttribute('data-target'));
-                    }
+                    var targetId = this.getAttribute('data-target');
+                    showEndpoint(targetId);
+                    history.replaceState(null, null, '#' + targetId);
                 });
             });
 
-            // Intersection observer for active nav tracking
-            var articles = document.querySelectorAll('.ta-docs-ep');
-            if(articles.length && 'IntersectionObserver' in window){
-                var observer = new IntersectionObserver(function(entries){
-                    entries.forEach(function(entry){
-                        if(entry.isIntersecting){
-                            navLinks.forEach(function(a){a.classList.remove('active');});
-                            var active = document.querySelector('.ta-nav-link[data-target="'+entry.target.id+'"]');
-                            if(active){
-                                active.classList.add('active');
-                                // Scroll nav to show active item
-                                active.scrollIntoView({block:'nearest',behavior:'smooth'});
-                            }
-                        }
-                    });
-                },{rootMargin:'-80px 0px -70% 0px',threshold:0});
-                articles.forEach(function(el){observer.observe(el);});
-            }
-
-            // Open group from URL hash
-            if(location.hash){
-                var target = document.querySelector(location.hash);
-                if(target) setTimeout(function(){target.scrollIntoView({block:'start'});},200);
+            // Initial load
+            if (location.hash && location.hash.length > 1) {
+                var tid = location.hash.substring(1);
+                showEndpoint(tid);
+                // Expand group in sidebar
+                var activeLink = document.querySelector('.ta-nav-link[data-target="' + tid + '"]');
+                if(activeLink) {
+                    var groupItems = activeLink.closest('.ta-nav-items');
+                    if(groupItems) {
+                        groupItems.classList.remove('collapsed');
+                        var title = groupItems.previousElementSibling;
+                        if(title) title.classList.remove('collapsed');
+                        setTimeout(function(){ activeLink.scrollIntoView({block:'nearest'}); }, 100);
+                    }
+                }
+            } else {
+                // Hide all sections initially
+                sections.forEach(function(s) { s.style.display = 'none'; });
             }
         })();
         </script>

@@ -125,8 +125,10 @@ class TA_Log_Viewer {
                 .ta-log-filters { background:#fff; border:1px solid #ddd; padding:14px 16px; border-radius:4px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
                 .ta-log-filters label { display:flex; flex-direction:column; font-size:12px; color:#555; gap:3px; }
                 .ta-log-filters input, .ta-log-filters select { font-size:13px; }
-                .ta-log-table { width:100%; border-collapse:collapse; font-size:12px; }
-                .ta-log-table th { background:#1d2327; color:#fff; padding:7px 8px; text-align:left; position:sticky; top:32px; }
+                /* Wrap table for horizontal scroll on small screens */
+                .ta-log-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:16px; }
+                .ta-log-table { width:100%; border-collapse:collapse; font-size:12px; min-width:780px; }
+                .ta-log-table th { background:#1d2327; color:#fff; padding:7px 8px; text-align:left; position:sticky; top:32px; white-space:nowrap; }
                 .ta-log-table td { padding:5px 8px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
                 .ta-log-table tr:hover td { background:#f8f9fa; }
                 .ta-log-table tr.ta-err-row td { background:#fff5f5; }
@@ -141,6 +143,11 @@ class TA_Log_Viewer {
                 .ta-detail-row pre { margin:0; white-space:pre-wrap; font-size:11px; max-height:200px; overflow:auto; background:#fff; padding:8px; border:1px solid #ddd; border-radius:3px; }
                 .ta-uuid-link { font-family:monospace; font-size:11px; color:#0073aa; text-decoration:none; }
                 .ta-uuid-link:hover { text-decoration:underline; }
+                /* Toolbar: stack on small screens */
+                @media (max-width: 782px) {
+                    .ta-log-toolbar { flex-direction:column; align-items:flex-start !important; gap:8px; }
+                    #ta-clear-form { flex-wrap:wrap; }
+                }
             </style>
 
             <!-- Filters -->
@@ -175,7 +182,7 @@ class TA_Log_Viewer {
             </form>
 
             <!-- Toolbar -->
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px" class="ta-log-toolbar">
                 <div style="font-size:12px;color:#666">
                     Page <?php echo $page; ?> of <?php echo max(1, $total_pages); ?>
                     &nbsp;·&nbsp; Showing <?php echo count($rows); ?> of <?php echo number_format($total); ?> entries
@@ -220,6 +227,7 @@ class TA_Log_Viewer {
             </div>
 
             <!-- Log table -->
+            <div class="ta-log-table-wrap">
             <table class="ta-log-table">
                 <thead>
                     <tr>
@@ -312,6 +320,7 @@ class TA_Log_Viewer {
                 <?php endforeach; ?>
                 </tbody>
             </table>
+            </div><!-- /.ta-log-table-wrap -->
 
             <!-- Pagination -->
             <?php if ($total_pages > 1): ?>

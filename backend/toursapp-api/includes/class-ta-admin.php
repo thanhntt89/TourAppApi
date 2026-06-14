@@ -769,6 +769,33 @@ class TA_Admin {
         ], admin_url('admin-post.php'));
         ?>
         <div class="wrap">
+            <style>
+                /* ── ToursApp Admin Responsive ── */
+                .ta-admin-box { background:#fff;border:1px solid #ddd;padding:16px 20px;margin-bottom:20px;border-radius:4px; }
+                .ta-secret-input { font-family:monospace;font-size:12px;width:100%;max-width:500px;padding:4px 8px; }
+                /* Feature table: horizontal scroll on small screens */
+                .ta-feature-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+                .ta-feature-wrap table { min-width:640px; }
+                /* Endpoint table: horizontal scroll */
+                .ta-ep-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+                .ta-ep-wrap #ta-api-table { min-width:560px; }
+                /* Endpoint header buttons: wrap on small screens */
+                .ta-ep-header { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px; }
+                .ta-ep-header h2 { margin:0; }
+                .ta-ep-header .ta-ep-btns { display:flex;flex-wrap:wrap;gap:4px; }
+                @media (max-width: 782px) {
+                    /* WP sidebar is collapsed at 782px — give content more room */
+                    .ta-admin-box { padding:12px 14px; }
+                    /* Form table: stack label above field */
+                    .ta-admin-box .form-table th,
+                    .ta-admin-box .form-table td { display:block; width:100%; padding:6px 0; }
+                    /* Wide inputs should not overflow */
+                    .ta-admin-box input[type=text],
+                    .ta-admin-box input[type=password],
+                    .ta-admin-box input[type=number],
+                    .ta-admin-box select { max-width:100% !important; box-sizing:border-box; }
+                }
+            </style>
             <h1>ToursApp API — Settings</h1>
 
             <?php if (isset($_GET['saved'])): ?>
@@ -778,7 +805,7 @@ class TA_Admin {
             <form method="post">
                 <?php wp_nonce_field('ta_api_settings', 'ta_api_save_nonce'); ?>
 
-                <div style="background:#fff;border:1px solid #ddd;padding:16px 20px;margin-bottom:20px;border-radius:4px;">
+                <div class="ta-admin-box">
                     <h2 style="margin-top:0">Global Settings</h2>
                     <table class="form-table" style="margin:0">
                         <tr>
@@ -811,7 +838,7 @@ class TA_Admin {
                             <th style="padding:8px 0">App Secret</th>
                             <td>
                                 <?php $sig_secret = get_option(TA_Signature::OPTION_SECRET, ''); ?>
-                                <input type="password" name="ta_api_app_secret" id="ta-secret-input" value="<?php echo esc_attr($sig_secret); ?>" style="font-family:monospace;font-size:12px;width:500px;padding:4px 8px" placeholder="Auto-generated if left empty" autocomplete="off">
+                                <input type="password" name="ta_api_app_secret" id="ta-secret-input" value="<?php echo esc_attr($sig_secret); ?>" class="ta-secret-input" placeholder="Auto-generated if left empty" autocomplete="off">
                                 <button type="button" class="button button-small" onclick="var el=document.getElementById('ta-secret-input');var show=el.type==='password';el.type=show?'text':'password';this.textContent=show?'Hide Secret':'Show Secret';">Show Secret</button>
                                 <p class="description" style="margin-top:4px">You can paste a custom secret or leave empty to auto-generate. <strong>Minimum 32 characters required.</strong></p>
                                 <br><br>
@@ -843,12 +870,12 @@ class TA_Admin {
                 </div>
 
                 <!-- Feature Settings -->
-                <div style="background:#fff;border:1px solid #ddd;padding:16px 20px;margin-bottom:20px;border-radius:4px;">
+                <div class="ta-admin-box">
                     <h2 style="margin-top:0">Feature Access</h2>
                     <p style="color:#666;margin-top:-8px;margin-bottom:16px;font-size:13px">
                         Control which premium features are available, and how users unlock them.
                     </p>
-                    <table class="widefat" style="font-size:13px">
+                    <div class="ta-feature-wrap"><table class="widefat" style="font-size:13px">
                         <thead>
                             <tr>
                                 <th style="width:22%">Feature</th>
@@ -895,11 +922,11 @@ class TA_Admin {
                         </tr>
                         <?php endforeach; ?>
                         </tbody>
-                    </table>
+                    </table></div><!-- /.ta-feature-wrap -->
                 </div>
 
-                <div style="background:#fff;border:1px solid #ddd;padding:16px 20px;border-radius:4px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div class="ta-admin-box">
+                    <div class="ta-ep-header">
                         <h2 style="margin:0">Endpoints
                             <span style="font-size:13px;font-weight:normal;color:#666;margin-left:8px;">
                                 Namespace: <code><?php echo esc_html(TA_API_NAMESPACE); ?></code>
@@ -913,7 +940,7 @@ class TA_Admin {
                             <button type="button" class="button button-primary" style="margin-left:8px"
                                 onclick="taExportApiCSV(this)">⬇ Export CSV</button>
                         </div>
-                    </div>
+                    </div><!-- /.ta-ep-header -->
 
             <style>
                 #ta-api-table { border-collapse: collapse; width: 100%; font-size: 13px; }
@@ -932,7 +959,7 @@ class TA_Admin {
                 .ta-toggle { display:inline-flex;align-items:center;cursor:pointer; }
                 .ta-toggle input { width:34px;height:18px;cursor:pointer; }
             </style>
-            <table id="ta-api-table">
+            <div class="ta-ep-wrap"><table id="ta-api-table">
                 <thead>
                     <tr>
                         <th style="width:50px">On/Off</th>
@@ -964,7 +991,7 @@ class TA_Admin {
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
-            </table>
+            </table></div><!-- /.ta-ep-wrap -->
                 </div><!-- /.endpoints panel -->
 
                 <p style="margin-top:16px">
