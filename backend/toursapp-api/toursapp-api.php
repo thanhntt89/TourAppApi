@@ -39,7 +39,9 @@ final class ToursApp {
         add_action('rest_api_init', ['TA_Signature', 'init'], 3);
         add_action('rest_api_init', ['TA_API', 'init_filters'], 5);
         add_action('rest_api_init', ['TA_Output_Fields', 'init'], 20);
-        add_filter('cron_schedules',      ['TA_Monitor', 'add_cron_interval']);
+        add_action('save_post_place',       [self::class, 'clear_place_coords_cache']);
+        add_action('save_post_ta_location', [self::class, 'clear_place_coords_cache']);
+        add_filter('cron_schedules',        ['TA_Monitor', 'add_cron_interval']);
         add_action(TA_Monitor::CRON_HOOK, ['TA_Monitor', 'run']);
         add_filter('cron_schedules',           ['TA_Data_Archiver', 'add_cron_interval']);
         add_action(TA_Data_Archiver::CRON_HOOK, ['TA_Data_Archiver', 'run']);
@@ -168,6 +170,11 @@ final class ToursApp {
 
     public function register_api() {
         TA_API::register();
+    }
+
+    public function clear_place_coords_cache(): void {
+        $v = (int) get_option('ta_place_coord_v', 1);
+        update_option('ta_place_coord_v', $v + 1, false);
     }
 }
 
