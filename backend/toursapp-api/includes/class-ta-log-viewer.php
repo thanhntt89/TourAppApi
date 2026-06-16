@@ -122,11 +122,11 @@ class TA_Log_Viewer {
             <?php endif; ?>
 
             <style>
-                .ta-log-filters { background:#fff; border:1px solid #ddd; padding:14px 16px; border-radius:4px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+                .ta-log-filters { background:#f ff; border:1px solid #ddd; padding:14px 16px; border-radius:4px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
                 .ta-log-filters label { display:flex; flex-direction:column; font-size:12px; color:#555; gap:3px; }
                 .ta-log-filters input, .ta-log-filters select { font-size:13px; }
                 .ta-log-table { width:100%; border-collapse:collapse; font-size:12px; }
-                .ta-log-table th { background:#1d2327; color:#fff; padding:7px 8px; text-align:left; position:sticky; top:32px; }
+                .ta-log-table th { background:#1d2327; color:#fff; padding:7px 8px; text-align:left; position:sticky; top:0; z-index:1; }
                 .ta-log-table td { padding:5px 8px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
                 .ta-log-table tr:hover td { background:#f8f9fa; }
                 .ta-log-table tr.ta-err-row td { background:#fff5f5; }
@@ -243,7 +243,9 @@ class TA_Log_Viewer {
                 <tbody>
                 <?php
                 $m_colors = ['GET' => '#0a7a35', 'POST' => '#0073aa', 'PUT' => '#8b6914', 'DELETE' => '#b32d2e'];
-                foreach ($rows as $i => $row):
+                $row_num  = 0;
+                foreach ($rows as $row):
+                    $row_num++;
                     $is_err   = $row['status_code'] >= 400;
                     $status_cls = $row['status_code'] >= 500 ? 'ta-5xx' : ($row['status_code'] >= 400 ? 'ta-4xx' : 'ta-2xx');
                     $slow_cls   = $row['response_ms'] > 2000 ? 'ta-slow' : ($row['response_ms'] > 1000 ? 'color:#856404' : '');
@@ -253,7 +255,7 @@ class TA_Log_Viewer {
                     $user_url   = add_query_arg(['page' => 'toursapp-analytics', 'tab' => 'users', 'uuid' => $row['device_uuid']], admin_url('admin.php'));
                 ?>
                 <tr class="<?php echo $is_err ? 'ta-err-row' : ''; ?>">
-                    <td style="color:#999;font-size:10px"><?php echo esc_html(($page - 1) * $per_page + $i + 1); ?></td>
+                    <td style="color:#999;font-size:10px"><?php echo esc_html(($page - 1) * $per_page + $row_num); ?></td>
                     <td style="font-size:11px;color:#555;white-space:nowrap"><?php echo esc_html($row['created_at']); ?></td>
                     <td><span class="ta-method-badge" style="background:<?php echo esc_attr($mc); ?>"><?php echo esc_html($row['method']); ?></span></td>
                     <td style="font-size:11px"><code><?php echo esc_html($row['endpoint']); ?></code></td>
