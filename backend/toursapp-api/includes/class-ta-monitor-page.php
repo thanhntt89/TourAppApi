@@ -185,6 +185,24 @@ class TA_Monitor_Page {
                                 'silence_warning_min',  'silence_critical_min',  'minutes',
                                 'Warning: 30 min · Critical: 60 min'
                             ],
+                            [
+                                'Table Size (DB)',
+                                'Total size of all ToursApp custom tables (data + indexes). Signals archiver falling behind.',
+                                'table_size_warning_mb', 'table_size_critical_mb', 'MB',
+                                'Warning: 200MB · Critical: 500MB',
+                            ],
+                            [
+                                'P95 Response Time',
+                                'Slowest 95th-percentile endpoint response in a 15-minute window. Catches outliers that the average hides.',
+                                'p95_warning_ms', 'p95_critical_ms', 'ms',
+                                'Warning: 1500ms · Critical: 4000ms',
+                            ],
+                            [
+                                'Auth Failures / IP',
+                                '401 errors from a single IP in 5 minutes. Elevated values indicate bot or brute-force activity.',
+                                'auth_fail_per_ip_warning', 'auth_fail_per_ip_critical', '401s / 5 min',
+                                'Warning: 10 · Critical: 30',
+                            ],
                         ];
                         foreach ($threshold_rows as [$label, $desc, $warn_key, $crit_key, $unit, $rec]):
                         ?>
@@ -310,6 +328,29 @@ class TA_Monitor_Page {
                     ⏳ Cron will be scheduled after saving settings.
                 <?php else: ?>
                     ⏸ Monitor cron inactive — enable email or Telegram above and save to activate.
+                <?php endif; ?>
+            </div>
+
+            <!-- WP Cron Reliability -->
+            <?php $using_real_cron = defined('DISABLE_WP_CRON') && DISABLE_WP_CRON; ?>
+            <div class="ta-section-box" style="margin-top:20px;border-left:4px solid <?php echo $using_real_cron ? '#28a745' : '#ffc107'; ?>">
+                <h2 style="color:<?php echo $using_real_cron ? '#155724' : '#856404'; ?>">
+                    <?php echo $using_real_cron ? '✅ OS Cron Active (Reliable)' : '⚠️ WP Pseudo-Cron (Unreliable)'; ?>
+                </h2>
+                <?php if ($using_real_cron): ?>
+                    <p style="color:#155724;margin:0">
+                        <code>DISABLE_WP_CRON</code> is defined — this server uses real OS cron to trigger WordPress jobs.
+                        Monitor checks fire every 5 minutes regardless of traffic.
+                    </p>
+                <?php else: ?>
+                    <p style="color:#856404;margin:0 0 12px">
+                        <strong>WP Cron only fires when someone visits the site.</strong>
+                        During quiet hours (2–6 AM when Ha Giang has no traffic), the 5-minute monitor may not run for several hours — missing error spikes or outages.
+                    </p>
+                    <p style="margin:0 0 6px"><strong>Step 1 — add to server crontab (<code>crontab -e</code>):</strong></p>
+                    <pre style="background:#1e1e1e;color:#d4d4d4;padding:10px 14px;border-radius:4px;font-size:12px;margin:0 0 12px;overflow-x:auto">*/5 * * * * curl -s "<?php echo esc_url(home_url()); ?>/wp-cron.php?doing_wp_cron" &gt; /dev/null 2&gt;&amp;1</pre>
+                    <p style="margin:0 0 6px"><strong>Step 2 — disable WP pseudo-cron in <code>wp-config.php</code>:</strong></p>
+                    <pre style="background:#1e1e1e;color:#d4d4d4;padding:10px 14px;border-radius:4px;font-size:12px;margin:0">define('DISABLE_WP_CRON', true);</pre>
                 <?php endif; ?>
             </div>
 

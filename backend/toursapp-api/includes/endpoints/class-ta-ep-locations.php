@@ -61,8 +61,12 @@ class TA_EP_Locations {
         $lat_f      = $has_coords ? (float) $lat : 0;
         $lng_f      = $has_coords ? (float) $lng : 0;
 
-        $locations = array_map(function ($post) use ($lang, $has_coords, $lat_f, $lng_f) {
-            return self::format_location($post, $lang, $has_coords, $lat_f, $lng_f);
+        // Batch count places per location in one query instead of N+1.
+        $loc_ids      = wp_list_pluck($posts, 'ID');
+        $place_counts = self::batch_count_places($loc_ids);
+
+        $locations = array_map(function ($post) use ($lang, $has_coords, $lat_f, $lng_f, $place_counts) {
+            return self::format_location($post, $lang, $has_coords, $lat_f, $lng_f, $place_counts);
         }, $posts);
 
         // Sort.
@@ -121,7 +125,7 @@ class TA_EP_Locations {
     /**
      * Compact location for list endpoint.
      */
-    private static function format_location(WP_Post $post, string $lang, bool $has_coords, float $lat, float $lng): array {
+    private static function format_location(WP_Post $post, string $lang, bool $has_coords, float $lat, float $lng, array $place_counts = []): array {
         $id    = $post->ID;
         $l_lat = (float) get_field('location_lat', $id);
         $l_lng = (float) get_field('location_lng', $id);
@@ -133,7 +137,7 @@ class TA_EP_Locations {
             'feature_image' => TA_Localize::format_image(get_field('location_feature_image', $id)),
             'latitude'      => $l_lat,
             'longitude'     => $l_lng,
-            'total_places'  => self::count_places($id),
+            'total_places'  => (int) ($place_counts[$id] ?? 0),
             'sort_order'    => (int) get_field('location_sort_order', $id),
         ];
 
@@ -142,6 +146,28 @@ class TA_EP_Locations {
         }
 
         return $item;
+    }
+
+    private static function batch_count_places(array $location_ids): array {
+        if (empty($location_ids)) {
+            return [];
+        }
+        global $wpdb;
+        $phs  = implode(',', array_fill(0, count($location_ids), '%d'));
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT pm.meta_value AS location_id, COUNT(p.ID) AS cnt
+                 FROM {$wpdb->posts} p
+                 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                     AND pm.meta_key = 'place_location'
+                 WHERE p.post_type = 'place'
+                   AND p.post_status = 'publish'
+                   AND pm.meta_value IN ($phs)
+                 GROUP BY pm.meta_value",
+                ...$location_ids
+            )
+        );
+        return array_column($rows, 'cnt', 'location_id');
     }
 
     /**

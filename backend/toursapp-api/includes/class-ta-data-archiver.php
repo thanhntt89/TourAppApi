@@ -71,6 +71,11 @@ class TA_Data_Archiver {
         } catch (Exception $e) {
             $log[] = 'ERROR: ' . $e->getMessage();
             update_option('ta_archive_last_log', $log);
+            TA_Monitor::send_direct_alert(
+                'archiver_failure',
+                'CRITICAL',
+                "🚨 ARCHIVER FAILED\nError: " . $e->getMessage() . "\nDB tables are not being purged — check logs immediately."
+            );
         }
 
         return $log;

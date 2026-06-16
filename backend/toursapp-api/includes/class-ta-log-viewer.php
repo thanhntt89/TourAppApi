@@ -141,6 +141,11 @@ class TA_Log_Viewer {
                 .ta-detail-row pre { margin:0; white-space:pre-wrap; font-size:11px; max-height:200px; overflow:auto; background:#fff; padding:8px; border:1px solid #ddd; border-radius:3px; }
                 .ta-uuid-link { font-family:monospace; font-size:11px; color:#0073aa; text-decoration:none; }
                 .ta-uuid-link:hover { text-decoration:underline; }
+                @media(max-width:768px){
+                    .ta-log-filters label { min-width:calc(50% - 8px); }
+                    .ta-log-filters input[type=date] { width:100% !important; box-sizing:border-box; }
+                    .ta-log-filters input[type=text] { width:100% !important; box-sizing:border-box; }
+                }
             </style>
 
             <!-- Filters -->
@@ -175,7 +180,7 @@ class TA_Log_Viewer {
             </form>
 
             <!-- Toolbar -->
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
                 <div style="font-size:12px;color:#666">
                     Page <?php echo $page; ?> of <?php echo max(1, $total_pages); ?>
                     &nbsp;·&nbsp; Showing <?php echo count($rows); ?> of <?php echo number_format($total); ?> entries
@@ -220,7 +225,7 @@ class TA_Log_Viewer {
             </div>
 
             <!-- Log table -->
-            <table class="ta-log-table">
+            <div style="overflow-x:auto"><table class="ta-log-table">
                 <thead>
                     <tr>
                         <th style="width:40px">#</th>
@@ -311,7 +316,7 @@ class TA_Log_Viewer {
                 <?php endif; ?>
                 <?php endforeach; ?>
                 </tbody>
-            </table>
+            </table></div>
 
             <!-- Pagination -->
             <?php if ($total_pages > 1): ?>

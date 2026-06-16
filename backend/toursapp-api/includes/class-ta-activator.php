@@ -29,6 +29,13 @@ class TA_Activator {
             self::create_tables();
             update_option('ta_db_version', '1.5.2');
         }
+        if (version_compare($installed, '1.6.0', '<')) {
+            $col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}ta_api_logs LIKE 'app_version'");
+            if (empty($col)) {
+                $wpdb->query("ALTER TABLE {$wpdb->prefix}ta_api_logs ADD COLUMN app_version VARCHAR(20) NULL AFTER ip_address");
+            }
+            update_option('ta_db_version', '1.6.0');
+        }
     }
 
     public static function deactivate() {
@@ -207,6 +214,7 @@ class TA_Activator {
             status_code     SMALLINT NOT NULL,
             response_ms     INT NOT NULL,
             ip_address      VARCHAR(45),
+            app_version     VARCHAR(20),
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_endpoint (endpoint),
             INDEX idx_created (created_at),
