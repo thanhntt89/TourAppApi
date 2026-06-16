@@ -49,13 +49,6 @@ class TA_Monitor {
         'telegram_enabled'       => 0,
         'telegram_bot_token'     => '',
         'telegram_chat_id'       => '',
-        // Extended operational checks
-        'table_size_warning_mb'     => 200,
-        'table_size_critical_mb'    => 500,
-        'p95_warning_ms'            => 1500,
-        'p95_critical_ms'           => 4000,
-        'auth_fail_per_ip_warning'  => 10,
-        'auth_fail_per_ip_critical' => 30,
     ];
 
     // ── Cron ─────────────────────────────────────────────────────────────
@@ -196,117 +189,6 @@ class TA_Monitor {
                 $alerts[] = self::make_alert('silence', 'WARNING',
                     "No API activity for {$silence_min} minutes",
                     "⚠️ No API activity for {$silence_min} minutes."
-                );
-            }
-        }
-
-        // 6. DB table size (data + indexes across all ta_ tables)
-        $size_mb = (float) $wpdb->get_var($wpdb->prepare(
-            "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 1)
-             FROM information_schema.tables
-             WHERE table_schema = DATABASE() AND table_name LIKE %s",
-            $wpdb->esc_like($p . 'ta_') . '%'
-        ));
-        $sz_crit = (float) self::get('table_size_critical_mb');
-        $sz_warn = (float) self::get('table_size_warning_mb');
-        if ($size_mb >= $sz_crit) {
-            $alerts[] = self::make_alert('table_size', 'CRITICAL',
-                "DB tables {$size_mb}MB (threshold: {$sz_crit}MB)",
-                "🚨 DB TABLES CRITICAL: ToursApp tables are using {$size_mb}MB.\nArchiver may have failed. Check immediately."
-            );
-        } elseif ($size_mb >= $sz_warn) {
-            $alerts[] = self::make_alert('table_size', 'WARNING',
-                "DB tables {$size_mb}MB (threshold: {$sz_warn}MB)",
-                "⚠️ DB tables growing: {$size_mb}MB. Review archiver retention settings."
-            );
-        }
-
-        // 7. Archiver health — should complete every ~24 hours
-        $last_archive = get_option('ta_archive_last_run');
-        if ($last_archive) {
-            $hours_ago = (time() - strtotime($last_archive)) / 3600;
-            if ($hours_ago > 50) {
-                $alerts[] = self::make_alert('archiver_health', 'CRITICAL',
-                    'Archiver last ran ' . round($hours_ago) . ' hours ago',
-                    '🚨 ARCHIVER OVERDUE: Last successful run was ' . round($hours_ago) . " hours ago.\nDB tables are not being purged — risk of disk full."
-                );
-            } elseif ($hours_ago > 26) {
-                $alerts[] = self::make_alert('archiver_health', 'WARNING',
-                    'Archiver last ran ' . round($hours_ago) . ' hours ago',
-                    '⚠️ Archiver overdue: last successful run ' . round($hours_ago) . ' hours ago.'
-                );
-            }
-        }
-
-        // 8. P95 response time per endpoint (15-minute window, minimum 5 data points)
-        $p95_crit = (int) self::get('p95_critical_ms');
-        $p95_warn = (int) self::get('p95_warning_ms');
-        $ep_rows  = $wpdb->get_results(
-            "SELECT endpoint, response_ms
-             FROM {$p}ta_api_logs
-             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)
-             ORDER BY endpoint, response_ms",
-            ARRAY_A
-        );
-        if (!empty($ep_rows)) {
-            $by_ep = [];
-            foreach ($ep_rows as $r) {
-                $by_ep[$r['endpoint']][] = (int) $r['response_ms'];
-            }
-            $slow_crit = [];
-            $slow_warn = [];
-            foreach ($by_ep as $ep => $times) {
-                if (count($times) < 5) continue;
-                $p95_val = $times[(int) ceil(0.95 * count($times)) - 1];
-                if ($p95_val >= $p95_crit)     $slow_crit[] = "{$ep} ({$p95_val}ms)";
-                elseif ($p95_val >= $p95_warn) $slow_warn[] = "{$ep} ({$p95_val}ms)";
-            }
-            if (!empty($slow_crit)) {
-                $list = implode(', ', array_slice($slow_crit, 0, 5));
-                $alerts[] = self::make_alert('p95_slow', 'CRITICAL',
-                    "P95 critical: {$list}",
-                    "🚨 SLOW ENDPOINTS P95:\n{$list}\nThreshold: {$p95_crit}ms over 15 min."
-                );
-            } elseif (!empty($slow_warn)) {
-                $list = implode(', ', array_slice($slow_warn, 0, 5));
-                $alerts[] = self::make_alert('p95_slow', 'WARNING',
-                    "P95 warning: {$list}",
-                    "⚠️ Slow endpoints P95:\n{$list}\nThreshold: {$p95_warn}ms over 15 min."
-                );
-            }
-        }
-
-        // 9. Auth failure spike — per-IP burst of 401s in 5 minutes
-        $af_crit  = (int) self::get('auth_fail_per_ip_critical');
-        $af_warn  = (int) self::get('auth_fail_per_ip_warning');
-        $ip_fails = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT ip_address, COUNT(*) AS cnt
-                 FROM {$p}ta_api_logs
-                 WHERE created_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
-                   AND status_code = 401
-                 GROUP BY ip_address
-                 HAVING cnt >= %d
-                 ORDER BY cnt DESC
-                 LIMIT 10",
-                $af_warn
-            ),
-            ARRAY_A
-        );
-        if (!empty($ip_fails)) {
-            $crit_ips = array_filter($ip_fails, fn($r) => (int) $r['cnt'] >= $af_crit);
-            $warn_ips = array_filter($ip_fails, fn($r) => (int) $r['cnt'] <  $af_crit);
-            if (!empty($crit_ips)) {
-                $top = array_map(fn($r) => "{$r['ip_address']} ({$r['cnt']}x)", array_slice(array_values($crit_ips), 0, 5));
-                $alerts[] = self::make_alert('auth_fail', 'CRITICAL',
-                    'Auth attack: ' . implode(', ', $top),
-                    "🚨 AUTH ATTACK DETECTED:\n" . implode("\n", $top) . "\n\nConsider blocking these IPs."
-                );
-            } elseif (!empty($warn_ips)) {
-                $top = array_map(fn($r) => "{$r['ip_address']} ({$r['cnt']}x)", array_slice(array_values($warn_ips), 0, 5));
-                $alerts[] = self::make_alert('auth_fail', 'WARNING',
-                    'Auth failures: ' . implode(', ', $top),
-                    "⚠️ Elevated auth failures:\n" . implode("\n", $top)
                 );
             }
         }
@@ -512,16 +394,5 @@ class TA_Monitor {
                 update_option('ta_monitor_' . $key, $data[$key]);
             }
         }
-    }
-
-    /**
-     * Send an alert directly from background processes (e.g., archiver on exception).
-     * Respects the configured cooldown to avoid flooding on repeated failures.
-     */
-    public static function send_direct_alert(string $type, string $level, string $message): void {
-        if (!self::should_send($type)) return;
-        $alert = self::make_alert($type, $level, $message, $message);
-        self::send_alert($alert);
-        self::mark_sent($type);
     }
 }

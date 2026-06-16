@@ -811,7 +811,7 @@ class TA_Admin {
                             <th style="padding:8px 0">App Secret</th>
                             <td>
                                 <?php $sig_secret = get_option(TA_Signature::OPTION_SECRET, ''); ?>
-                                <input type="password" name="ta_api_app_secret" id="ta-secret-input" value="<?php echo esc_attr($sig_secret); ?>" style="font-family:monospace;font-size:12px;width:100%;max-width:500px;padding:4px 8px;box-sizing:border-box" placeholder="Auto-generated if left empty" autocomplete="off">
+                                <input type="password" name="ta_api_app_secret" id="ta-secret-input" value="<?php echo esc_attr($sig_secret); ?>" style="font-family:monospace;font-size:12px;width:500px;padding:4px 8px" placeholder="Auto-generated if left empty" autocomplete="off">
                                 <button type="button" class="button button-small" onclick="var el=document.getElementById('ta-secret-input');var show=el.type==='password';el.type=show?'text':'password';this.textContent=show?'Hide Secret':'Show Secret';">Show Secret</button>
                                 <p class="description" style="margin-top:4px">You can paste a custom secret or leave empty to auto-generate. <strong>Minimum 32 characters required.</strong></p>
                                 <br><br>
@@ -848,7 +848,7 @@ class TA_Admin {
                     <p style="color:#666;margin-top:-8px;margin-bottom:16px;font-size:13px">
                         Control which premium features are available, and how users unlock them.
                     </p>
-                    <div class="ta-feat-table-wrap"><table class="widefat" style="font-size:13px">
+                    <table class="widefat" style="font-size:13px">
                         <thead>
                             <tr>
                                 <th style="width:22%">Feature</th>
@@ -895,11 +895,11 @@ class TA_Admin {
                         </tr>
                         <?php endforeach; ?>
                         </tbody>
-                    </table></div>
+                    </table>
                 </div>
 
                 <div style="background:#fff;border:1px solid #ddd;padding:16px 20px;border-radius:4px;">
-                    <div class="ta-ep-toolbar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
                         <h2 style="margin:0">Endpoints
                             <span style="font-size:13px;font-weight:normal;color:#666;margin-left:8px;">
                                 Namespace: <code><?php echo esc_html(TA_API_NAMESPACE); ?></code>
@@ -931,18 +931,8 @@ class TA_Admin {
                 .ta-auth-no   { color: #555; }
                 .ta-toggle { display:inline-flex;align-items:center;cursor:pointer; }
                 .ta-toggle input { width:34px;height:18px;cursor:pointer; }
-                @media(max-width:768px){
-                    .ta-ep-toolbar { flex-wrap:wrap; gap:8px; }
-                    .ta-ep-toolbar h2 { font-size:14px; }
-                    #ta-ep-table-wrap,
-                    .ta-feat-table-wrap { overflow-x:auto; }
-                    #ta-api-table,
-                    .ta-feat-table-wrap > table { min-width:540px; }
-                    .form-table td { display:block; width:100%; box-sizing:border-box; }
-                    .form-table th { padding-top:8px; }
-                }
             </style>
-            <div id="ta-ep-table-wrap"><table id="ta-api-table">
+            <table id="ta-api-table">
                 <thead>
                     <tr>
                         <th style="width:50px">On/Off</th>
@@ -974,7 +964,7 @@ class TA_Admin {
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
-            </table></div>
+            </table>
                 </div><!-- /.endpoints panel -->
 
                 <p style="margin-top:16px">

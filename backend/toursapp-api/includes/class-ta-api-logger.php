@@ -29,8 +29,7 @@ class TA_API_Logger {
         $uuid       = $request->get_header('X-Device-UUID') ?: null;
         $route      = $request->get_route();
         $method     = $request->get_method();
-        $ip          = $_SERVER['REMOTE_ADDR'] ?? '';
-        $app_version = substr($request->get_header('X-App-Version') ?: '', 0, 20) ?: null;
+        $ip         = $_SERVER['REMOTE_ADDR'] ?? '';
 
         $log_data = [
             'device_uuid' => $uuid,
@@ -39,7 +38,6 @@ class TA_API_Logger {
             'status_code' => $status,
             'response_ms' => $elapsed_ms,
             'ip_address'  => $ip,
-            'app_version' => $app_version,
         ];
 
         // For error responses, capture full details in error_logs

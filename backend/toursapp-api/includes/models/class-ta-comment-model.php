@@ -48,16 +48,13 @@ class TA_Comment_Model {
         $sort     = ($args['sort'] ?? 'newest') === 'oldest' ? 'ASC' : 'DESC';
         $offset   = ($page - 1) * $per_page;
 
-        // $sort is always 'ASC' or 'DESC' (validated above) — appended after prepare() intentionally
-        // because ORDER BY direction cannot be parameterized with %s in $wpdb->prepare().
-        $sql  = $wpdb->prepare(
+        $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$table}
              WHERE content_type = %s AND content_id = %d AND status = 'approved'
-             ORDER BY created_at
+             ORDER BY created_at {$sort}
              LIMIT %d OFFSET %d",
             $content_type, $content_id, $per_page, $offset
-        );
-        $rows = $wpdb->get_results("$sql $sort", ARRAY_A);
+        ), ARRAY_A);
 
         return array_map([self::class, 'format_row'], $rows);
     }
