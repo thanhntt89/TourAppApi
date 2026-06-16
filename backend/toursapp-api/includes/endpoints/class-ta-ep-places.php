@@ -13,6 +13,11 @@ class TA_EP_Places {
                 'province_id' => ['type' => 'integer', 'sanitize_callback' => 'absint'],
                 'location_id' => ['type' => 'integer', 'sanitize_callback' => 'absint'],
                 'featured'    => ['type' => 'string', 'enum' => ['true', 'false']],
+                'place_type'  => [
+                    'type' => 'string',
+                    'enum' => ['attraction', 'food', 'cafe', 'hotel'],
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
                 'lang'        => ['type' => 'string', 'default' => TA_DEFAULT_LANG],
                 'sort'        => [
                     'type'    => 'string',
@@ -87,6 +92,7 @@ class TA_EP_Places {
         $province_id = $request->get_param('province_id');
         $location_id = $request->get_param('location_id');
         $featured    = $request->get_param('featured');
+        $place_type  = $request->get_param('place_type');
         $lang        = TA_Localize::get_lang($request);
         $sort        = $request->get_param('sort') ?: 'sort_order';
         $lat         = $request->get_param('lat');
@@ -136,6 +142,14 @@ class TA_EP_Places {
             $meta_query[] = [
                 'key'   => 'place_is_featured',
                 'value' => '1',
+            ];
+        }
+
+        // Filter by place type (attraction/food/cafe/hotel). Default = attraction when not specified.
+        if ($place_type) {
+            $meta_query[] = [
+                'key'   => 'place_type',
+                'value' => $place_type,
             ];
         }
 
@@ -202,6 +216,12 @@ class TA_EP_Places {
         $pages = (int) ceil($total / $per_page);
         $offset = ($page - 1) * $per_page;
         $places = array_slice($places, $offset, $per_page);
+
+        // Optional user enrichment: add user_status + content progress when UUID is present.
+        $uuid = $request->get_header('X-Device-UUID');
+        if ($uuid) {
+            $places = self::enrich_with_user_status($places, $uuid);
+        }
 
         return TA_API::success($places, [
             'total'    => $total,
@@ -646,6 +666,7 @@ class TA_EP_Places {
             'feature_image'    => TA_Localize::format_image(get_field('place_feature_image', $id)),
             'latitude'         => $p_lat,
             'longitude'        => $p_lng,
+            'place_type'       => get_field('place_type', $id) ?: 'attraction',
             'is_featured'      => (bool) get_field('place_is_featured', $id),
             'sort_order'       => (int) get_field('place_sort_order', $id),
             'sub_places_count' => (int) ($sub_counts[$id] ?? 0),
@@ -656,6 +677,101 @@ class TA_EP_Places {
         }
 
         return $item;
+    }
+
+    // ──────────────────────────────────────────────
+    // User enrichment (optional, activated by UUID header)
+    // ──────────────────────────────────────────────
+
+    private static function enrich_with_user_status(array $places, string $uuid): array {
+        // Only enrich attraction-type places (food/cafe/hotel have no story/audio).
+        $attraction_ids = [];
+        foreach ($places as $p) {
+            if (($p['place_type'] ?? 'attraction') === 'attraction') {
+                $attraction_ids[] = $p['id'];
+            }
+        }
+
+        if (empty($attraction_ids)) {
+            return array_map(function ($p) {
+                $p['user_status']       = null;
+                $p['story_progress_pct'] = null;
+                $p['audio_progress_pct'] = null;
+                return $p;
+            }, $places);
+        }
+
+        $checkins = self::batch_checkins_for_places($uuid, $attraction_ids);
+        $progress = self::batch_content_progress_for_places($uuid, $attraction_ids);
+
+        return array_map(function ($p) use ($checkins, $progress) {
+            $pid  = $p['id'];
+            $type = $p['place_type'] ?? 'attraction';
+
+            if ($type !== 'attraction') {
+                $p['user_status']        = null;
+                $p['story_progress_pct'] = null;
+                $p['audio_progress_pct'] = null;
+                return $p;
+            }
+
+            $is_visited   = isset($checkins[$pid]);
+            $story_pct    = $progress[$pid]['article_read'] ?? null;
+            $audio_pct    = $progress[$pid]['audio']        ?? null;
+            $story_done   = $story_pct !== null && $story_pct >= 100;
+            $audio_done   = $audio_pct !== null && $audio_pct >= 100;
+
+            if ($is_visited && $story_done && $audio_done) {
+                $status = 'discovered';
+            } elseif ($is_visited) {
+                $status = 'explored';
+            } else {
+                $status = 'unexplored';
+            }
+
+            $p['user_status']        = $status;
+            $p['story_progress_pct'] = $story_pct;
+            $p['audio_progress_pct'] = $audio_pct;
+            return $p;
+        }, $places);
+    }
+
+    private static function batch_checkins_for_places(string $uuid, array $place_ids): array {
+        global $wpdb;
+        $phs  = implode(',', array_fill(0, count($place_ids), '%d'));
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT place_id FROM {$wpdb->prefix}ta_checkins
+             WHERE device_uuid = %s AND place_id IN ($phs)",
+            array_merge([$uuid], $place_ids)
+        ), ARRAY_A);
+
+        return array_fill_keys(array_column($rows, 'place_id'), true);
+    }
+
+    private static function batch_content_progress_for_places(string $uuid, array $place_ids): array {
+        global $wpdb;
+        $phs  = implode(',', array_fill(0, count($place_ids), '%d'));
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT content_id, event_type, MAX(completion_pct) AS max_pct
+             FROM {$wpdb->prefix}ta_content_events
+             WHERE device_uuid = %s
+               AND content_type = 'place'
+               AND content_id IN ($phs)
+               AND event_type IN ('article_read', 'audio_play', 'audio_complete')
+             GROUP BY content_id, event_type",
+            array_merge([$uuid], $place_ids)
+        ), ARRAY_A);
+
+        $map = [];
+        foreach ($rows as $row) {
+            $pid = (int) $row['content_id'];
+            if ($row['event_type'] === 'article_read') {
+                $map[$pid]['article_read'] = max($map[$pid]['article_read'] ?? 0, (int) $row['max_pct']);
+            } else {
+                $map[$pid]['audio'] = max($map[$pid]['audio'] ?? 0, (int) $row['max_pct']);
+            }
+        }
+        return $map;
     }
 
     private static function batch_count_sub_places(array $place_ids): array {

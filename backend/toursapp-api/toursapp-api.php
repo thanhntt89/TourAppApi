@@ -11,7 +11,7 @@
 
 defined('ABSPATH') || exit;
 
-define('TA_VERSION', '1.7.0');
+define('TA_VERSION', '1.7.7');
 define('TA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TA_API_NAMESPACE', 'toursapp/v1');
@@ -34,6 +34,10 @@ final class ToursApp {
         add_action('init', [$this, 'register_post_types']);
         add_action('rest_api_init', [$this, 'register_api']);
         add_action('acf/init', ['TA_Fields', 'register']);
+        // All field groups are managed in code — disable ACF JSON sync entirely.
+        // Without this, ACF reads acf-json/*.json files and creates duplicate DB posts on every admin load.
+        add_filter('acf/settings/save_json', '__return_false', PHP_INT_MAX);
+        add_filter('acf/settings/load_json', static function () { return []; }, PHP_INT_MAX);
         add_action('rest_api_init', ['TA_API_Logger', 'init']);
         add_action('init', ['TA_Activator', 'upgrade']);
         add_action('rest_api_init', ['TA_Signature', 'init'], 3);

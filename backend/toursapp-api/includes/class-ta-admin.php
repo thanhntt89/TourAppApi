@@ -6,8 +6,9 @@ class TA_Admin {
     public static function register_menu() {
         add_menu_page('ToursApp API', 'ToursApp API', 'manage_options', 'toursapp-api', [self::class, 'render_page'], 'dashicons-rest-api', 80);
         add_submenu_page('toursapp-api', 'Update Plugin', 'Update Plugin', 'update_plugins', 'toursapp-update', [self::class, 'render_update_page']);
-        add_action('admin_init',                  [self::class, 'save_settings']);
-        add_action('admin_post_ta_api_docs_export', [self::class, 'handle_docs_export']);
+        add_action('admin_init',                     [self::class, 'save_settings']);
+        add_action('admin_post_ta_api_docs_export',  [self::class, 'handle_docs_export']);
+        add_action('admin_post_ta_acf_reimport',     [self::class, 'handle_acf_reimport']);
         // wp_ajax_ta_plugin_update registered in toursapp-api.php (admin_menu skips admin-ajax.php)
     }
 
@@ -662,8 +663,8 @@ class TA_Admin {
         $s = [
             'POST /device/register' => '{"device_uuid":"abc-123","is_new":true,"wallet_balance":0,"referral_code":"HG-A1B2C3","last_province_id":null}',
             'GET /provinces'        => '[{"id":1,"name":"Hà Giang","description":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":22.82,"longitude":104.98,"detection_radius_km":50,"is_active":true,"total_locations":4,"total_places":24,"sort_order":1}]',
-            'GET /places'           => '{"success":true,"data":[{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":23.12,"longitude":105.43,"is_featured":true,"sort_order":1,"sub_places_count":3}],"meta":{"total":24,"page":1,"per_page":20,"pages":2}}',
-            'GET /places/{id}'      => '{"id":5,"hierarchical_index":"1.1","order_number":1,"name":"Mã Pí Lèng","info":"...","article":"<p>...</p>","feature_image":{"url":"..."},"gallery":[{"url":"...","alt":""}],"audio":{"url":"...","size":1024,"duration":180.5},"latitude":23.12,"longitude":105.43,"geofence_radius":200,"qr_code":"MPL-001","is_featured":true,"show_article_free":false,"show_audio_free":true,"article_offline":true,"audio_offline":true,"article_cost":5,"checkin_reward":10,"sort_order":1,"location":{"id":1,"number":1,"name":"Đồng Văn"},"user_status":{"is_checked_in":false,"is_article_unlocked":false,"is_audio_unlocked":false}}',
+            'GET /places'           => '{"success":true,"data":[{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":23.12,"longitude":105.43,"place_type":"attraction","is_featured":true,"sort_order":1,"sub_places_count":3,"user_status":"explored","story_progress_pct":100,"audio_progress_pct":50},{"id":8,"order_number":2,"name":"Bún Bò Đồng Văn","info":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":23.28,"longitude":105.36,"place_type":"food","is_featured":false,"sort_order":2,"sub_places_count":0,"user_status":null,"story_progress_pct":null,"audio_progress_pct":null}],"meta":{"total":24,"page":1,"per_page":20,"pages":2}}',
+            'GET /places/{id}'      => '{"id":5,"hierarchical_index":"1.1","order_number":1,"name":"Mã Pí Lèng","info":"...","article":"<p>...</p>","feature_image":{"url":"..."},"gallery":[{"url":"...","alt":""}],"audio":{"url":"...","size":1024,"duration":180.5},"latitude":23.12,"longitude":105.43,"geofence_radius":200,"qr_code":"MPL-001","place_type":"attraction","is_featured":true,"show_article_free":false,"show_audio_free":true,"article_offline":true,"audio_offline":true,"article_cost":5,"checkin_reward":10,"sort_order":1,"location":{"id":1,"number":1,"name":"Đồng Văn"},"user_status":{"is_checked_in":false,"is_article_unlocked":false,"is_audio_unlocked":false}}',
             'POST /user/checkin'    => '{"checkin_id":42,"place_id":5,"place_name":"Mã Pí Lèng","method":"gps","reward":{"amount":10,"currency":"buckwheat_flower","new_balance":35},"unlocked":{"article":false,"audio":false},"created_at":"2026-06-13 10:00:00"}',
             'POST /user/unlock'     => '{"content_type":"article","content_id":5,"cost":5,"new_balance":30,"unlocked_at":"2026-06-13 10:05:00"}',
             'GET /user/wallet'      => '{"balance":35,"total_earned":50,"total_spent":15,"referral_code":"HG-A1B2C3","recent_transactions":[{"id":1,"type":"earn_checkin","amount":10,"balance_after":35,"note":"Check-in at Mã Pí Lèng","created_at":"2026-06-13 10:00:00"}]}',
@@ -739,6 +740,19 @@ class TA_Admin {
         );
     }
 
+    public static function handle_acf_reimport() {
+        if (!check_admin_referer('ta_acf_reimport')) return;
+        if (!current_user_can('manage_options')) return;
+
+        delete_option('ta_acf_fields_version');
+        if (class_exists('TA_Fields')) {
+            TA_Fields::register();
+        }
+
+        wp_redirect(add_query_arg('acf_reimported', '1', menu_page_url('toursapp-api', false)));
+        exit;
+    }
+
     public static function save_settings() {
         if (!isset($_POST['ta_api_save_nonce'])) return;
         if (!wp_verify_nonce($_POST['ta_api_save_nonce'], 'ta_api_settings')) return;
@@ -795,12 +809,39 @@ class TA_Admin {
             'action' => 'ta_api_docs_export',
             '_nonce' => wp_create_nonce('ta_api_docs_export'),
         ], admin_url('admin-post.php'));
+        $acf_saved_ver  = get_option('ta_acf_fields_version', '—');
+        $acf_synced     = $acf_saved_ver === TA_VERSION;
+        $reimport_url   = wp_nonce_url(
+            add_query_arg('action', 'ta_acf_reimport', admin_url('admin-post.php')),
+            'ta_acf_reimport'
+        );
         ?>
         <div class="wrap">
             <h1>ToursApp API — Settings</h1>
 
             <?php if (isset($_GET['saved'])): ?>
             <div class="notice notice-success is-dismissible"><p>Settings saved.</p></div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['acf_reimported'])): ?>
+            <div class="notice notice-success is-dismissible"><p>ACF fields reimported successfully.</p></div>
+            <?php elseif (!$acf_synced): ?>
+            <div class="notice notice-warning">
+                <p>
+                    <strong>ACF Fields out of sync.</strong>
+                    Saved version: <code><?php echo esc_html($acf_saved_ver); ?></code> → Current: <code><?php echo esc_html(TA_VERSION); ?></code><br>
+                    Fields will auto-reimport on next page load, or click below to run now.
+                </p>
+                <p><a href="<?php echo esc_url($reimport_url); ?>" class="button button-primary">Force Reimport ACF Fields</a></p>
+            </div>
+            <?php else: ?>
+            <div class="notice notice-info is-dismissible">
+                <p>
+                    ACF fields synced at version <code><?php echo esc_html(TA_VERSION); ?></code>.
+                    If you see duplicate field groups in ACF, click:
+                    <a href="<?php echo esc_url($reimport_url); ?>" class="button button-secondary" style="margin-left:8px">Force Reimport ACF Fields</a>
+                </p>
+            </div>
             <?php endif; ?>
 
             <form method="post">
