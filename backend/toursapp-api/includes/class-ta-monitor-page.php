@@ -73,7 +73,7 @@ class TA_Monitor_Page {
             <?php endif; ?>
 
             <style>
-                .ta-health-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:24px; }
+                .ta-health-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-bottom:24px; }
                 .ta-health-box { background:#fff; border:1px solid #ddd; border-radius:6px; padding:14px 16px; }
                 .ta-health-box .val { font-size:26px; font-weight:700; display:block; }
                 .ta-health-box .lbl { font-size:12px; color:#666; display:block; margin-top:4px; }
@@ -81,12 +81,6 @@ class TA_Monitor_Page {
                 .ta-health-box .bar-fill { height:4px; border-radius:2px; }
                 .ta-section-box { background:#fff; border:1px solid #ddd; border-radius:6px; padding:18px 20px; margin-bottom:20px; }
                 .ta-section-box h2 { margin-top:0; font-size:16px; border-bottom:1px solid #eee; padding-bottom:10px; }
-                /* Threshold table: horizontal scroll */
-                .ta-threshold-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:16px; }
-                .ta-threshold-wrap .widefat { min-width:600px; }
-                .ta-threshold-wrap .widefat th { white-space:nowrap; }
-                /* Inputs: no fixed width, use max-width */
-                .ta-wide-input { width:100%; max-width:400px; box-sizing:border-box; }
                 .ta-threshold-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
                 .ta-threshold-item { display:flex; flex-direction:column; gap:4px; }
                 .ta-threshold-item label { font-size:13px; font-weight:600; }
@@ -94,14 +88,6 @@ class TA_Monitor_Page {
                 .ta-threshold-item input { width:100%; font-size:14px; padding:5px 8px; }
                 .ta-level-warn { color:#856404; font-weight:bold; }
                 .ta-level-crit { color:#721c24; font-weight:bold; }
-                /* form-table: stack on mobile */
-                @media (max-width: 782px) {
-                    .ta-section-box .form-table th,
-                    .ta-section-box .form-table td { display:block; width:100%; padding:6px 0; }
-                    .ta-section-box .form-table th { font-weight:600; }
-                    .ta-wide-input { max-width:100%; }
-                    .ta-health-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
-                }
             </style>
 
             <!-- Health Status -->
@@ -156,7 +142,7 @@ class TA_Monitor_Page {
                         These values define when alerts are triggered. Checked every 5 minutes.
                     </p>
 
-                    <div class="ta-threshold-wrap"><table class="widefat" style="font-size:13px">
+                    <table class="widefat" style="font-size:13px;margin-bottom:16px">
                         <thead>
                             <tr>
                                 <th>Metric</th>
@@ -199,6 +185,24 @@ class TA_Monitor_Page {
                                 'silence_warning_min',  'silence_critical_min',  'minutes',
                                 'Warning: 30 min · Critical: 60 min'
                             ],
+                            [
+                                'Table Size (DB)',
+                                'Total size of all ToursApp custom tables (data + indexes). Signals archiver falling behind.',
+                                'table_size_warning_mb', 'table_size_critical_mb', 'MB',
+                                'Warning: 200MB · Critical: 500MB',
+                            ],
+                            [
+                                'P95 Response Time',
+                                'Slowest 95th-percentile endpoint response in a 15-minute window. Catches outliers that the average hides.',
+                                'p95_warning_ms', 'p95_critical_ms', 'ms',
+                                'Warning: 1500ms · Critical: 4000ms',
+                            ],
+                            [
+                                'Auth Failures / IP',
+                                '401 errors from a single IP in 5 minutes. Elevated values indicate bot or brute-force activity.',
+                                'auth_fail_per_ip_warning', 'auth_fail_per_ip_critical', '401s / 5 min',
+                                'Warning: 10 · Critical: 30',
+                            ],
                         ];
                         foreach ($threshold_rows as [$label, $desc, $warn_key, $crit_key, $unit, $rec]):
                         ?>
@@ -225,7 +229,7 @@ class TA_Monitor_Page {
                         </tr>
                         <?php endforeach; ?>
                         </tbody>
-                    </table></div><!-- /.ta-threshold-wrap -->
+                    </table>
 
                     <div style="display:flex;gap:20px;align-items:center">
                         <label style="font-size:13px">
@@ -251,7 +255,7 @@ class TA_Monitor_Page {
                             <td>
                                 <input type="text" name="ta_monitor_email_recipients"
                                     value="<?php echo esc_attr(TA_Monitor::get('email_recipients')); ?>"
-                                    class="ta-wide-input" placeholder="admin@example.com, ops@example.com">
+                                    style="width:400px" placeholder="admin@example.com, ops@example.com">
                                 <p class="description">Comma-separated email addresses.</p>
                             </td>
                         </tr>
@@ -282,14 +286,14 @@ class TA_Monitor_Page {
                             <th style="padding:8px 0">Bot Token</th>
                             <td><input type="text" name="ta_monitor_telegram_bot_token"
                                 value="<?php echo esc_attr(TA_Monitor::get('telegram_bot_token')); ?>"
-                                class="ta-wide-input" placeholder="1234567890:ABCdef..."></td>
+                                style="width:400px" placeholder="1234567890:ABCdef..."></td>
                         </tr>
                         <tr>
                             <th style="padding:8px 0">Chat ID</th>
                             <td>
                                 <input type="text" name="ta_monitor_telegram_chat_id"
                                     value="<?php echo esc_attr(TA_Monitor::get('telegram_chat_id')); ?>"
-                                    class="ta-wide-input" style="max-width:220px" placeholder="-1001234567890 or @channelname">
+                                    style="width:200px" placeholder="-1001234567890 or @channelname">
                                 <p class="description">Group/channel chat ID. Use negative ID for groups.</p>
                             </td>
                         </tr>
@@ -324,6 +328,29 @@ class TA_Monitor_Page {
                     ⏳ Cron will be scheduled after saving settings.
                 <?php else: ?>
                     ⏸ Monitor cron inactive — enable email or Telegram above and save to activate.
+                <?php endif; ?>
+            </div>
+
+            <!-- WP Cron Reliability -->
+            <?php $using_real_cron = defined('DISABLE_WP_CRON') && DISABLE_WP_CRON; ?>
+            <div class="ta-section-box" style="margin-top:20px;border-left:4px solid <?php echo $using_real_cron ? '#28a745' : '#ffc107'; ?>">
+                <h2 style="color:<?php echo $using_real_cron ? '#155724' : '#856404'; ?>">
+                    <?php echo $using_real_cron ? '✅ OS Cron Active (Reliable)' : '⚠️ WP Pseudo-Cron (Unreliable)'; ?>
+                </h2>
+                <?php if ($using_real_cron): ?>
+                    <p style="color:#155724;margin:0">
+                        <code>DISABLE_WP_CRON</code> is defined — this server uses real OS cron to trigger WordPress jobs.
+                        Monitor checks fire every 5 minutes regardless of traffic.
+                    </p>
+                <?php else: ?>
+                    <p style="color:#856404;margin:0 0 12px">
+                        <strong>WP Cron only fires when someone visits the site.</strong>
+                        During quiet hours (2–6 AM when Ha Giang has no traffic), the 5-minute monitor may not run for several hours — missing error spikes or outages.
+                    </p>
+                    <p style="margin:0 0 6px"><strong>Step 1 — add to server crontab (<code>crontab -e</code>):</strong></p>
+                    <pre style="background:#1e1e1e;color:#d4d4d4;padding:10px 14px;border-radius:4px;font-size:12px;margin:0 0 12px;overflow-x:auto">*/5 * * * * curl -s "<?php echo esc_url(home_url()); ?>/wp-cron.php?doing_wp_cron" &gt; /dev/null 2&gt;&amp;1</pre>
+                    <p style="margin:0 0 6px"><strong>Step 2 — disable WP pseudo-cron in <code>wp-config.php</code>:</strong></p>
+                    <pre style="background:#1e1e1e;color:#d4d4d4;padding:10px 14px;border-radius:4px;font-size:12px;margin:0">define('DISABLE_WP_CRON', true);</pre>
                 <?php endif; ?>
             </div>
 

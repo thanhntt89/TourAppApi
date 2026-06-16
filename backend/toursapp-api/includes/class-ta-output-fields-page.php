@@ -49,18 +49,13 @@ class TA_Output_Fields_Page {
                 <input type="hidden" name="ta_active_tab" id="ta-active-tab" value="<?php echo esc_attr($active); ?>">
 
                 <style>
-                    /* Tab nav: flex-wrap so tabs flow to next line on narrow screens */
-                    .nav-tab-wrapper { display:flex; flex-wrap:wrap; gap:4px; padding-bottom:4px; }
-                    .nav-tab { margin-left:0 !important; }
-                    /* Tables: horizontal scroll on small screens */
-                    .ta-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-                    .ta-table-wrap table { min-width:500px; }
-                    @media (max-width: 782px) {
-                        .ta-tab-pane { padding:12px 14px !important; }
-                    }
-                </style>
-
-                <nav class="nav-tab-wrapper" style="margin-bottom:0">
+                @media(max-width:768px){
+                    .nav-tab-wrapper { overflow-x:auto; white-space:nowrap; flex-wrap:nowrap; }
+                    .ta-tab-pane { overflow-x:auto; }
+                    .ta-tab-pane .widefat { min-width:480px; }
+                }
+            </style>
+            <nav class="nav-tab-wrapper" style="margin-bottom:0">
                     <?php foreach (self::$type_labels as $type => $label): ?>
                     <a class="nav-tab ta-field-tab <?php echo $type === $active ? 'nav-tab-active' : ''; ?>"
                        href="#"
@@ -86,7 +81,7 @@ class TA_Output_Fields_Page {
                         </span>
                     </div>
 
-                    <div class="ta-table-wrap"><table class="widefat striped" style="border:0">
+                    <table class="widefat striped" style="border:0">
                         <thead>
                             <tr>
                                 <th style="width:50px;text-align:center">On</th>
@@ -122,7 +117,7 @@ class TA_Output_Fields_Page {
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
-                    </table></div>
+                    </table>
                 </div>
                 <?php endforeach; ?>
 

@@ -148,14 +148,13 @@ class TA_Devices_Page {
                 .ta-dev-bar > div { height:100%; }
                 .ta-mini-chart { display:flex; align-items:flex-end; gap:3px; height:40px; margin-top:8px; }
                 .ta-mini-chart > div { flex:1; background:#2271b1; border-radius:2px 2px 0 0; min-width:1px; }
-                /* Tables: horizontal scroll on small screens */
-                .ta-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:16px; }
-                .ta-table-wrap table { min-width:500px; margin-bottom:0 !important; }
-                @media (max-width: 782px) {
-                    .ta-dev-section { padding:12px 14px; }
-                    .ta-dev-cards { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; }
-                    .ta-grid-2 { grid-template-columns:1fr !important; } /* Stack columns */
-                    .ta-grid-4 { grid-template-columns:1fr 1fr !important; } /* Stack stats */
+                .ta-2col { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+                .ta-4col { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+                .ta-tbl-wrap { overflow-x:auto; }
+                @media(max-width:768px){
+                    .ta-dev-cards { grid-template-columns:repeat(2,1fr); }
+                    .ta-2col { grid-template-columns:1fr; }
+                    .ta-4col { grid-template-columns:repeat(2,1fr); }
                 }
             </style>
 
@@ -202,7 +201,7 @@ class TA_Devices_Page {
                 </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" class="ta-grid-2">
+            <div class="ta-2col">
                 <!-- Platform Breakdown -->
                 <div class="ta-dev-section">
                     <h2>Platform Breakdown</h2>
@@ -261,7 +260,7 @@ class TA_Devices_Page {
             <!-- Offline Download Stats -->
             <div class="ta-dev-section">
                 <h2>Offline Downloads Summary</h2>
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px" class="ta-grid-4">
+                <div class="ta-4col">
                     <div>
                         <div style="font-size:24px;font-weight:700"><?php echo number_format($s['download_stats']['total_downloads']); ?></div>
                         <div style="font-size:12px;color:#666">Total Downloads</div>
@@ -282,12 +281,12 @@ class TA_Devices_Page {
             </div>
 
             <!-- Download Detail: By Province -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" class="ta-grid-2">
+            <div class="ta-2col">
                 <div class="ta-dev-section">
                     <h2>Downloads by Province <span style="font-size:12px;font-weight:normal;color:#888">(ranked)</span></h2>
                     <?php if ($s['downloads_by_province']): ?>
                         <?php $max_dl = max(array_column($s['downloads_by_province'], 'dl_count')); ?>
-                        <div class="ta-table-wrap"><table style="width:100%;font-size:13px;border-collapse:collapse">
+                        <table style="width:100%;font-size:13px;border-collapse:collapse">
                             <?php foreach ($s['downloads_by_province'] as $i => $prov):
                                 $pct = $max_dl > 0 ? round($prov['dl_count'] / $max_dl * 100) : 0;
                             ?>
@@ -305,7 +304,7 @@ class TA_Devices_Page {
                                 </td>
                             </tr>
                             <?php endforeach; ?>
-                        </table></div>
+                        </table>
                     <?php else: ?>
                         <p style="color:#888">No download data yet.</p>
                     <?php endif; ?>
@@ -374,7 +373,7 @@ class TA_Devices_Page {
             <!-- Recent Downloads Table -->
             <div class="ta-dev-section" style="margin-bottom:20px">
                 <h2>Recent Downloads <span style="font-size:12px;font-weight:normal;color:#888">(last 20)</span></h2>
-                <div class="ta-table-wrap"><table class="widefat striped" style="font-size:13px">
+                <div class="ta-tbl-wrap"><table class="widefat striped" style="font-size:13px">
                     <thead>
                         <tr>
                             <th>Province</th>
@@ -422,7 +421,7 @@ class TA_Devices_Page {
             <!-- Recent Devices Table -->
             <div class="ta-dev-section">
                 <h2>Recent Devices <span style="font-size:12px;font-weight:normal;color:#888">(last 20 registered)</span></h2>
-                <div class="ta-table-wrap"><table class="widefat striped" style="font-size:13px">
+                <div class="ta-tbl-wrap"><table class="widefat striped" style="font-size:13px">
                     <thead>
                         <tr>
                             <th>Status</th>

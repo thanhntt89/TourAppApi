@@ -543,31 +543,34 @@ class TA_Analytics_Page {
             <?php endif; ?>
 
             <style>
-                .ta-stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+                .ta-stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:24px; }
                 .ta-stat-box { background:#fff; border:1px solid #ddd; border-radius:6px; padding:14px 16px; text-align:center; }
                 .ta-stat-box .val { font-size:28px; font-weight:700; color:#2271b1; display:block; }
                 .ta-stat-box .lbl { font-size:12px; color:#666; margin-top:4px; display:block; }
-                /* Tab nav: flex-wrap so tabs flow to next line on narrow screens */
-                .ta-tabs { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:20px; border-bottom:2px solid #ddd; padding-bottom:4px; }
-                .ta-tab { padding:7px 13px; text-decoration:none; color:#555; border-radius:4px 4px 0 0; font-size:13px; white-space:nowrap; }
+                .ta-tabs { display:flex; gap:4px; margin-bottom:20px; border-bottom:2px solid #ddd; }
+                .ta-tab { padding:8px 16px; text-decoration:none; color:#555; border-radius:4px 4px 0 0; font-size:13px; }
                 .ta-tab:hover { background:#f0f6fc; color:#2271b1; }
                 .ta-tab.active { background:#2271b1; color:#fff; font-weight:600; }
-                /* Tables: horizontal scroll on small screens */
-                .ta-section { background:#fff; border:1px solid #ddd; border-radius:6px; padding:16px 20px; margin-bottom:20px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-                .ta-section h3 { margin-top:0; font-size:15px; color:#1d2327; border-bottom:1px solid #eee; padding-bottom:8px; }
-                .ta-table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:0; min-width:480px; }
-                .ta-table th { background:#2271b1; color:#fff; padding:7px 10px; text-align:left; white-space:nowrap; }
+                .ta-table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:24px; }
+                .ta-table th { background:#2271b1; color:#fff; padding:7px 10px; text-align:left; }
                 .ta-table td { padding:6px 10px; border-bottom:1px solid #eee; vertical-align:top; }
                 .ta-table tr:hover td { background:#f8f9fa; }
+                .ta-section { background:#fff; border:1px solid #ddd; border-radius:6px; padding:16px 20px; margin-bottom:20px; }
+                .ta-section h3 { margin-top:0; font-size:15px; color:#1d2327; border-bottom:1px solid #eee; padding-bottom:8px; }
                 .ta-badge { display:inline-block; padding:2px 7px; border-radius:10px; font-size:11px; font-weight:600; }
                 .ta-badge-green { background:#d4edda; color:#155724; }
                 .ta-badge-red { background:#f8d7da; color:#721c24; }
                 .ta-badge-orange { background:#fff3cd; color:#856404; }
                 .ta-progress { background:#eee; border-radius:10px; height:8px; display:inline-block; width:80px; vertical-align:middle; }
                 .ta-progress-fill { background:#2271b1; height:8px; border-radius:10px; }
-                @media (max-width: 782px) {
-                    .ta-section { padding:12px 14px; }
-                    .ta-stat-grid { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; }
+                .ta-2col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+                .ta-tbl-wrap { overflow-x:auto; }
+                @media(max-width:768px){
+                    .ta-tabs { flex-wrap:wrap; }
+                    .ta-stat-grid { grid-template-columns:repeat(2,1fr) !important; }
+                    .ta-2col { grid-template-columns:1fr; }
+                    .ta-section { overflow-x:auto; }
+                    .ta-table { min-width:480px; }
                 }
             </style>
 
@@ -701,7 +704,7 @@ class TA_Analytics_Page {
         echo '</tbody></table></div>';
 
         // Top & bottom rated
-        echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
+        echo '<div class="ta-2col">';
         self::render_rating_table('Top Rated', TA_Analytics::top_rated_content(10));
         self::render_rating_table('Needs Improvement (Low Rated)', TA_Analytics::bottom_rated_content(10));
         echo '</div>';
@@ -758,7 +761,7 @@ class TA_Analytics_Page {
 
     private static function tab_users(string $uuid_search = '') {
         echo '<form method="get" style="margin-bottom:16px"><input type="hidden" name="page" value="toursapp-analytics"><input type="hidden" name="tab" value="users">';
-        echo 'Search UUID: <input type="text" name="uuid" value="' . esc_attr($uuid_search) . '" style="width:320px" placeholder="device-uuid-here">';
+        echo 'Search UUID: <input type="text" name="uuid" value="' . esc_attr($uuid_search) . '" style="width:100%;max-width:320px" placeholder="device-uuid-here">';
         echo ' <button type="submit" class="button button-primary">Search</button></form>';
 
         if ($uuid_search) {
@@ -903,7 +906,7 @@ class TA_Analytics_Page {
 
     private static function tab_economy() {
         $eco = TA_Analytics::economy_stats();
-        echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
+        echo '<div class="ta-2col">';
 
         echo '<div class="ta-section"><h3>Transaction Types</h3>';
         echo '<table class="ta-table"><thead><tr><th>Type</th><th>Count</th><th>Total Flowers</th></tr></thead><tbody>';
