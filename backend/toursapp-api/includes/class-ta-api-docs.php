@@ -8,6 +8,9 @@ class TA_API_Docs {
         if (strpos($path, '/user/journeys') === 0) return 'User Journeys';
         if (strpos($path, '/user/features') === 0) return 'Features';
         if (strpos($path, '/user/downloads') === 0) return 'Downloads';
+        if (strpos($path, '/user/library') === 0) return 'Library';
+        if (strpos($path, '/user/favorites') === 0) return 'Library';
+        if (strpos($path, '/user/offline') === 0) return 'Library';
         if (strpos($path, '/user/upload') === 0) return 'User Actions';
         if (strpos($path, '/user/track') === 0) return 'Engagement';
         if (preg_match('#^/user/(checkin|unlock|history|wallet|share|referral)#', $path)) return 'User Actions';
@@ -31,7 +34,7 @@ class TA_API_Docs {
         $order = [
             'Device', 'Provinces', 'Locations', 'Places',
             'Sub-Places', 'Sub-Items', 'Journeys', 'Stories', 'News',
-            'User Actions', 'User Journeys', 'Features',
+            'User Actions', 'User Journeys', 'Features', 'Library',
             'Comments', 'Ratings', 'Engagement', 'Analytics',
             'Downloads', 'Sync',
         ];

@@ -36,6 +36,10 @@ class TA_Activator {
             }
             update_option('ta_db_version', '1.6.0');
         }
+        if (version_compare($installed, '1.7.0', '<')) {
+            self::create_tables();
+            update_option('ta_db_version', '1.7.0');
+        }
     }
 
     public static function deactivate() {
@@ -270,6 +274,27 @@ class TA_Activator {
             UNIQUE KEY unique_daily (date, content_type, content_id, event_type),
             INDEX idx_date (date),
             INDEX idx_content (content_type, content_id)
+        ) $charset;
+
+        CREATE TABLE {$wpdb->prefix}ta_user_favorites (
+            id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+            device_uuid     VARCHAR(64) NOT NULL,
+            content_type    VARCHAR(20) NOT NULL,
+            content_id      INT NOT NULL,
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_fav (device_uuid, content_type, content_id),
+            INDEX idx_device (device_uuid),
+            INDEX idx_content (content_type, content_id)
+        ) $charset;
+
+        CREATE TABLE {$wpdb->prefix}ta_user_offline_items (
+            id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+            device_uuid     VARCHAR(64) NOT NULL,
+            content_type    VARCHAR(20) NOT NULL,
+            content_id      INT NOT NULL,
+            synced_at       DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_offline (device_uuid, content_type, content_id),
+            INDEX idx_device (device_uuid)
         ) $charset;
         ";
 

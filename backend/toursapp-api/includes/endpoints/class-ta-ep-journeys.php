@@ -21,6 +21,9 @@ class TA_EP_Journeys {
                 'featured' => [
                     'type' => 'boolean',
                 ],
+                'homepage' => [
+                    'type' => 'boolean',
+                ],
             ],
         ]);
 
@@ -54,6 +57,15 @@ class TA_EP_Journeys {
             $meta_query[] = [
                 'key'   => 'journey_is_featured',
                 'value' => $featured ? '1' : '0',
+            ];
+            $meta_query['relation'] = 'AND';
+        }
+
+        $homepage = $request->get_param('homepage');
+        if ($homepage !== null) {
+            $meta_query[] = [
+                'key'   => 'journey_show_homepage',
+                'value' => $homepage ? '1' : '0',
             ];
             $meta_query['relation'] = 'AND';
         }
@@ -108,8 +120,9 @@ class TA_EP_Journeys {
             'duration_days' => (int) get_field('journey_duration_days', $id),
             'total_places'  => (int) get_field('journey_total_places', $id),
             'difficulty'    => get_field('journey_difficulty', $id) ?: 'easy',
-            'is_featured'   => (bool) get_field('journey_is_featured', $id),
-            'sort_order'    => (int) get_field('journey_sort_order', $id),
+            'is_featured'    => (bool) get_field('journey_is_featured', $id),
+            'show_homepage'  => (bool) get_field('journey_show_homepage', $id),
+            'sort_order'     => (int) get_field('journey_sort_order', $id),
             'stops'         => self::format_stops($id, $lang),
         ];
     }

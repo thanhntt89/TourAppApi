@@ -618,6 +618,12 @@ class TA_Admin {
             'GET /user/track'                              => 'Record content engagement (page view, article read, audio play, completion).',
             'POST /user/track'                             => 'Record content engagement event. Only logs if tracking enabled on content.',
             // User journeys
+            // Library
+            'GET /user/library'                            => 'Full Library screen in one call: resume_items (in-progress favourites), favourite_places, favourite_stories (with status: saved/downloaded/in_progress), offline_counts (audio_guide + story), recent_activity (checkins, unlocks, audio plays).',
+            'POST /user/favorites'                         => 'Add a content item to favourites. content_type: place | ta_story. Returns already_existed:true if duplicate.',
+            'DELETE /user/favorites/{type}/{id}'           => 'Remove a favourited item. Idempotent — returns removed:true regardless.',
+            'POST /user/offline/sync'                      => 'Replace the server-side offline inventory for this device. items: array of {content_type, content_id}. Max 500 items. Returns updated counts.',
+            // User journeys
             'GET /user/journeys'                           => 'List custom journeys created by this device.',
             'POST /user/journeys'                          => 'Create custom journey. Free plan: max 5 journeys (403 journey_limit_reached if exceeded). Unlock unlimited_journeys feature to remove limit. Cross-province requires feature unlock.',
             'PUT /user/journeys/{id}'                      => 'Update custom journey name, description, status, or stops.',
@@ -1164,6 +1170,7 @@ class TA_Admin {
             ['method' => 'GET', 'path' => '/journeys',           'auth' => false, 'description' => 'List preset journeys', 'params' => [
                 ['name' => 'province_id', 'type' => 'integer', 'required' => true,  'default' => ''],
                 ['name' => 'featured',    'type' => 'boolean', 'required' => false, 'default' => ''],
+                ['name' => 'homepage',    'type' => 'boolean', 'required' => false, 'default' => ''],
                 ['name' => 'lang',        'type' => 'string',  'required' => false, 'default' => 'vi'],
             ]],
             ['method' => 'GET', 'path' => '/journeys/{id}',      'auth' => false, 'description' => 'Get preset journey detail with stops', 'params' => [
@@ -1287,6 +1294,21 @@ class TA_Admin {
                 ['name' => 'file_count',    'type' => 'integer', 'required' => false, 'default' => '0'],
                 ['name' => 'total_size_mb', 'type' => 'number',  'required' => false, 'default' => '0'],
                 ['name' => 'status',        'type' => 'string',  'required' => false, 'default' => 'completed'],
+            ]],
+            // Library
+            ['method' => 'GET',    'path' => '/user/library',                         'auth' => true, 'description' => 'Get full library screen: resume items, favourites, offline counts, recent activity', 'params' => [
+                ['name' => 'lang', 'type' => 'string', 'required' => false, 'default' => 'vi'],
+            ]],
+            ['method' => 'POST',   'path' => '/user/favorites',                       'auth' => true, 'description' => 'Add a place or story to favourites (heart)', 'params' => [
+                ['name' => 'content_type', 'type' => 'string',  'required' => true,  'default' => ''],
+                ['name' => 'content_id',   'type' => 'integer', 'required' => true,  'default' => ''],
+            ]],
+            ['method' => 'DELETE', 'path' => '/user/favorites/{type}/{id}',           'auth' => true, 'description' => 'Remove a place or story from favourites', 'params' => [
+                ['name' => 'type', 'type' => 'string',  'required' => true, 'default' => ''],
+                ['name' => 'id',   'type' => 'integer', 'required' => true, 'default' => ''],
+            ]],
+            ['method' => 'POST',   'path' => '/user/offline/sync',                    'auth' => true, 'description' => 'Sync device offline inventory (list of downloaded content items)', 'params' => [
+                ['name' => 'items', 'type' => 'array', 'required' => true, 'default' => ''],
             ]],
             // Sync
             ['method' => 'GET', 'path' => '/sync/check',                'auth' => false, 'description' => 'Check for content updates since timestamp', 'params' => [

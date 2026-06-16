@@ -11,7 +11,7 @@
 
 defined('ABSPATH') || exit;
 
-define('TA_VERSION', '1.5.1');
+define('TA_VERSION', '1.7.0');
 define('TA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TA_API_NAMESPACE', 'toursapp/v1');
@@ -101,6 +101,7 @@ final class ToursApp {
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-wallet-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-checkin-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-journey-model.php';
+        require_once TA_PLUGIN_DIR . 'includes/models/class-ta-library-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-engagement-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-comment-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-rating-model.php';
