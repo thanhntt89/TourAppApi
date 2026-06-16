@@ -269,8 +269,7 @@ class TA_EP_Places {
         $hierarchical_index = $location_number . '.' . $order_number;
 
         // Audio
-        $audio    = TA_Localize::get_audio_localized($id, 'place_audio', $lang);
-        $duration = get_field('place_audio_duration', $id);
+        $audio = TA_Localize::get_audio_localized($id, 'place_audio', $lang);
 
         // User status
         $user_status = null;
@@ -291,11 +290,7 @@ class TA_EP_Places {
             'article'              => TA_Localize::get_field_localized($id, 'place_article', $lang),
             'feature_image'        => TA_Localize::format_image(get_field('place_feature_image', $id)),
             'gallery'              => TA_Localize::format_gallery(get_field('place_gallery', $id)),
-            'audio'                => $audio ? [
-                'url'      => $audio['url'],
-                'size'     => $audio['size'] ?? null,
-                'duration' => (float) ($duration ?: 0),
-            ] : null,
+            'audio'                => $audio ?: null,
             'latitude'             => (float) get_field('place_lat', $id),
             'longitude'            => (float) get_field('place_lng', $id),
             'geofence_radius'      => (int) (get_field('place_geofence_radius', $id) ?: 300),
@@ -820,7 +815,6 @@ class TA_EP_Places {
         foreach ($posts as $sp) {
             $sp_id = $sp->ID;
             $audio = TA_Localize::get_audio_localized($sp_id, 'sub_place_audio', $lang);
-            $duration = get_field('sub_place_audio_duration', $sp_id);
 
             $entry = [
                 'id'              => $sp_id,
@@ -828,10 +822,7 @@ class TA_EP_Places {
                 'name'            => TA_Localize::get_field_localized($sp_id, 'sub_place_name', $lang),
                 'description'     => TA_Localize::get_field_localized($sp_id, 'sub_place_desc', $lang),
                 'feature_image'   => TA_Localize::format_image(get_field('sub_place_feature_image', $sp_id)),
-                'audio'           => $audio ? [
-                    'url'      => $audio['url'],
-                    'duration' => (float) ($duration ?: 0),
-                ] : null,
+                'audio'           => $audio ?: null,
                 'latitude'        => (float) (get_field('sub_place_lat', $sp_id) ?: 0),
                 'longitude'       => (float) (get_field('sub_place_lng', $sp_id) ?: 0),
                 'sort_order'      => (int) (get_field('sub_place_sort_order', $sp_id) ?: 0),

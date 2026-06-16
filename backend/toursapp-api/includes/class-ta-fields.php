@@ -215,7 +215,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('place_lng'),                'label' => 'Longitude',                  'name' => 'place_lng',                'type' => 'number',      'step' => 'any'];
         $f[] = ['key' => self::k('place_geofence_radius'),    'label' => 'Geofence Radius (m)',        'name' => 'place_geofence_radius',    'type' => 'number',      'default_value' => 300];
         $f[] = ['key' => self::k('place_qr_code'),            'label' => 'QR Code',                    'name' => 'place_qr_code',            'type' => 'text'];
-        $f[] = ['key' => self::k('place_audio_duration'),     'label' => 'Audio Duration (seconds)',   'name' => 'place_audio_duration',     'type' => 'number',      'step' => '0.1'];
         $f[] = ['key' => self::k('place_is_featured'),        'label' => 'Featured',                   'name' => 'place_is_featured',        'type' => 'true_false',  'ui' => 1];
         $f[] = ['key' => self::k('place_show_article_free'),  'label' => 'Show Article Free',          'name' => 'place_show_article_free',  'type' => 'true_false',  'ui' => 1];
         $f[] = ['key' => self::k('place_show_audio_free'),    'label' => 'Show Audio Free',            'name' => 'place_show_audio_free',    'type' => 'true_false',  'ui' => 1];
@@ -251,7 +250,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('sub_place_feature_image'), 'label' => 'Feature Image',       'name' => 'sub_place_feature_image', 'type' => 'image',       'return_format' => 'id', 'preview_size' => 'medium'];
         $f[] = ['key' => self::k('sub_place_lat'),           'label' => 'Latitude',            'name' => 'sub_place_lat',           'type' => 'number',      'step' => 'any'];
         $f[] = ['key' => self::k('sub_place_lng'),           'label' => 'Longitude',           'name' => 'sub_place_lng',           'type' => 'number',      'step' => 'any'];
-        $f[] = ['key' => self::k('sub_place_audio_duration'),'label' => 'Audio Duration (s)',  'name' => 'sub_place_audio_duration','type' => 'number',      'step' => '0.1'];
         $f[] = ['key' => self::k('sub_place_sort_order'),        'label' => 'Sort Order',                  'name' => 'sub_place_sort_order',        'type' => 'number',     'default_value' => 0];
         $f[] = ['key' => self::k('sub_place_show_audio_free'),    'label' => 'Show Audio Free',             'name' => 'sub_place_show_audio_free',   'type' => 'true_false', 'ui' => 1, 'default_value' => 1];
         $f[] = ['key' => self::k('sub_place_audio_cost'),         'label' => 'Audio Unlock Cost',           'name' => 'sub_place_audio_cost',        'type' => 'number',     'default_value' => 5];
@@ -307,8 +305,9 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('journey_sort_order'),     'label' => 'Sort Order',         'name' => 'journey_sort_order',     'type' => 'number',      'default_value' => 0];
 
         $f = array_merge($f, self::append_lang_tabs('jrn', [
-            ['prefix' => 'journey_name', 'label' => 'Journey Name', 'type' => 'text'],
-            ['prefix' => 'journey_desc', 'label' => 'Description',  'type' => 'wysiwyg'],
+            ['prefix' => 'journey_name',  'label' => 'Journey Name', 'type' => 'text'],
+            ['prefix' => 'journey_desc',  'label' => 'Description',  'type' => 'wysiwyg'],
+            ['prefix' => 'journey_audio', 'label' => 'Audio File',   'type' => 'file'],
         ]));
 
         return $f;
@@ -358,7 +357,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = self::tab('story', 'Audio Settings');
         $f[] = ['key' => self::k('story_show_audio_free'),    'label' => 'Audio Free',          'name' => 'story_show_audio_free',    'type' => 'true_false', 'ui' => 1, 'default_value' => 1, 'instructions' => 'ON = free to play. OFF = requires flowers.'];
         $f[] = ['key' => self::k('story_audio_cost'),         'label' => 'Audio Unlock Cost',   'name' => 'story_audio_cost',         'type' => 'number',     'default_value' => 5];
-        $f[] = ['key' => self::k('story_audio_duration'),     'label' => 'Audio Duration (sec)','name' => 'story_audio_duration',     'type' => 'number',     'step' => '0.1'];
         $f[] = ['key' => self::k('story_audio_offline'),      'label' => 'Audio Offline',       'name' => 'story_audio_offline',      'type' => 'true_false', 'ui' => 1];
 
         $f[] = self::tab('story', 'Tracking & UGC');

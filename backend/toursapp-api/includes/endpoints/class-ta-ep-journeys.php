@@ -109,6 +109,8 @@ class TA_EP_Journeys {
     private static function format_journey(WP_Post $post, string $lang): array {
         $id = $post->ID;
 
+        $audio = TA_Localize::get_audio_localized($id, 'journey_audio', $lang);
+
         return [
             'id'            => $id,
             'type'          => 'preset',
@@ -117,6 +119,7 @@ class TA_EP_Journeys {
             'feature_image' => TA_Localize::format_image(get_field('journey_feature_image', $id)),
             'passport_name' => get_field('journey_passport_name', $id) ?: '',
             'stamp_image'   => TA_Localize::format_image(get_field('journey_stamp_image', $id)),
+            'audio'         => $audio ?: null,
             'duration_days' => (int) get_field('journey_duration_days', $id),
             'total_places'  => (int) get_field('journey_total_places', $id),
             'difficulty'    => get_field('journey_difficulty', $id) ?: 'easy',

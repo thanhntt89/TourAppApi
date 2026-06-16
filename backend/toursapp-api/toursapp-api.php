@@ -11,7 +11,7 @@
 
 defined('ABSPATH') || exit;
 
-define('TA_VERSION', '1.7.7');
+define('TA_VERSION', '1.7.8');
 define('TA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TA_API_NAMESPACE', 'toursapp/v1');

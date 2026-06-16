@@ -643,7 +643,6 @@ class TA_EP_Sync {
         foreach ($posts as $post) {
             $id    = $post->ID;
             $audio = TA_Localize::get_audio_localized($id, 'place_audio', $lang);
-            $duration = get_field('place_audio_duration', $id);
 
             $items[] = [
                 'id'                => $id,
@@ -653,10 +652,7 @@ class TA_EP_Sync {
                 'article'           => TA_Localize::get_field_localized($id, 'place_article', $lang),
                 'feature_image'     => TA_Localize::format_image(get_field('place_feature_image', $id)),
                 'gallery'           => TA_Localize::format_gallery(get_field('place_gallery', $id)),
-                'audio'             => $audio ? [
-                    'url'      => $audio['url'],
-                    'duration' => (float) ($duration ?: 0),
-                ] : null,
+                'audio'             => $audio ?: null,
                 'latitude'          => (float) get_field('place_lat', $id),
                 'longitude'         => (float) get_field('place_lng', $id),
                 'geofence_radius'   => (int) (get_field('place_geofence_radius', $id) ?: 300),

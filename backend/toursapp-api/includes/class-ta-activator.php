@@ -40,6 +40,15 @@ class TA_Activator {
             self::create_tables();
             update_option('ta_db_version', '1.7.0');
         }
+        if (version_compare($installed, '1.7.8', '<')) {
+            $wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE meta_key IN (
+                'place_audio_duration',
+                'sub_place_audio_duration',
+                'journey_audio_duration',
+                'story_audio_duration'
+            )");
+            update_option('ta_db_version', '1.7.8');
+        }
     }
 
     public static function deactivate() {

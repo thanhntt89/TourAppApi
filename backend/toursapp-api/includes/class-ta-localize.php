@@ -38,13 +38,26 @@ class TA_Localize {
         }
 
         if (is_array($file)) {
+            $att_id   = $file['ID'] ?? $file['id'] ?? 0;
+            $meta     = $att_id ? wp_get_attachment_metadata($att_id) : [];
+            $duration = 0;
+            if (!empty($meta['length_formatted'])) {
+                $parts    = array_map('intval', explode(':', $meta['length_formatted']));
+                $duration = count($parts) === 3
+                    ? $parts[0] * 3600 + $parts[1] * 60 + $parts[2]
+                    : $parts[0] * 60 + ($parts[1] ?? 0);
+            } elseif (!empty($meta['length'])) {
+                $duration = (float) $meta['length'];
+            }
+
             return [
-                'url'  => $file['url'] ?? '',
-                'size' => $file['filesize'] ?? 0,
+                'url'      => $file['url'] ?? '',
+                'size'     => $file['filesize'] ?? 0,
+                'duration' => $duration,
             ];
         }
 
-        return ['url' => (string)$file, 'size' => 0];
+        return ['url' => (string)$file, 'size' => 0, 'duration' => 0];
     }
 
     public static function format_image($image): ?array {
