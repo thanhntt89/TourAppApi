@@ -123,6 +123,7 @@ class TA_API {
             'class-ta-ep-comments.php',
             'class-ta-ep-downloads.php',
             'class-ta-ep-features.php',
+            'class-ta-ep-passport.php',
         ];
 
         foreach ($files as $file) {
@@ -147,6 +148,7 @@ class TA_API {
         TA_EP_Comments::register_routes();
         TA_EP_Downloads::register_routes();
         TA_EP_Features::register_routes();
+        TA_EP_Passport::register_routes();
     }
 
     public static function success($data, array $meta = []): WP_REST_Response {

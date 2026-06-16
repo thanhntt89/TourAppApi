@@ -103,6 +103,8 @@ class TA_EP_Journeys {
             'name'          => TA_Localize::get_field_localized($id, 'journey_name', $lang),
             'description'   => TA_Localize::get_field_localized($id, 'journey_desc', $lang),
             'feature_image' => TA_Localize::format_image(get_field('journey_feature_image', $id)),
+            'passport_name' => get_field('journey_passport_name', $id) ?: '',
+            'stamp_image'   => TA_Localize::format_image(get_field('journey_stamp_image', $id)),
             'duration_days' => (int) get_field('journey_duration_days', $id),
             'total_places'  => (int) get_field('journey_total_places', $id),
             'difficulty'    => get_field('journey_difficulty', $id) ?: 'easy',
