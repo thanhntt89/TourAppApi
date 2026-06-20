@@ -21,6 +21,9 @@ class TA_EP_Journeys {
                 'featured' => [
                     'type' => 'boolean',
                 ],
+                'homepage' => [
+                    'type' => 'boolean',
+                ],
             ],
         ]);
 
@@ -54,6 +57,15 @@ class TA_EP_Journeys {
             $meta_query[] = [
                 'key'   => 'journey_is_featured',
                 'value' => $featured ? '1' : '0',
+            ];
+            $meta_query['relation'] = 'AND';
+        }
+
+        $homepage = $request->get_param('homepage');
+        if ($homepage !== null) {
+            $meta_query[] = [
+                'key'   => 'journey_show_homepage',
+                'value' => $homepage ? '1' : '0',
             ];
             $meta_query['relation'] = 'AND';
         }
@@ -97,20 +109,14 @@ class TA_EP_Journeys {
     private static function format_journey(WP_Post $post, string $lang): array {
         $id = $post->ID;
 
+        $audio = TA_Localize::get_audio_localized($id, 'journey_audio', $lang);
+
         return [
             'id'            => $id,
             'type'          => 'preset',
             'name'          => TA_Localize::get_field_localized($id, 'journey_name', $lang),
             'description'   => TA_Localize::get_field_localized($id, 'journey_desc', $lang),
             'feature_image' => TA_Localize::format_image(get_field('journey_feature_image', $id)),
-<<<<<<< Updated upstream
-            'duration_days' => (int) get_field('journey_duration_days', $id),
-            'total_places'  => (int) get_field('journey_total_places', $id),
-            'difficulty'    => get_field('journey_difficulty', $id) ?: 'easy',
-            'is_featured'   => (bool) get_field('journey_is_featured', $id),
-            'sort_order'    => (int) get_field('journey_sort_order', $id),
-            'stops'         => self::format_stops($id, $lang),
-=======
             'passport_name' => get_field('journey_passport_name', $id) ?: '',
             'stamp_image'   => TA_Localize::format_image(get_field('journey_stamp_image', $id)),
             'audio'         => $audio ?: null,
@@ -121,7 +127,6 @@ class TA_EP_Journeys {
             'duration_days' => (int) get_field('journey_duration_days', $id),
             'stops'         => ($stops = self::format_stops($id, $lang)),
             'total_places'  => count($stops),
->>>>>>> Stashed changes
         ];
     }
 

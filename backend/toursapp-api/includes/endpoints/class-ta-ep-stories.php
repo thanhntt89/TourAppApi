@@ -137,7 +137,7 @@ class TA_EP_Stories {
                 'is_free'  => (bool) get_field('story_show_audio_free', $id) !== false
                               ? (bool) get_field('story_show_audio_free', $id) : true,
                 'cost'     => (int) get_field('story_audio_cost', $id) ?: 5,
-                'duration' => (float) get_field('story_audio_duration', $id) ?: 0,
+                'duration' => (float) (TA_Localize::get_audio_localized($id, 'story_audio', $lang)['duration'] ?? 0),
             ],
             'allow_comments'   => (bool) get_field('story_allow_comments', $id) !== false
                                   ? (bool) get_field('story_allow_comments', $id) : true,

@@ -48,7 +48,14 @@ class TA_Output_Fields_Page {
                 <?php wp_nonce_field('ta_output_fields_save', 'ta_output_fields_nonce'); ?>
                 <input type="hidden" name="ta_active_tab" id="ta-active-tab" value="<?php echo esc_attr($active); ?>">
 
-                <nav class="nav-tab-wrapper" style="margin-bottom:0">
+                <style>
+                @media(max-width:768px){
+                    .nav-tab-wrapper { overflow-x:auto; white-space:nowrap; flex-wrap:nowrap; }
+                    .ta-tab-pane { overflow-x:auto; }
+                    .ta-tab-pane .widefat { min-width:480px; }
+                }
+            </style>
+            <nav class="nav-tab-wrapper" style="margin-bottom:0">
                     <?php foreach (self::$type_labels as $type => $label): ?>
                     <a class="nav-tab ta-field-tab <?php echo $type === $active ? 'nav-tab-active' : ''; ?>"
                        href="#"

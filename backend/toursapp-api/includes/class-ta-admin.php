@@ -6,8 +6,9 @@ class TA_Admin {
     public static function register_menu() {
         add_menu_page('ToursApp API', 'ToursApp API', 'manage_options', 'toursapp-api', [self::class, 'render_page'], 'dashicons-rest-api', 80);
         add_submenu_page('toursapp-api', 'Update Plugin', 'Update Plugin', 'update_plugins', 'toursapp-update', [self::class, 'render_update_page']);
-        add_action('admin_init',                  [self::class, 'save_settings']);
-        add_action('admin_post_ta_api_docs_export', [self::class, 'handle_docs_export']);
+        add_action('admin_init',                     [self::class, 'save_settings']);
+        add_action('admin_post_ta_api_docs_export',  [self::class, 'handle_docs_export']);
+        add_action('admin_post_ta_acf_reimport',     [self::class, 'handle_acf_reimport']);
         // wp_ajax_ta_plugin_update registered in toursapp-api.php (admin_menu skips admin-ajax.php)
     }
 
@@ -615,8 +616,13 @@ class TA_Admin {
             'GET /user/wallet'                             => 'Wallet balance + last 10 transactions.',
             'POST /user/share'                             => 'Record social share or referral. Awards flowers.',
             'POST /user/referral/redeem'                   => 'Redeem an invitation referral code. One-time per device.',
-            'GET /user/track'                              => 'Record content engagement (page view, article read, audio play, completion).',
             'POST /user/track'                             => 'Record content engagement event. Only logs if tracking enabled on content.',
+            // User journeys
+            // Library
+            'GET /user/library'                            => 'Full Library screen in one call: resume_items (in-progress favourites), favourite_places, favourite_stories (with status: saved/downloaded/in_progress), offline_counts (audio_guide + story), recent_activity (checkins, unlocks, audio plays).',
+            'POST /user/favorites'                         => 'Add a content item to favourites. content_type: place | ta_story. Returns already_existed:true if duplicate.',
+            'DELETE /user/favorites/{type}/{id}'           => 'Remove a favourited item. Idempotent — returns removed:true regardless.',
+            'POST /user/offline/sync'                      => 'Replace the server-side offline inventory for this device. items: array of {content_type, content_id}. Max 500 items. Returns updated counts.',
             // User journeys
             'GET /user/journeys'                           => 'List custom journeys created by this device.',
             'POST /user/journeys'                          => 'Create custom journey. Free plan: max 5 journeys (403 journey_limit_reached if exceeded). Unlock unlimited_journeys feature to remove limit. Cross-province requires feature unlock.',
@@ -657,8 +663,8 @@ class TA_Admin {
         $s = [
             'POST /device/register' => '{"device_uuid":"abc-123","is_new":true,"wallet_balance":0,"referral_code":"HG-A1B2C3","last_province_id":null}',
             'GET /provinces'        => '[{"id":1,"name":"Hà Giang","description":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":22.82,"longitude":104.98,"detection_radius_km":50,"is_active":true,"total_locations":4,"total_places":24,"sort_order":1}]',
-            'GET /places'           => '{"success":true,"data":[{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":23.12,"longitude":105.43,"is_featured":true,"sort_order":1,"sub_places_count":3}],"meta":{"total":24,"page":1,"per_page":20,"pages":2}}',
-            'GET /places/{id}'      => '{"id":5,"hierarchical_index":"1.1","order_number":1,"name":"Mã Pí Lèng","info":"...","article":"<p>...</p>","feature_image":{"url":"..."},"gallery":[{"url":"...","alt":""}],"audio":{"url":"...","size":1024,"duration":180.5},"latitude":23.12,"longitude":105.43,"geofence_radius":200,"qr_code":"MPL-001","is_featured":true,"show_article_free":false,"show_audio_free":true,"article_offline":true,"audio_offline":true,"article_cost":5,"checkin_reward":10,"sort_order":1,"location":{"id":1,"number":1,"name":"Đồng Văn"},"user_status":{"is_checked_in":false,"is_article_unlocked":false,"is_audio_unlocked":false}}',
+            'GET /places'           => '{"success":true,"data":[{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":23.12,"longitude":105.43,"place_type":"attraction","is_featured":true,"sort_order":1,"sub_places_count":3,"user_status":"explored","story_progress_pct":100,"audio_progress_pct":50},{"id":8,"order_number":2,"name":"Bún Bò Đồng Văn","info":"...","feature_image":{"url":"...","alt":"","width":800,"height":600},"latitude":23.28,"longitude":105.36,"place_type":"food","is_featured":false,"sort_order":2,"sub_places_count":0,"user_status":null,"story_progress_pct":null,"audio_progress_pct":null}],"meta":{"total":24,"page":1,"per_page":20,"pages":2}}',
+            'GET /places/{id}'      => '{"id":5,"hierarchical_index":"1.1","order_number":1,"name":"Mã Pí Lèng","info":"...","article":"<p>...</p>","feature_image":{"url":"..."},"gallery":[{"url":"...","alt":""}],"audio":{"url":"...","size":1024,"duration":180.5},"latitude":23.12,"longitude":105.43,"geofence_radius":200,"qr_code":"MPL-001","place_type":"attraction","is_featured":true,"show_article_free":false,"show_audio_free":true,"article_offline":true,"audio_offline":true,"article_cost":5,"checkin_reward":10,"sort_order":1,"location":{"id":1,"number":1,"name":"Đồng Văn"},"user_status":{"is_checked_in":false,"is_article_unlocked":false,"is_audio_unlocked":false}}',
             'POST /user/checkin'    => '{"checkin_id":42,"place_id":5,"place_name":"Mã Pí Lèng","method":"gps","reward":{"amount":10,"currency":"buckwheat_flower","new_balance":35},"unlocked":{"article":false,"audio":false},"created_at":"2026-06-13 10:00:00"}',
             'POST /user/unlock'     => '{"content_type":"article","content_id":5,"cost":5,"new_balance":30,"unlocked_at":"2026-06-13 10:05:00"}',
             'GET /user/wallet'      => '{"balance":35,"total_earned":50,"total_spent":15,"referral_code":"HG-A1B2C3","recent_transactions":[{"id":1,"type":"earn_checkin","amount":10,"balance_after":35,"note":"Check-in at Mã Pí Lèng","created_at":"2026-06-13 10:00:00"}]}',
@@ -671,6 +677,11 @@ class TA_Admin {
             'GET /user/features'    => '[{"feature":"cross_province","label":"Cross-Province Journeys","enabled":true,"mode":"achievement","has_access":false,"achievement":{"required":10,"current":6,"progress":60}},{"feature":"unlimited_journeys","label":"Unlimited Custom Journeys","enabled":true,"mode":"paid","has_access":false,"cost":20,"unlocked":false}]',
             'GET /sync/check'       => '{"has_updates":true,"last_modified":"2026-06-13 10:00:00","changes":{"provinces":{"updated":0,"last_modified":null},"locations":{"updated":1,"last_modified":"2026-06-13"},"places":{"updated":3,"last_modified":"2026-06-13"},"sub_places":{"updated":0,"last_modified":null},"sub_items":{"updated":0,"last_modified":null},"journeys":{"updated":0,"last_modified":null},"news":{"updated":1,"last_modified":"2026-06-13"}},"estimated_download_size_mb":4.2}',
             'POST /user/journeys'   => '{"id":12,"type":"user","name":"3 ngày Hà Giang","description":"","province_id":1,"source_journey_id":null,"status":"planning","total_places":0,"visited_count":0,"progress_percent":0,"stops":[],"created_at":"2026-06-13 10:00:00","updated_at":"2026-06-13 10:00:00"}',
+            // Library
+            'GET /user/library'     => '{"resume_items":[{"content_type":"ta_story","content_id":3,"title":"Truyền thuyết Mã Pí Lèng","feature_image":{"url":"https://cdn.../story.jpg","alt":""},"completion_pct":65,"last_event_at":"2026-06-14 10:00:00","saved_at":"2026-06-10 08:00:00"}],"favourite_places":[{"id":5,"name":"Mã Pí Lèng","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"lat":23.12,"lng":105.43,"saved_at":"2026-06-10 08:00:00"}],"favourite_stories":[{"id":3,"name":"Truyền thuyết Mã Pí Lèng","feature_image":{"url":"https://cdn.../story.jpg","alt":""},"completion_pct":65,"is_offline":false,"status":"in_progress","last_opened_at":"2026-06-14 10:00:00","saved_at":"2026-06-10 08:00:00"},{"id":7,"name":"Bí ẩn hẻm Tu Sản","feature_image":{"url":"https://cdn.../story2.jpg","alt":""},"completion_pct":0,"is_offline":true,"status":"downloaded","last_opened_at":null,"saved_at":"2026-06-12 09:00:00"}],"offline_counts":{"audio_guide":3,"story":9,"total":12},"recent_activity":[{"type":"checkin","content_type":"place","content_id":5,"title":"Mã Pí Lèng","created_at":"2026-06-14 10:00:00"},{"type":"unlock","content_type":"ta_story","content_id":7,"title":"Bí ẩn hẻm Tu Sản","created_at":"2026-06-13 09:00:00"}]}',
+            'POST /user/favorites'  => '{"favorited":true}',
+            'DELETE /user/favorites/{type}/{id}' => '{"removed":true}',
+            'POST /user/offline/sync' => '{"synced":true,"counts":{"audio_guide":3,"story":9,"total":12}}',
             // Provinces
             'GET /provinces/{id}'   => '{"id":1,"name":"Hà Giang","description":"Tỉnh địa đầu Tổ quốc...","feature_image":{"url":"https://cdn.../ha-giang.jpg","alt":"","width":800,"height":600},"latitude":22.82,"longitude":104.98,"detection_radius_km":50,"is_active":true,"total_locations":4,"total_places":24,"sort_order":1,"banner_images":[{"url":"https://cdn.../banner1.jpg","alt":""}]}',
             'GET /provinces/detect' => '{"detected":true,"province":{"id":1,"name":"Hà Giang","feature_image":{"url":"https://cdn.../ha-giang.jpg","alt":""},"latitude":22.82,"longitude":104.98,"detection_radius_km":50,"is_active":true,"total_locations":4,"total_places":24,"sort_order":1,"distance_km":12.5}}',
@@ -681,12 +692,18 @@ class TA_Admin {
             'GET /places/nearby'    => '{"success":true,"data":[{"id":5,"name":"Mã Pí Lèng","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"latitude":23.12,"longitude":105.43,"distance_km":0.8,"is_featured":true,"sort_order":1}],"meta":{"total":3}}',
             'GET /places/qr/{code}' => '{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"latitude":23.12,"longitude":105.43,"qr_code":"MPL-001","is_featured":true,"sort_order":1,"location":{"id":2,"number":1,"name":"Đồng Văn"},"user_status":{"is_checked_in":false,"is_article_unlocked":false,"is_audio_unlocked":false}}',
             'GET /places/search'    => '{"success":true,"data":[{"id":5,"order_number":1,"name":"Mã Pí Lèng","info":"...","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"latitude":23.12,"longitude":105.43,"is_featured":true,"sort_order":1}],"meta":{"total":2,"page":1,"per_page":20,"pages":1}}',
+            // Sub-places list + Sub-items list
+            'GET /sub-places'       => '{"success":true,"data":[{"id":10,"sub_place_index":"1","name":"Đỉnh đèo","feature_image":{"url":"https://cdn.../sub-place.jpg","alt":""},"latitude":23.12,"longitude":105.43,"sort_order":1,"sub_items_count":3}],"meta":{"total":2}}',
+            'GET /sub-items'        => '{"success":true,"data":[{"id":20,"item_index":"1.1","name":"Bia tưởng niệm","feature_image":{"url":"https://cdn.../item.jpg","alt":""},"sort_order":1}],"meta":{"total":4}}',
+            // Sub-items detail
+            'GET /sub-items/{id}'   => '{"id":20,"item_index":"1.1","name":"Bia tưởng niệm","description":"Bia đá ghi dấu chiến thắng...","feature_image":{"url":"https://cdn.../item.jpg","alt":"","width":800,"height":600},"gallery":[{"url":"https://cdn.../gallery1.jpg","alt":""},{"url":"https://cdn.../gallery2.jpg","alt":""}],"audio":{"url":"https://cdn.../item-audio-vi.mp3","duration":60.0,"size":512000},"sort_order":1,"sub_place":{"id":10,"name":"Đỉnh đèo"}}',
             // Sub-places
             'GET /places/{place_id}/sub-places' => '[{"id":10,"sub_place_index":"1","name":"Đỉnh đèo","feature_image":{"url":"https://cdn.../sub-place.jpg","alt":"","width":800,"height":600},"latitude":23.12,"longitude":105.43,"sort_order":1,"sub_items":[{"id":20,"item_index":"1.1","name":"Bia tưởng niệm","feature_image":{"url":"https://cdn.../item.jpg","alt":""},"sort_order":1}]}]',
             'GET /sub-places/{id}'  => '{"id":10,"sub_place_index":"1","name":"Đỉnh đèo","description":"Điểm cao nhất...","feature_image":{"url":"https://cdn.../sub-place.jpg","alt":"","width":800,"height":600},"audio":{"url":"https://cdn.../audio-vi.mp3","duration":120.5},"latitude":23.12,"longitude":105.43,"sort_order":1,"place":{"id":5,"name":"Mã Pí Lèng"},"sub_items":[{"id":20,"item_index":"1.1","name":"Bia tưởng niệm","description":"...","feature_image":{"url":"https://cdn.../item.jpg","alt":""},"gallery":[{"url":"https://cdn.../gallery1.jpg","alt":""}],"audio":{"url":"https://cdn.../item-audio.mp3","duration":60.0},"sort_order":1}]}',
             // Journeys
-            'GET /journeys'         => '[{"id":3,"type":"preset","name":"3 ngày Hà Giang cổ điển","description":"...","feature_image":{"url":"https://cdn.../journey.jpg","alt":""},"duration_days":3,"total_places":12,"difficulty":"medium","is_featured":true,"sort_order":1}]',
-            'GET /journeys/{id}'    => '{"id":3,"type":"preset","name":"3 ngày Hà Giang cổ điển","description":"...","feature_image":{"url":"https://cdn.../journey.jpg","alt":""},"duration_days":3,"total_places":12,"difficulty":"medium","is_featured":true,"sort_order":1,"stops":[{"day_number":1,"stop_order":1,"place_id":5,"place_name":"Mã Pí Lèng","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"lat":23.12,"lng":105.43,"note":""}]}',
+            'GET /journeys'         => '[{"id":3,"type":"preset","name":"3 ngày Hà Giang cổ điển","description":"...","feature_image":{"url":"https://cdn.../journey.jpg","alt":""},"duration_days":3,"total_places":12,"difficulty":"medium","is_featured":true,"show_homepage":true,"sort_order":1}]',
+            'GET /journeys/{id}'    => '{"id":3,"type":"preset","name":"3 ngày Hà Giang cổ điển","description":"...","feature_image":{"url":"https://cdn.../journey.jpg","alt":""},"passport_name":"KM0 Passport","stamp_image":{"url":"https://cdn.../stamp.png","alt":"","width":400,"height":400},"duration_days":3,"total_places":12,"difficulty":"medium","is_featured":true,"show_homepage":true,"sort_order":1,"stops":[{"day_number":1,"stop_order":1,"place_id":5,"place_name":"Mã Pí Lèng","feature_image":{"url":"https://cdn.../mpl.jpg","alt":""},"lat":23.12,"lng":105.43,"note":""}]}',
+            'GET /user/passport/{journey_id}' => '{"success":true,"data":{"journey":{"id":3,"name":"Ha Giang City Explorer","passport_name":"KM0 Passport","feature_image":{"url":"https://cdn.../journey.jpg","alt":"","width":1200,"height":800},"stamp_image":{"url":"https://cdn.../stamp.png","alt":"","width":400,"height":400}},"stamp":{"progress_pct":75,"is_locked":true,"total_required":8,"total_completed":6},"summary":{"total_places":8,"places_visited":8,"places_discovered":6,"filters":{"all":8,"discovered":6,"explored":2,"planned":0,"unexplored":0}},"next_actions":[{"place_id":12,"type":"audio","label":"Complete Ha Giang Museum Audio Guide"},{"place_id":15,"type":"story","label":"Complete Dong Van Plateau Museum Story"},{"place_id":15,"type":"audio","label":"Complete Dong Van Plateau Museum Audio Guide"}],"places":[{"place_id":10,"name":"Km0 Milestone","feature_image":{"url":"https://cdn.../km0.jpg","alt":""},"stop_order":0,"is_visited":true,"checked_in_at":"2025-06-01T10:30:00Z","story_progress_pct":100,"audio_progress_pct":100,"status":"discovered","flower_earned":true},{"place_id":12,"name":"Ha Giang Museum","feature_image":{"url":"https://cdn.../museum.jpg","alt":""},"stop_order":2,"is_visited":true,"checked_in_at":"2025-06-02T09:00:00Z","story_progress_pct":100,"audio_progress_pct":50,"status":"explored","flower_earned":false},{"place_id":20,"name":"Lung Cu Flag Tower","feature_image":{"url":"https://cdn.../lung-cu.jpg","alt":""},"stop_order":4,"is_visited":false,"checked_in_at":null,"story_progress_pct":0,"audio_progress_pct":null,"status":"unexplored","flower_earned":false}]}}',
             // Stories
             'GET /stories'          => '{"success":true,"data":[{"id":3,"type":"legend","name":"Truyền thuyết Mã Pí Lèng","summary":"...","feature_image":{"url":"https://cdn.../story.jpg","alt":""},"is_featured":true,"sort_order":1}],"meta":{"total":15,"page":1,"per_page":20,"pages":1}}',
             // News
@@ -695,6 +712,18 @@ class TA_Admin {
             'GET /user/history'     => '{"success":true,"data":[{"checkin_id":42,"place_id":5,"place_name":"Mã Pí Lèng","method":"gps","reward":10,"created_at":"2026-06-13 10:00:00"}],"meta":{"total":6,"total_flowers_earned":60,"page":1,"per_page":20}}',
             'GET /user/features/{feature}' => '{"feature":"cross_province","label":"Cross-Province Journeys","enabled":true,"mode":"achievement","has_access":false,"achievement":{"required":10,"current":6,"progress":60}}',
             'GET /user/journeys'    => '{"success":true,"data":[{"id":12,"type":"user","name":"3 ngày Hà Giang","description":"","province_id":1,"status":"planning","total_places":2,"visited_count":1,"progress_percent":50,"stops":[{"place_id":5,"place_name":"Mã Pí Lèng","stop_order":1,"day_number":1,"note":"","status":"visited"}],"created_at":"2026-06-13 10:00:00","updated_at":"2026-06-13 10:00:00"}],"meta":{"total":2}}',
+            'POST /user/share'      => '{"share_id":5,"reward":{"amount":5,"currency":"buckwheat_flower","new_balance":40},"referral_link":"https://toursapp.vn/invite/HG-A1B2C3"}',
+            'POST /user/referral/redeem' => '{"success":true,"reward":{"amount":20,"currency":"buckwheat_flower","new_balance":55},"referrer_rewarded":true}',
+            'PUT /user/journeys/{id}' => '{"id":12,"type":"user","name":"3 ngày Hà Giang","description":"Cập nhật lịch trình","province_id":1,"status":"active","total_places":3,"visited_count":1,"progress_percent":33,"stops":[{"place_id":5,"place_name":"Mã Pí Lèng","stop_order":1,"day_number":1,"note":"Điểm đến đầu tiên","status":"visited"},{"place_id":8,"place_name":"Đồng Văn Cổ Trấn","stop_order":2,"day_number":2,"note":"","status":"planned"}],"created_at":"2026-06-13 10:00:00","updated_at":"2026-06-15 08:00:00"}',
+            'DELETE /user/journeys/{id}' => '{"deleted":true}',
+            'POST /user/features/{feature}/unlock' => '{"feature":"unlimited_journeys","has_access":true,"mode":"paid","cost":20,"new_balance":15,"unlocked_at":"2026-06-13 10:00:00"}',
+            'POST /content/{type}/{id}/comments' => '{"id":15,"device_uuid":"abc-123","comment_text":"Đẹp lắm, đáng đến!","photo":null,"created_at":"2026-06-13 10:00:00"}',
+            'PUT /content/{type}/{id}/comments/{cid}' => '{"id":15,"comment_text":"Rất đẹp, đáng đến lắm!","updated_at":"2026-06-13 10:05:00"}',
+            'DELETE /content/{type}/{id}/comments/{cid}' => '{"deleted":true}',
+            'POST /content/{type}/{id}/rating' => '{"content_id":5,"rating":5,"average":4.4,"total":29}',
+            'POST /user/upload-photo' => '{"photo_id":88,"url":"https://cdn.../comment-photo-88.jpg","width":1200,"height":900}',
+            'POST /user/downloads/start' => '{"download_id":7}',
+            'POST /user/downloads/complete' => '{"updated":true}',
             'GET /user/downloads'   => '[{"id":1,"province_id":1,"download_type":"full","lang":"vi","status":"completed","file_count":145,"total_size_mb":32.4,"started_at":"2026-06-13 09:00:00","completed_at":"2026-06-13 09:02:00"}]',
             // Sync
             'GET /sync/package/{province_id}' => '{"province":{"id":1,"name":"Hà Giang"},"locations":[{"id":2,"number":1,"name":"Đồng Văn"}],"places":[{"id":5,"name":"Mã Pí Lèng","audio":{"url":"...","size":1024,"duration":180}}],"sub_places":[{"id":10,"name":"Đỉnh đèo"}],"sub_items":[{"id":20,"name":"Bia tưởng niệm"}],"journeys":[{"id":3,"name":"3 ngày Hà Giang"}],"news":[{"id":7,"title":"Thông báo mùa mưa lũ"}],"sync_version":"2026-06-13T10:00:00Z","total_media_size_mb":32.4}',
@@ -709,6 +738,19 @@ class TA_Admin {
             $wpdb->prepare("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name LIKE %s",
                 DB_NAME, $wpdb->prefix . 'ta_%')
         );
+    }
+
+    public static function handle_acf_reimport() {
+        if (!check_admin_referer('ta_acf_reimport')) return;
+        if (!current_user_can('manage_options')) return;
+
+        delete_option('ta_acf_fields_version');
+        if (class_exists('TA_Fields')) {
+            TA_Fields::register();
+        }
+
+        wp_redirect(add_query_arg('acf_reimported', '1', menu_page_url('toursapp-api', false)));
+        exit;
     }
 
     public static function save_settings() {
@@ -767,12 +809,39 @@ class TA_Admin {
             'action' => 'ta_api_docs_export',
             '_nonce' => wp_create_nonce('ta_api_docs_export'),
         ], admin_url('admin-post.php'));
+        $acf_saved_ver  = get_option('ta_acf_fields_version', '—');
+        $acf_synced     = $acf_saved_ver === TA_VERSION;
+        $reimport_url   = wp_nonce_url(
+            add_query_arg('action', 'ta_acf_reimport', admin_url('admin-post.php')),
+            'ta_acf_reimport'
+        );
         ?>
         <div class="wrap">
             <h1>ToursApp API — Settings</h1>
 
             <?php if (isset($_GET['saved'])): ?>
             <div class="notice notice-success is-dismissible"><p>Settings saved.</p></div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['acf_reimported'])): ?>
+            <div class="notice notice-success is-dismissible"><p>ACF fields reimported successfully.</p></div>
+            <?php elseif (!$acf_synced): ?>
+            <div class="notice notice-warning">
+                <p>
+                    <strong>ACF Fields out of sync.</strong>
+                    Saved version: <code><?php echo esc_html($acf_saved_ver); ?></code> → Current: <code><?php echo esc_html(TA_VERSION); ?></code><br>
+                    Fields will auto-reimport on next page load, or click below to run now.
+                </p>
+                <p><a href="<?php echo esc_url($reimport_url); ?>" class="button button-primary">Force Reimport ACF Fields</a></p>
+            </div>
+            <?php else: ?>
+            <div class="notice notice-info is-dismissible">
+                <p>
+                    ACF fields synced at version <code><?php echo esc_html(TA_VERSION); ?></code>.
+                    If you see duplicate field groups in ACF, click:
+                    <a href="<?php echo esc_url($reimport_url); ?>" class="button button-secondary" style="margin-left:8px">Force Reimport ACF Fields</a>
+                </p>
+            </div>
             <?php endif; ?>
 
             <form method="post">
@@ -811,7 +880,7 @@ class TA_Admin {
                             <th style="padding:8px 0">App Secret</th>
                             <td>
                                 <?php $sig_secret = get_option(TA_Signature::OPTION_SECRET, ''); ?>
-                                <input type="password" name="ta_api_app_secret" id="ta-secret-input" value="<?php echo esc_attr($sig_secret); ?>" style="font-family:monospace;font-size:12px;width:500px;padding:4px 8px" placeholder="Auto-generated if left empty" autocomplete="off">
+                                <input type="password" name="ta_api_app_secret" id="ta-secret-input" value="<?php echo esc_attr($sig_secret); ?>" style="font-family:monospace;font-size:12px;width:100%;max-width:500px;padding:4px 8px;box-sizing:border-box" placeholder="Auto-generated if left empty" autocomplete="off">
                                 <button type="button" class="button button-small" onclick="var el=document.getElementById('ta-secret-input');var show=el.type==='password';el.type=show?'text':'password';this.textContent=show?'Hide Secret':'Show Secret';">Show Secret</button>
                                 <p class="description" style="margin-top:4px">You can paste a custom secret or leave empty to auto-generate. <strong>Minimum 32 characters required.</strong></p>
                                 <br><br>
@@ -848,7 +917,7 @@ class TA_Admin {
                     <p style="color:#666;margin-top:-8px;margin-bottom:16px;font-size:13px">
                         Control which premium features are available, and how users unlock them.
                     </p>
-                    <table class="widefat" style="font-size:13px">
+                    <div class="ta-feat-table-wrap"><table class="widefat" style="font-size:13px">
                         <thead>
                             <tr>
                                 <th style="width:22%">Feature</th>
@@ -895,11 +964,11 @@ class TA_Admin {
                         </tr>
                         <?php endforeach; ?>
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
 
                 <div style="background:#fff;border:1px solid #ddd;padding:16px 20px;border-radius:4px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div class="ta-ep-toolbar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
                         <h2 style="margin:0">Endpoints
                             <span style="font-size:13px;font-weight:normal;color:#666;margin-left:8px;">
                                 Namespace: <code><?php echo esc_html(TA_API_NAMESPACE); ?></code>
@@ -931,8 +1000,18 @@ class TA_Admin {
                 .ta-auth-no   { color: #555; }
                 .ta-toggle { display:inline-flex;align-items:center;cursor:pointer; }
                 .ta-toggle input { width:34px;height:18px;cursor:pointer; }
+                @media(max-width:768px){
+                    .ta-ep-toolbar { flex-wrap:wrap; gap:8px; }
+                    .ta-ep-toolbar h2 { font-size:14px; }
+                    #ta-ep-table-wrap,
+                    .ta-feat-table-wrap { overflow-x:auto; }
+                    #ta-api-table,
+                    .ta-feat-table-wrap > table { min-width:540px; }
+                    .form-table td { display:block; width:100%; box-sizing:border-box; }
+                    .form-table th { padding-top:8px; }
+                }
             </style>
-            <table id="ta-api-table">
+            <div id="ta-ep-table-wrap"><table id="ta-api-table">
                 <thead>
                     <tr>
                         <th style="width:50px">On/Off</th>
@@ -964,7 +1043,7 @@ class TA_Admin {
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
-            </table>
+            </table></div>
                 </div><!-- /.endpoints panel -->
 
                 <p style="margin-top:16px">
@@ -1153,6 +1232,7 @@ class TA_Admin {
             ['method' => 'GET', 'path' => '/journeys',           'auth' => false, 'description' => 'List preset journeys', 'params' => [
                 ['name' => 'province_id', 'type' => 'integer', 'required' => true,  'default' => ''],
                 ['name' => 'featured',    'type' => 'boolean', 'required' => false, 'default' => ''],
+                ['name' => 'homepage',    'type' => 'boolean', 'required' => false, 'default' => ''],
                 ['name' => 'lang',        'type' => 'string',  'required' => false, 'default' => 'vi'],
             ]],
             ['method' => 'GET', 'path' => '/journeys/{id}',      'auth' => false, 'description' => 'Get preset journey detail with stops', 'params' => [
@@ -1276,6 +1356,21 @@ class TA_Admin {
                 ['name' => 'file_count',    'type' => 'integer', 'required' => false, 'default' => '0'],
                 ['name' => 'total_size_mb', 'type' => 'number',  'required' => false, 'default' => '0'],
                 ['name' => 'status',        'type' => 'string',  'required' => false, 'default' => 'completed'],
+            ]],
+            // Library
+            ['method' => 'GET',    'path' => '/user/library',                         'auth' => true, 'description' => 'Get full library screen: resume items, favourites, offline counts, recent activity', 'params' => [
+                ['name' => 'lang', 'type' => 'string', 'required' => false, 'default' => 'vi'],
+            ]],
+            ['method' => 'POST',   'path' => '/user/favorites',                       'auth' => true, 'description' => 'Add a place or story to favourites (heart)', 'params' => [
+                ['name' => 'content_type', 'type' => 'string',  'required' => true,  'default' => ''],
+                ['name' => 'content_id',   'type' => 'integer', 'required' => true,  'default' => ''],
+            ]],
+            ['method' => 'DELETE', 'path' => '/user/favorites/{type}/{id}',           'auth' => true, 'description' => 'Remove a place or story from favourites', 'params' => [
+                ['name' => 'type', 'type' => 'string',  'required' => true, 'default' => ''],
+                ['name' => 'id',   'type' => 'integer', 'required' => true, 'default' => ''],
+            ]],
+            ['method' => 'POST',   'path' => '/user/offline/sync',                    'auth' => true, 'description' => 'Sync device offline inventory (list of downloaded content items)', 'params' => [
+                ['name' => 'items', 'type' => 'array', 'required' => true, 'default' => ''],
             ]],
             // Sync
             ['method' => 'GET', 'path' => '/sync/check',                'auth' => false, 'description' => 'Check for content updates since timestamp', 'params' => [

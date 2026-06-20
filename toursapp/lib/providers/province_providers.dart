@@ -8,6 +8,7 @@ import 'package:stoneecho/data/models/province.dart';
 import 'package:stoneecho/providers/app_providers.dart';
 import 'package:stoneecho/providers/gps_providers.dart';
 
+
 part 'province_providers.g.dart';
 
 const _currentProvinceIdKey = 'current_province_id';
@@ -21,7 +22,7 @@ class Provinces extends _$Provinces {
     final dio = ref.read(dioProvider);
     final response = await dio.get<Map<String, dynamic>>(
       ApiConstants.provinces,
-      queryParameters: {'lang': 'vi'},
+      queryParameters: {'lang': ref.read(appLangProvider)},
     );
     final data = response.data!;
     return (data['data'] as List)

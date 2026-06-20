@@ -9,20 +9,20 @@ part of 'gps_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Stream of the user's current GPS position.
-/// Updates based on [AppConstants.gpsDistanceFilterBrowse].
+/// Updates based on AppConstants.gpsDistanceFilterBrowse.
 
 @ProviderFor(currentPosition)
 const currentPositionProvider = CurrentPositionProvider._();
 
 /// Stream of the user's current GPS position.
-/// Updates based on [AppConstants.gpsDistanceFilterBrowse].
+/// Updates based on AppConstants.gpsDistanceFilterBrowse.
 
 final class CurrentPositionProvider
     extends
         $FunctionalProvider<AsyncValue<Position>, Position, Stream<Position>>
     with $FutureModifier<Position>, $StreamProvider<Position> {
   /// Stream of the user's current GPS position.
-  /// Updates based on [AppConstants.gpsDistanceFilterBrowse].
+  /// Updates based on AppConstants.gpsDistanceFilterBrowse.
   const CurrentPositionProvider._()
     : super(
         from: null,
@@ -48,7 +48,7 @@ final class CurrentPositionProvider
   }
 }
 
-String _$currentPositionHash() => r'c5a0c205303831b9598396f73bfddda76ad8b9cd';
+String _$currentPositionHash() => r'01aae52aa8126688c0071e85b1af3a1689ad1b69';
 
 /// Current GPS permission status.
 

@@ -1,7 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:stoneecho/core/constants/api_constants.dart';
 import 'package:stoneecho/core/network/api_client.dart';
 import 'package:stoneecho/data/models/place.dart';
+import 'package:stoneecho/providers/app_providers.dart';
 import 'package:stoneecho/providers/gps_providers.dart';
 
 part 'place_providers.g.dart';
@@ -38,7 +40,7 @@ Future<List<Place>> places(Ref ref, {required int locationId}) async {
   final dio = ref.watch(dioProvider);
   final response = await dio.get<Map<String, dynamic>>(
     ApiConstants.places,
-    queryParameters: {'location_id': locationId, 'lang': 'vi'},
+    queryParameters: {'location_id': locationId, 'lang': ref.watch(appLangProvider)},
   );
   final data = response.data!;
   return (data['data'] as List)
@@ -70,7 +72,7 @@ Future<List<Place>> nearbyPlaces(Ref ref) async {
       'radius': radiusMeters,
       'province_id': 144,
       'limit': 50,
-      'lang': 'vi',
+      'lang': ref.watch(appLangProvider),
     },
   );
   final data = response.data!;
@@ -79,18 +81,17 @@ Future<List<Place>> nearbyPlaces(Ref ref) async {
       .toList();
 }
 
-@riverpod
-Future<List<Place>> placesByProvince(Ref ref, {required int provinceId}) async {
+final placesByProvinceProvider = FutureProvider.family<List<Place>, int>((ref, provinceId) async {
   final dio = ref.watch(dioProvider);
   final response = await dio.get<Map<String, dynamic>>(
     ApiConstants.places,
-    queryParameters: {'province_id': provinceId, 'lang': 'vi'},
+    queryParameters: {'province_id': provinceId, 'featured': 'true', 'lang': ref.watch(appLangProvider)},
   );
   final data = response.data!;
   return (data['data'] as List)
       .map((e) => _parsePlace(e as Map<String, dynamic>))
       .toList();
-}
+});
 
 @riverpod
 Future<List<Place>> placeSearch(Ref ref, {required String query}) async {
@@ -99,7 +100,7 @@ Future<List<Place>> placeSearch(Ref ref, {required String query}) async {
   final dio = ref.watch(dioProvider);
   final response = await dio.get<Map<String, dynamic>>(
     ApiConstants.placesSearch,
-    queryParameters: {'q': query, 'lang': 'vi'},
+    queryParameters: {'q': query, 'lang': ref.watch(appLangProvider)},
   );
   final data = response.data!;
   return (data['data'] as List)

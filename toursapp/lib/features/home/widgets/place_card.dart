@@ -94,7 +94,7 @@ class PlaceCard extends StatelessWidget {
             // Content
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -117,7 +117,7 @@ class PlaceCard extends StatelessWidget {
                         Text(distance, style: AppTextStyles.caption),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     StatusBadge(status: status),
                   ],
                 ),

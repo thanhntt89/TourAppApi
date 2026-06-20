@@ -12,8 +12,20 @@ part 'gps_providers.g.dart';
 /// Stream of the user's current GPS position.
 /// Updates based on AppConstants.gpsDistanceFilterBrowse.
 @Riverpod(keepAlive: true)
-Stream<Position> currentPosition(Ref ref) {
-  return Geolocator.getPositionStream(
+Stream<Position> currentPosition(Ref ref) async* {
+  final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) return;
+
+  var permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
+  if (permission == LocationPermission.denied ||
+      permission == LocationPermission.deniedForever) {
+    return;
+  }
+
+  yield* Geolocator.getPositionStream(
     locationSettings: const LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 50,

@@ -29,8 +29,6 @@ class TA_Activator {
             self::create_tables();
             update_option('ta_db_version', '1.5.2');
         }
-<<<<<<< Updated upstream
-=======
         if (version_compare($installed, '1.6.0', '<')) {
             $col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}ta_api_logs LIKE 'app_version'");
             if (empty($col)) {
@@ -58,7 +56,6 @@ class TA_Activator {
         if (version_compare($installed, '1.7.10', '<')) {
             update_option('ta_db_version', '1.7.10');
         }
->>>>>>> Stashed changes
     }
 
     public static function deactivate() {
@@ -237,6 +234,7 @@ class TA_Activator {
             status_code     SMALLINT NOT NULL,
             response_ms     INT NOT NULL,
             ip_address      VARCHAR(45),
+            app_version     VARCHAR(20),
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_endpoint (endpoint),
             INDEX idx_created (created_at),
@@ -292,6 +290,27 @@ class TA_Activator {
             UNIQUE KEY unique_daily (date, content_type, content_id, event_type),
             INDEX idx_date (date),
             INDEX idx_content (content_type, content_id)
+        ) $charset;
+
+        CREATE TABLE {$wpdb->prefix}ta_user_favorites (
+            id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+            device_uuid     VARCHAR(64) NOT NULL,
+            content_type    VARCHAR(20) NOT NULL,
+            content_id      INT NOT NULL,
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_fav (device_uuid, content_type, content_id),
+            INDEX idx_device (device_uuid),
+            INDEX idx_content (content_type, content_id)
+        ) $charset;
+
+        CREATE TABLE {$wpdb->prefix}ta_user_offline_items (
+            id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+            device_uuid     VARCHAR(64) NOT NULL,
+            content_type    VARCHAR(20) NOT NULL,
+            content_id      INT NOT NULL,
+            synced_at       DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_offline (device_uuid, content_type, content_id),
+            INDEX idx_device (device_uuid)
         ) $charset;
         ";
 

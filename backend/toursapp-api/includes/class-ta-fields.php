@@ -18,6 +18,10 @@ class TA_Fields {
         if (get_option('ta_acf_fields_version') === TA_VERSION) {
             return;
         }
+
+        // Purge any stale/orphaned field groups not matching our known keys before importing.
+        self::purge_unknown_field_groups();
+
         self::import('group_ta_province',  'Province Settings',      'province',   self::province());
         self::import('group_ta_location',  'Location Settings',      'ta_location', self::location());
         self::import('group_ta_place',     'Place Settings',         'place',       self::place());
@@ -27,6 +31,42 @@ class TA_Fields {
         self::import('group_ta_news',      'News / Alert Settings',  'news_alert',  self::news());
         self::import('group_ta_story',     'Story Settings',         'ta_story',    self::story());
         update_option('ta_acf_fields_version', TA_VERSION);
+    }
+
+    private static function purge_unknown_field_groups() {
+        global $wpdb;
+
+        $known_keys = [
+            'group_ta_province', 'group_ta_location', 'group_ta_place',
+            'group_ta_sub_place', 'group_ta_sub_item', 'group_ta_journey',
+            'group_ta_news', 'group_ta_story',
+        ];
+
+        // Delete ALL acf-field-group posts that belong to our plugin — simple and bulletproof.
+        $ids = $wpdb->get_col(
+            "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'acf-field-group'"
+        );
+        if (!$ids) {
+            return;
+        }
+
+        $id_list = implode(',', array_map('intval', $ids));
+        $wpdb->query("DELETE FROM {$wpdb->posts}    WHERE post_parent IN ($id_list) AND post_type = 'acf-field'");
+        $wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE post_id     IN ($id_list)");
+        $wpdb->query("DELETE FROM {$wpdb->posts}    WHERE ID          IN ($id_list)");
+
+        self::clear_acf_cache();
+    }
+
+    private static function clear_acf_cache(): void {
+        // Clear ACF's in-memory field group store so subsequent imports start fresh.
+        if (function_exists('acf') && method_exists(acf(), 'get_store')) {
+            $store = acf()->get_store('field-groups');
+            if ($store && method_exists($store, 'reset')) {
+                $store->reset();
+            }
+        }
+        wp_cache_delete('acf_get_field_groups', 'acf');
     }
 
     public static function reimport() {
@@ -153,6 +193,7 @@ $f[] = ['key' => self::k('province_lat'),             'label' => 'Latitude',    
         $f[] = ['key' => self::k('location_lat'),           'label' => 'Latitude',          'name' => 'location_lat',           'type' => 'number',      'step' => 'any'];
         $f[] = ['key' => self::k('location_lng'),           'label' => 'Longitude',         'name' => 'location_lng',           'type' => 'number',      'step' => 'any'];
         $f[] = ['key' => self::k('location_sort_order'),    'label' => 'Sort Order',        'name' => 'location_sort_order',    'type' => 'number',      'default_value' => 0];
+        $f[] = ['key' => self::k('location_is_featured'),   'label' => 'Show on Homepage',   'name' => 'location_is_featured',   'type' => 'true_false',  'ui' => 1, 'default_value' => 1];
 
         $f = array_merge($f, self::append_lang_tabs('loc', [
             ['prefix' => 'location_name', 'label' => 'Location Name', 'type' => 'text'],
@@ -175,7 +216,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('place_lng'),                'label' => 'Longitude',                  'name' => 'place_lng',                'type' => 'number',      'step' => 'any'];
         $f[] = ['key' => self::k('place_geofence_radius'),    'label' => 'Geofence Radius (m)',        'name' => 'place_geofence_radius',    'type' => 'number',      'default_value' => 300];
         $f[] = ['key' => self::k('place_qr_code'),            'label' => 'QR Code',                    'name' => 'place_qr_code',            'type' => 'text'];
-        $f[] = ['key' => self::k('place_audio_duration'),     'label' => 'Audio Duration (seconds)',   'name' => 'place_audio_duration',     'type' => 'number',      'step' => '0.1'];
         $f[] = ['key' => self::k('place_is_featured'),        'label' => 'Featured',                   'name' => 'place_is_featured',        'type' => 'true_false',  'ui' => 1];
         $f[] = ['key' => self::k('place_show_article_free'),  'label' => 'Show Article Free',          'name' => 'place_show_article_free',  'type' => 'true_false',  'ui' => 1];
         $f[] = ['key' => self::k('place_show_audio_free'),    'label' => 'Show Audio Free',            'name' => 'place_show_audio_free',    'type' => 'true_false',  'ui' => 1];
@@ -184,6 +224,7 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('place_article_cost'),       'label' => 'Article Unlock Cost',        'name' => 'place_article_cost',       'type' => 'number',      'default_value' => 5];
         $f[] = ['key' => self::k('place_audio_cost'),         'label' => 'Audio Unlock Cost',          'name' => 'place_audio_cost',         'type' => 'number',      'default_value' => 5];
         $f[] = ['key' => self::k('place_checkin_reward'),     'label' => 'Check-in Reward (flowers)',  'name' => 'place_checkin_reward',     'type' => 'number',      'default_value' => 10];
+        $f[] = ['key' => self::k('place_type'),               'label' => 'Place Type',                 'name' => 'place_type',               'type' => 'select',      'choices' => ['attraction' => 'Attraction', 'food' => 'Food', 'cafe' => 'Cafe', 'hotel' => 'Hotel'], 'default_value' => 'attraction', 'allow_null' => 0];
         $f[] = ['key' => self::k('place_sort_order'),         'label' => 'Sort Order',                 'name' => 'place_sort_order',         'type' => 'number',      'default_value' => 0];
         $f[] = ['key' => self::k('place_enable_tracking'),    'label' => 'Enable Engagement Tracking', 'name' => 'place_enable_tracking',    'type' => 'true_false',  'ui' => 1, 'default_value' => 1];
         $f[] = ['key' => self::k('place_allow_comments'),     'label' => 'Allow Comments',             'name' => 'place_allow_comments',     'type' => 'true_false',  'ui' => 1, 'default_value' => 1];
@@ -210,7 +251,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('sub_place_feature_image'), 'label' => 'Feature Image',       'name' => 'sub_place_feature_image', 'type' => 'image',       'return_format' => 'id', 'preview_size' => 'medium'];
         $f[] = ['key' => self::k('sub_place_lat'),           'label' => 'Latitude',            'name' => 'sub_place_lat',           'type' => 'number',      'step' => 'any'];
         $f[] = ['key' => self::k('sub_place_lng'),           'label' => 'Longitude',           'name' => 'sub_place_lng',           'type' => 'number',      'step' => 'any'];
-        $f[] = ['key' => self::k('sub_place_audio_duration'),'label' => 'Audio Duration (s)',  'name' => 'sub_place_audio_duration','type' => 'number',      'step' => '0.1'];
         $f[] = ['key' => self::k('sub_place_sort_order'),        'label' => 'Sort Order',                  'name' => 'sub_place_sort_order',        'type' => 'number',     'default_value' => 0];
         $f[] = ['key' => self::k('sub_place_show_audio_free'),    'label' => 'Show Audio Free',             'name' => 'sub_place_show_audio_free',   'type' => 'true_false', 'ui' => 1, 'default_value' => 1];
         $f[] = ['key' => self::k('sub_place_audio_cost'),         'label' => 'Audio Unlock Cost',           'name' => 'sub_place_audio_cost',        'type' => 'number',     'default_value' => 5];
@@ -261,11 +301,13 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('journey_duration_days'),  'label' => 'Duration (days)',    'name' => 'journey_duration_days',  'type' => 'number',      'default_value' => 1];
         $f[] = ['key' => self::k('journey_difficulty'),     'label' => 'Difficulty',         'name' => 'journey_difficulty',     'type' => 'select',      'choices' => ['easy' => 'Easy', 'medium' => 'Medium', 'hard' => 'Hard'], 'default_value' => 'easy'];
         $f[] = ['key' => self::k('journey_is_featured'),    'label' => 'Featured',           'name' => 'journey_is_featured',    'type' => 'true_false',  'ui' => 1];
+        $f[] = ['key' => self::k('journey_show_homepage'), 'label' => 'Show on Homepage',   'name' => 'journey_show_homepage',  'type' => 'true_false',  'ui' => 1];
         $f[] = ['key' => self::k('journey_sort_order'),     'label' => 'Sort Order',         'name' => 'journey_sort_order',     'type' => 'number',      'default_value' => 0];
 
         $f = array_merge($f, self::append_lang_tabs('jrn', [
-            ['prefix' => 'journey_name', 'label' => 'Journey Name', 'type' => 'text'],
-            ['prefix' => 'journey_desc', 'label' => 'Description',  'type' => 'wysiwyg'],
+            ['prefix' => 'journey_name',  'label' => 'Journey Name', 'type' => 'text'],
+            ['prefix' => 'journey_desc',  'label' => 'Description',  'type' => 'wysiwyg'],
+            ['prefix' => 'journey_audio', 'label' => 'Audio File',   'type' => 'file'],
         ]));
 
         return $f;
@@ -315,7 +357,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = self::tab('story', 'Audio Settings');
         $f[] = ['key' => self::k('story_show_audio_free'),    'label' => 'Audio Free',          'name' => 'story_show_audio_free',    'type' => 'true_false', 'ui' => 1, 'default_value' => 1, 'instructions' => 'ON = free to play. OFF = requires flowers.'];
         $f[] = ['key' => self::k('story_audio_cost'),         'label' => 'Audio Unlock Cost',   'name' => 'story_audio_cost',         'type' => 'number',     'default_value' => 5];
-        $f[] = ['key' => self::k('story_audio_duration'),     'label' => 'Audio Duration (sec)','name' => 'story_audio_duration',     'type' => 'number',     'step' => '0.1'];
         $f[] = ['key' => self::k('story_audio_offline'),      'label' => 'Audio Offline',       'name' => 'story_audio_offline',      'type' => 'true_false', 'ui' => 1];
 
         $f[] = self::tab('story', 'Tracking & UGC');

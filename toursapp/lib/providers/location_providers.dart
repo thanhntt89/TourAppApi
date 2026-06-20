@@ -1,7 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:stoneecho/core/constants/api_constants.dart';
 import 'package:stoneecho/core/network/api_client.dart';
 import 'package:stoneecho/data/models/location.dart';
+import 'package:stoneecho/providers/app_providers.dart';
 
 part 'location_providers.g.dart';
 
@@ -31,13 +33,27 @@ Future<List<Location>> locations(Ref ref, {required int provinceId}) async {
   // API route: GET /provinces/{province_id}/locations (path param, not query)
   final response = await dio.get<Map<String, dynamic>>(
     '${ApiConstants.provinces}/$provinceId/locations',
-    queryParameters: {'lang': 'vi'},
+    queryParameters: {'lang': ref.watch(appLangProvider)},
   );
   final data = response.data!;
   return (data['data'] as List)
       .map((e) => _parseLocation(e as Map<String, dynamic>, provinceId))
       .toList();
 }
+
+/// Featured locations for homepage — no @riverpod so no build_runner needed.
+final featuredLocationsProvider = FutureProvider.family<List<Location>, int>((ref, provinceId) async {
+  final dio = ref.watch(dioProvider);
+  final lang = ref.watch(appLangProvider);
+  final response = await dio.get<Map<String, dynamic>>(
+    '${ApiConstants.provinces}/$provinceId/locations',
+    queryParameters: {'lang': lang, 'featured': 'true'},
+  );
+  final data = response.data!;
+  return (data['data'] as List)
+      .map((e) => _parseLocation(e as Map<String, dynamic>, provinceId))
+      .toList();
+});
 
 @riverpod
 Future<Location> locationDetail(Ref ref, {required int id}) async {

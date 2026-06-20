@@ -11,11 +11,7 @@
 
 defined('ABSPATH') || exit;
 
-<<<<<<< Updated upstream
-define('TA_VERSION', '1.5.1');
-=======
-define('TA_VERSION', '1.7.10');
->>>>>>> Stashed changes
+define('TA_VERSION', '1.7.11');
 define('TA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TA_API_NAMESPACE', 'toursapp/v1');
@@ -38,12 +34,18 @@ final class ToursApp {
         add_action('init', [$this, 'register_post_types']);
         add_action('rest_api_init', [$this, 'register_api']);
         add_action('acf/init', ['TA_Fields', 'register']);
+        // All field groups are managed in code — disable ACF JSON sync entirely.
+        // Without this, ACF reads acf-json/*.json files and creates duplicate DB posts on every admin load.
+        add_filter('acf/settings/save_json', '__return_false', PHP_INT_MAX);
+        add_filter('acf/settings/load_json', static function () { return []; }, PHP_INT_MAX);
         add_action('rest_api_init', ['TA_API_Logger', 'init']);
         add_action('init', ['TA_Activator', 'upgrade']);
         add_action('rest_api_init', ['TA_Signature', 'init'], 3);
         add_action('rest_api_init', ['TA_API', 'init_filters'], 5);
         add_action('rest_api_init', ['TA_Output_Fields', 'init'], 20);
-        add_filter('cron_schedules',      ['TA_Monitor', 'add_cron_interval']);
+        add_action('save_post_place',       [self::class, 'clear_place_coords_cache']);
+        add_action('save_post_ta_location', [self::class, 'clear_place_coords_cache']);
+        add_filter('cron_schedules',        ['TA_Monitor', 'add_cron_interval']);
         add_action(TA_Monitor::CRON_HOOK, ['TA_Monitor', 'run']);
         add_filter('cron_schedules',           ['TA_Data_Archiver', 'add_cron_interval']);
         add_action(TA_Data_Archiver::CRON_HOOK, ['TA_Data_Archiver', 'run']);
@@ -103,6 +105,7 @@ final class ToursApp {
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-wallet-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-checkin-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-journey-model.php';
+        require_once TA_PLUGIN_DIR . 'includes/models/class-ta-library-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-engagement-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-comment-model.php';
         require_once TA_PLUGIN_DIR . 'includes/models/class-ta-rating-model.php';
@@ -172,6 +175,11 @@ final class ToursApp {
 
     public function register_api() {
         TA_API::register();
+    }
+
+    public function clear_place_coords_cache(): void {
+        $v = (int) get_option('ta_place_coord_v', 1);
+        update_option('ta_place_coord_v', $v + 1, false);
     }
 }
 

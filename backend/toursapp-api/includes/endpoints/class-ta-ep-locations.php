@@ -11,6 +11,7 @@ class TA_EP_Locations {
             'args'                => [
                 'province_id' => ['type' => 'integer', 'required' => true],
                 'lang'        => ['type' => 'string', 'default' => TA_DEFAULT_LANG],
+                'featured'    => ['type' => 'string', 'enum' => ['true', 'false']],
                 'sort'        => [
                     'type'    => 'string',
                     'default' => 'location_number',
@@ -39,6 +40,7 @@ class TA_EP_Locations {
     public static function list_locations(WP_REST_Request $request): WP_REST_Response {
         $province_id = (int) $request->get_param('province_id');
         $lang        = TA_Localize::get_lang($request);
+        $featured    = $request->get_param('featured');
         $sort        = $request->get_param('sort') ?: 'location_number';
         $lat         = $request->get_param('lat');
         $lng         = $request->get_param('lng');
@@ -61,9 +63,20 @@ class TA_EP_Locations {
         $lat_f      = $has_coords ? (float) $lat : 0;
         $lng_f      = $has_coords ? (float) $lng : 0;
 
-        $locations = array_map(function ($post) use ($lang, $has_coords, $lat_f, $lng_f) {
-            return self::format_location($post, $lang, $has_coords, $lat_f, $lng_f);
+        // Batch count places per location in one query instead of N+1.
+        $loc_ids      = wp_list_pluck($posts, 'ID');
+        $place_counts = self::batch_count_places($loc_ids);
+
+        $locations = array_map(function ($post) use ($lang, $has_coords, $lat_f, $lng_f, $place_counts) {
+            return self::format_location($post, $lang, $has_coords, $lat_f, $lng_f, $place_counts);
         }, $posts);
+
+        // Filter by featured if requested.
+        if ($featured === 'true') {
+            $locations = array_values(array_filter($locations, fn($l) => $l['is_featured'] === true));
+        } elseif ($featured === 'false') {
+            $locations = array_values(array_filter($locations, fn($l) => $l['is_featured'] === false));
+        }
 
         // Sort.
         switch ($sort) {
@@ -121,7 +134,7 @@ class TA_EP_Locations {
     /**
      * Compact location for list endpoint.
      */
-    private static function format_location(WP_Post $post, string $lang, bool $has_coords, float $lat, float $lng): array {
+    private static function format_location(WP_Post $post, string $lang, bool $has_coords, float $lat, float $lng, array $place_counts = []): array {
         $id    = $post->ID;
         $l_lat = (float) get_field('location_lat', $id);
         $l_lng = (float) get_field('location_lng', $id);
@@ -133,8 +146,10 @@ class TA_EP_Locations {
             'feature_image' => TA_Localize::format_image(get_field('location_feature_image', $id)),
             'latitude'      => $l_lat,
             'longitude'     => $l_lng,
-            'total_places'  => self::count_places($id),
+            'total_places'  => (int) ($place_counts[$id] ?? 0),
             'sort_order'    => (int) get_field('location_sort_order', $id),
+            // Default true for existing locations that predate this field.
+            'is_featured'   => get_post_meta($id, 'location_is_featured', true) === '0' ? false : true,
         ];
 
         if ($has_coords && $l_lat && $l_lng) {
@@ -142,6 +157,28 @@ class TA_EP_Locations {
         }
 
         return $item;
+    }
+
+    private static function batch_count_places(array $location_ids): array {
+        if (empty($location_ids)) {
+            return [];
+        }
+        global $wpdb;
+        $phs  = implode(',', array_fill(0, count($location_ids), '%d'));
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT pm.meta_value AS location_id, COUNT(p.ID) AS cnt
+                 FROM {$wpdb->posts} p
+                 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                     AND pm.meta_key = 'place_location'
+                 WHERE p.post_type = 'place'
+                   AND p.post_status = 'publish'
+                   AND pm.meta_value IN ($phs)
+                 GROUP BY pm.meta_value",
+                ...$location_ids
+            )
+        );
+        return array_column($rows, 'cnt', 'location_id');
     }
 
     /**

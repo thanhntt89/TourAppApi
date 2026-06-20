@@ -104,8 +104,7 @@ class TA_EP_SubPlaces {
         // Sub-items with full details
         $sub_items = self::get_sub_items_full($id, $lang);
 
-        $audio    = TA_Localize::get_audio_localized($id, 'sub_place_audio', $lang);
-        $duration = get_field('sub_place_audio_duration', $id);
+        $audio = TA_Localize::get_audio_localized($id, 'sub_place_audio', $lang);
 
         $data = [
             'id'              => $id,
@@ -113,10 +112,7 @@ class TA_EP_SubPlaces {
             'name'            => TA_Localize::get_field_localized($id, 'sub_place_name', $lang),
             'description'     => TA_Localize::get_field_localized($id, 'sub_place_desc', $lang),
             'feature_image'   => TA_Localize::format_image(get_field('sub_place_feature_image', $id)),
-            'audio'           => $audio ? [
-                'url'      => $audio['url'],
-                'duration' => (float) ($duration ?: 0),
-            ] : null,
+            'audio'           => $audio ?: null,
             'latitude'        => (float) (get_field('sub_place_lat', $id) ?: 0),
             'longitude'       => (float) (get_field('sub_place_lng', $id) ?: 0),
             'sort_order'      => (int) (get_field('sub_place_sort_order', $id) ?: 0),

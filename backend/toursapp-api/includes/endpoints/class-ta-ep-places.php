@@ -13,6 +13,11 @@ class TA_EP_Places {
                 'province_id' => ['type' => 'integer', 'sanitize_callback' => 'absint'],
                 'location_id' => ['type' => 'integer', 'sanitize_callback' => 'absint'],
                 'featured'    => ['type' => 'string', 'enum' => ['true', 'false']],
+                'place_type'  => [
+                    'type' => 'string',
+                    'enum' => ['attraction', 'food', 'cafe', 'hotel'],
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
                 'lang'        => ['type' => 'string', 'default' => TA_DEFAULT_LANG],
                 'sort'        => [
                     'type'    => 'string',
@@ -87,6 +92,7 @@ class TA_EP_Places {
         $province_id = $request->get_param('province_id');
         $location_id = $request->get_param('location_id');
         $featured    = $request->get_param('featured');
+        $place_type  = $request->get_param('place_type');
         $lang        = TA_Localize::get_lang($request);
         $sort        = $request->get_param('sort') ?: 'sort_order';
         $lat         = $request->get_param('lat');
@@ -139,6 +145,14 @@ class TA_EP_Places {
             ];
         }
 
+        // Filter by place type (attraction/food/cafe/hotel). Default = attraction when not specified.
+        if ($place_type) {
+            $meta_query[] = [
+                'key'   => 'place_type',
+                'value' => $place_type,
+            ];
+        }
+
         // Build query args.
         $query_args = [
             'post_type'      => 'place',
@@ -161,9 +175,13 @@ class TA_EP_Places {
         $lat_f      = $has_coords ? (float) $lat : 0;
         $lng_f      = $has_coords ? (float) $lng : 0;
 
+        // Batch count sub_places for all results in one query instead of N+1.
+        $place_ids  = wp_list_pluck($posts, 'ID');
+        $sub_counts = self::batch_count_sub_places($place_ids);
+
         // Format all places.
-        $places = array_map(function ($post) use ($lang, $has_coords, $lat_f, $lng_f) {
-            return self::format_place_list($post, $lang, $has_coords, $lat_f, $lng_f);
+        $places = array_map(function ($post) use ($lang, $has_coords, $lat_f, $lng_f, $sub_counts) {
+            return self::format_place_list($post, $lang, $has_coords, $lat_f, $lng_f, $sub_counts);
         }, $posts);
 
         // Sort.
@@ -198,6 +216,12 @@ class TA_EP_Places {
         $pages = (int) ceil($total / $per_page);
         $offset = ($page - 1) * $per_page;
         $places = array_slice($places, $offset, $per_page);
+
+        // Optional user enrichment: add user_status + content progress when UUID is present.
+        $uuid = $request->get_header('X-Device-UUID');
+        if ($uuid) {
+            $places = self::enrich_with_user_status($places, $uuid);
+        }
 
         return TA_API::success($places, [
             'total'    => $total,
@@ -245,8 +269,7 @@ class TA_EP_Places {
         $hierarchical_index = $location_number . '.' . $order_number;
 
         // Audio
-        $audio    = TA_Localize::get_audio_localized($id, 'place_audio', $lang);
-        $duration = get_field('place_audio_duration', $id);
+        $audio = TA_Localize::get_audio_localized($id, 'place_audio', $lang);
 
         // User status
         $user_status = null;
@@ -267,11 +290,7 @@ class TA_EP_Places {
             'article'              => TA_Localize::get_field_localized($id, 'place_article', $lang),
             'feature_image'        => TA_Localize::format_image(get_field('place_feature_image', $id)),
             'gallery'              => TA_Localize::format_gallery(get_field('place_gallery', $id)),
-            'audio'                => $audio ? [
-                'url'      => $audio['url'],
-                'size'     => $audio['size'] ?? null,
-                'duration' => (float) ($duration ?: 0),
-            ] : null,
+            'audio'                => $audio ?: null,
             'latitude'             => (float) get_field('place_lat', $id),
             'longitude'            => (float) get_field('place_lng', $id),
             'geofence_radius'      => (int) (get_field('place_geofence_radius', $id) ?: 300),
@@ -310,86 +329,115 @@ class TA_EP_Places {
         $lat         = (float) $request->get_param('lat');
         $lng         = (float) $request->get_param('lng');
         $radius      = (int) ($request->get_param('radius') ?: 1000);
-        $province_id = $request->get_param('province_id');
+        $province_id = $request->get_param('province_id') ? (int) $request->get_param('province_id') : null;
         $limit       = min(100, max(1, (int) ($request->get_param('limit') ?: 10)));
         $lang        = TA_Localize::get_lang($request);
 
-        // Build query.
-        $query_args = [
-            'post_type'      => 'place',
-            'post_status'    => 'publish',
-            'posts_per_page' => -1,
-        ];
+        // Load coords from cache (IDs + lat/lng/geofence only — no WP_Post objects).
+        $all_coords = self::get_place_coords_cached($province_id);
 
-        // Filter by province if provided.
-        if ($province_id) {
-            $location_ids = get_posts([
-                'post_type'      => 'ta_location',
-                'post_status'    => 'publish',
-                'meta_key'       => 'location_province',
-                'meta_value'     => (int) $province_id,
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-            ]);
-
-            if (empty($location_ids)) {
-                return TA_API::success([]);
-            }
-
-            $query_args['meta_query'] = [
-                [
-                    'key'     => 'place_location',
-                    'value'   => $location_ids,
-                    'compare' => 'IN',
-                ],
-            ];
-        }
-
-        $posts = get_posts($query_args);
-
-        // Compute distance and filter by radius.
-        $results = [];
-        foreach ($posts as $post) {
-            $p_lat = (float) get_field('place_lat', $post->ID);
-            $p_lng = (float) get_field('place_lng', $post->ID);
-
-            if (!$p_lat && !$p_lng) {
-                continue;
-            }
-
-            $distance_m       = TA_Geo::distance_meters($lat, $lng, $p_lat, $p_lng);
-            $geofence_radius  = (int) (get_field('place_geofence_radius', $post->ID) ?: 300);
-
+        // Filter by radius in PHP using lightweight coord data.
+        $nearby = [];
+        foreach ($all_coords as $coord) {
+            $distance_m = TA_Geo::distance_meters($lat, $lng, (float) $coord->lat, (float) $coord->lng);
             if ($distance_m > $radius) {
                 continue;
             }
-
-            $audio = TA_Localize::get_audio_localized($post->ID, 'place_audio', $lang);
-
-            $results[] = [
-                'id'                 => $post->ID,
-                'name'               => TA_Localize::get_field_localized($post->ID, 'place_name', $lang),
-                'feature_image'      => TA_Localize::format_image(get_field('place_feature_image', $post->ID)),
-                'latitude'           => $p_lat,
-                'longitude'          => $p_lng,
-                'distance_meters'    => round($distance_m),
-                'geofence_radius'    => $geofence_radius,
-                'is_within_geofence' => $distance_m <= $geofence_radius,
-                'has_audio'          => $audio !== null,
-                'is_featured'        => (bool) get_field('place_is_featured', $post->ID),
-                'sort_order'         => (int) get_field('place_sort_order', $post->ID),
+            $nearby[] = [
+                'id'         => (int) $coord->ID,
+                'distance_m' => $distance_m,
+                'lat'        => (float) $coord->lat,
+                'lng'        => (float) $coord->lng,
+                'geofence_r' => (int) ($coord->geofence_radius ?: 300),
             ];
         }
 
-        // Sort by nearest first.
-        usort($results, function ($a, $b) {
-            return $a['distance_meters'] <=> $b['distance_meters'];
-        });
+        if (empty($nearby)) {
+            return TA_API::success([], ['total' => 0]);
+        }
 
-        // Apply limit.
-        $results = array_slice($results, 0, $limit);
+        usort($nearby, fn($a, $b) => $a['distance_m'] <=> $b['distance_m']);
+        $nearby = array_slice($nearby, 0, $limit);
+
+        // Batch-load postmeta for only the nearby places (not all places).
+        update_meta_cache('post', array_column($nearby, 'id'));
+
+        $results = [];
+        foreach ($nearby as $item) {
+            $id    = $item['id'];
+            $audio = TA_Localize::get_audio_localized($id, 'place_audio', $lang);
+
+            $results[] = [
+                'id'                 => $id,
+                'name'               => TA_Localize::get_field_localized($id, 'place_name', $lang),
+                'feature_image'      => TA_Localize::format_image(get_field('place_feature_image', $id)),
+                'latitude'           => $item['lat'],
+                'longitude'          => $item['lng'],
+                'distance_meters'    => round($item['distance_m']),
+                'geofence_radius'    => $item['geofence_r'],
+                'is_within_geofence' => $item['distance_m'] <= $item['geofence_r'],
+                'has_audio'          => $audio !== null,
+                'is_featured'        => (bool) get_field('place_is_featured', $id),
+                'sort_order'         => (int) get_field('place_sort_order', $id),
+            ];
+        }
 
         return TA_API::success($results, ['total' => count($results)]);
+    }
+
+    // Cache: lat/lng/geofence per place, keyed by a version counter in wp_options.
+    // Invalidated via clear_place_coords_cache() on save_post for place/ta_location.
+    private static function get_place_coords_cached(?int $province_id = null): array {
+        global $wpdb;
+
+        $version   = (string) get_option('ta_place_coord_v', 1);
+        $cache_key = $province_id
+            ? "ta_coords_v{$version}_p{$province_id}"
+            : "ta_coords_v{$version}";
+
+        $cached = get_transient($cache_key);
+        if ($cached !== false) {
+            return $cached;
+        }
+
+        // Single query: ID + lat + lng + geofence_radius + location_id from postmeta.
+        // No user input in this query — safe without prepare().
+        $rows = $wpdb->get_results("
+            SELECT
+                p.ID,
+                MAX(CASE WHEN pm.meta_key = 'place_lat'             THEN pm.meta_value END) + 0 AS lat,
+                MAX(CASE WHEN pm.meta_key = 'place_lng'             THEN pm.meta_value END) + 0 AS lng,
+                MAX(CASE WHEN pm.meta_key = 'place_geofence_radius' THEN pm.meta_value END) + 0 AS geofence_radius,
+                MAX(CASE WHEN pm.meta_key = 'place_location'        THEN pm.meta_value END) + 0 AS location_id
+            FROM {$wpdb->posts} p
+            INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                AND pm.meta_key IN ('place_lat','place_lng','place_geofence_radius','place_location')
+            WHERE p.post_type = 'place' AND p.post_status = 'publish'
+            GROUP BY p.ID
+            HAVING lat != 0 AND lng != 0
+        ");
+
+        if ($province_id) {
+            $loc_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT p.ID FROM {$wpdb->posts} p
+                 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                     AND pm.meta_key = 'location_province' AND pm.meta_value = %d
+                 WHERE p.post_type = 'ta_location' AND p.post_status = 'publish'",
+                $province_id
+            ));
+            $loc_ids = array_map('intval', $loc_ids);
+            $rows = array_values(
+                array_filter($rows, fn($r) => in_array((int) $r->location_id, $loc_ids, true))
+            );
+        }
+
+        set_transient($cache_key, $rows, 12 * HOUR_IN_SECONDS);
+        return $rows;
+    }
+
+    public static function clear_place_coords_cache(): void {
+        $v = (int) get_option('ta_place_coord_v', 1);
+        update_option('ta_place_coord_v', $v + 1, false);
     }
 
     // ──────────────────────────────────────────────
@@ -510,17 +558,24 @@ class TA_EP_Places {
             ]);
         }
 
-        // Further filter by province locations if meta search results aren't scoped yet.
-        if ($location_ids !== null) {
-            $filtered = [];
-            foreach ($all_ids as $pid) {
-                $loc_obj = get_field('place_location', $pid);
-                $loc_id  = is_object($loc_obj) ? $loc_obj->ID : (int) $loc_obj;
-                if (in_array($loc_id, $location_ids, true)) {
-                    $filtered[] = $pid;
-                }
-            }
-            $all_ids = $filtered;
+        // Further filter by province: batch-fetch place_location meta instead of N+1 get_field().
+        if ($location_ids !== null && !empty($all_ids)) {
+            global $wpdb;
+            $phs  = implode(',', array_fill(0, count($all_ids), '%d'));
+            $rows = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT post_id, meta_value AS location_id
+                     FROM {$wpdb->postmeta}
+                     WHERE meta_key = 'place_location' AND post_id IN ($phs)",
+                    ...$all_ids
+                )
+            );
+            $loc_map = array_column($rows, 'location_id', 'post_id');
+            $all_ids = array_values(
+                array_filter($all_ids, fn($pid) =>
+                    isset($loc_map[$pid]) && in_array((int) $loc_map[$pid], $location_ids, true)
+                )
+            );
         }
 
         if (empty($all_ids)) {
@@ -593,22 +648,23 @@ class TA_EP_Places {
     /**
      * Compact place for list endpoint.
      */
-    private static function format_place_list(WP_Post $post, string $lang, bool $has_coords, float $lat, float $lng): array {
+    private static function format_place_list(WP_Post $post, string $lang, bool $has_coords, float $lat, float $lng, array $sub_counts = []): array {
         $id    = $post->ID;
         $p_lat = (float) get_field('place_lat', $id);
         $p_lng = (float) get_field('place_lng', $id);
 
         $item = [
-            'id'            => $id,
-            'order_number'  => (int) get_field('place_order_number', $id),
-            'name'          => TA_Localize::get_field_localized($id, 'place_name', $lang),
-            'info'          => TA_Localize::get_field_localized($id, 'place_info', $lang),
-            'feature_image' => TA_Localize::format_image(get_field('place_feature_image', $id)),
-            'latitude'      => $p_lat,
-            'longitude'     => $p_lng,
-            'is_featured'   => (bool) get_field('place_is_featured', $id),
-            'sort_order'    => (int) get_field('place_sort_order', $id),
-            'sub_places_count' => self::count_sub_places($id),
+            'id'               => $id,
+            'order_number'     => (int) get_field('place_order_number', $id),
+            'name'             => TA_Localize::get_field_localized($id, 'place_name', $lang),
+            'info'             => TA_Localize::get_field_localized($id, 'place_info', $lang),
+            'feature_image'    => TA_Localize::format_image(get_field('place_feature_image', $id)),
+            'latitude'         => $p_lat,
+            'longitude'        => $p_lng,
+            'place_type'       => get_field('place_type', $id) ?: 'attraction',
+            'is_featured'      => (bool) get_field('place_is_featured', $id),
+            'sort_order'       => (int) get_field('place_sort_order', $id),
+            'sub_places_count' => (int) ($sub_counts[$id] ?? 0),
         ];
 
         if ($has_coords && $p_lat && $p_lng) {
@@ -616,6 +672,123 @@ class TA_EP_Places {
         }
 
         return $item;
+    }
+
+    // ──────────────────────────────────────────────
+    // User enrichment (optional, activated by UUID header)
+    // ──────────────────────────────────────────────
+
+    private static function enrich_with_user_status(array $places, string $uuid): array {
+        // Only enrich attraction-type places (food/cafe/hotel have no story/audio).
+        $attraction_ids = [];
+        foreach ($places as $p) {
+            if (($p['place_type'] ?? 'attraction') === 'attraction') {
+                $attraction_ids[] = $p['id'];
+            }
+        }
+
+        if (empty($attraction_ids)) {
+            return array_map(function ($p) {
+                $p['user_status']       = null;
+                $p['story_progress_pct'] = null;
+                $p['audio_progress_pct'] = null;
+                return $p;
+            }, $places);
+        }
+
+        $checkins = self::batch_checkins_for_places($uuid, $attraction_ids);
+        $progress = self::batch_content_progress_for_places($uuid, $attraction_ids);
+
+        return array_map(function ($p) use ($checkins, $progress) {
+            $pid  = $p['id'];
+            $type = $p['place_type'] ?? 'attraction';
+
+            if ($type !== 'attraction') {
+                $p['user_status']        = null;
+                $p['story_progress_pct'] = null;
+                $p['audio_progress_pct'] = null;
+                return $p;
+            }
+
+            $is_visited   = isset($checkins[$pid]);
+            $story_pct    = $progress[$pid]['article_read'] ?? null;
+            $audio_pct    = $progress[$pid]['audio']        ?? null;
+            $story_done   = $story_pct !== null && $story_pct >= 100;
+            $audio_done   = $audio_pct !== null && $audio_pct >= 100;
+
+            if ($is_visited && $story_done && $audio_done) {
+                $status = 'discovered';
+            } elseif ($is_visited) {
+                $status = 'explored';
+            } else {
+                $status = 'unexplored';
+            }
+
+            $p['user_status']        = $status;
+            $p['story_progress_pct'] = $story_pct;
+            $p['audio_progress_pct'] = $audio_pct;
+            return $p;
+        }, $places);
+    }
+
+    private static function batch_checkins_for_places(string $uuid, array $place_ids): array {
+        global $wpdb;
+        $phs  = implode(',', array_fill(0, count($place_ids), '%d'));
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT place_id FROM {$wpdb->prefix}ta_checkins
+             WHERE device_uuid = %s AND place_id IN ($phs)",
+            array_merge([$uuid], $place_ids)
+        ), ARRAY_A);
+
+        return array_fill_keys(array_column($rows, 'place_id'), true);
+    }
+
+    private static function batch_content_progress_for_places(string $uuid, array $place_ids): array {
+        global $wpdb;
+        $phs  = implode(',', array_fill(0, count($place_ids), '%d'));
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT content_id, event_type, MAX(completion_pct) AS max_pct
+             FROM {$wpdb->prefix}ta_content_events
+             WHERE device_uuid = %s
+               AND content_type = 'place'
+               AND content_id IN ($phs)
+               AND event_type IN ('article_read', 'audio_play', 'audio_complete')
+             GROUP BY content_id, event_type",
+            array_merge([$uuid], $place_ids)
+        ), ARRAY_A);
+
+        $map = [];
+        foreach ($rows as $row) {
+            $pid = (int) $row['content_id'];
+            if ($row['event_type'] === 'article_read') {
+                $map[$pid]['article_read'] = max($map[$pid]['article_read'] ?? 0, (int) $row['max_pct']);
+            } else {
+                $map[$pid]['audio'] = max($map[$pid]['audio'] ?? 0, (int) $row['max_pct']);
+            }
+        }
+        return $map;
+    }
+
+    private static function batch_count_sub_places(array $place_ids): array {
+        if (empty($place_ids)) {
+            return [];
+        }
+        global $wpdb;
+        $phs = implode(',', array_fill(0, count($place_ids), '%d'));
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT pm.meta_value AS place_id, COUNT(p.ID) AS cnt
+                 FROM {$wpdb->posts} p
+                 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                     AND pm.meta_key = 'sub_place_place'
+                 WHERE p.post_type = 'sub_place'
+                   AND p.post_status = 'publish'
+                   AND pm.meta_value IN ($phs)
+                 GROUP BY pm.meta_value",
+                ...$place_ids
+            )
+        );
+        return array_column($rows, 'cnt', 'place_id');
     }
 
     /**
@@ -642,7 +815,6 @@ class TA_EP_Places {
         foreach ($posts as $sp) {
             $sp_id = $sp->ID;
             $audio = TA_Localize::get_audio_localized($sp_id, 'sub_place_audio', $lang);
-            $duration = get_field('sub_place_audio_duration', $sp_id);
 
             $entry = [
                 'id'              => $sp_id,
@@ -650,10 +822,7 @@ class TA_EP_Places {
                 'name'            => TA_Localize::get_field_localized($sp_id, 'sub_place_name', $lang),
                 'description'     => TA_Localize::get_field_localized($sp_id, 'sub_place_desc', $lang),
                 'feature_image'   => TA_Localize::format_image(get_field('sub_place_feature_image', $sp_id)),
-                'audio'           => $audio ? [
-                    'url'      => $audio['url'],
-                    'duration' => (float) ($duration ?: 0),
-                ] : null,
+                'audio'           => $audio ?: null,
                 'latitude'        => (float) (get_field('sub_place_lat', $sp_id) ?: 0),
                 'longitude'       => (float) (get_field('sub_place_lng', $sp_id) ?: 0),
                 'sort_order'      => (int) (get_field('sub_place_sort_order', $sp_id) ?: 0),

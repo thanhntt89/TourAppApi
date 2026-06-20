@@ -122,11 +122,11 @@ class TA_Log_Viewer {
             <?php endif; ?>
 
             <style>
-                .ta-log-filters { background:#fff; border:1px solid #ddd; padding:14px 16px; border-radius:4px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+                .ta-log-filters { background:#f ff; border:1px solid #ddd; padding:14px 16px; border-radius:4px; margin-bottom:16px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
                 .ta-log-filters label { display:flex; flex-direction:column; font-size:12px; color:#555; gap:3px; }
                 .ta-log-filters input, .ta-log-filters select { font-size:13px; }
                 .ta-log-table { width:100%; border-collapse:collapse; font-size:12px; }
-                .ta-log-table th { background:#1d2327; color:#fff; padding:7px 8px; text-align:left; position:sticky; top:32px; }
+                .ta-log-table th { background:#1d2327; color:#fff; padding:7px 8px; text-align:left; position:sticky; top:0; z-index:1; }
                 .ta-log-table td { padding:5px 8px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
                 .ta-log-table tr:hover td { background:#f8f9fa; }
                 .ta-log-table tr.ta-err-row td { background:#fff5f5; }
@@ -141,6 +141,11 @@ class TA_Log_Viewer {
                 .ta-detail-row pre { margin:0; white-space:pre-wrap; font-size:11px; max-height:200px; overflow:auto; background:#fff; padding:8px; border:1px solid #ddd; border-radius:3px; }
                 .ta-uuid-link { font-family:monospace; font-size:11px; color:#0073aa; text-decoration:none; }
                 .ta-uuid-link:hover { text-decoration:underline; }
+                @media(max-width:768px){
+                    .ta-log-filters label { min-width:calc(50% - 8px); }
+                    .ta-log-filters input[type=date] { width:100% !important; box-sizing:border-box; }
+                    .ta-log-filters input[type=text] { width:100% !important; box-sizing:border-box; }
+                }
             </style>
 
             <!-- Filters -->
@@ -175,7 +180,7 @@ class TA_Log_Viewer {
             </form>
 
             <!-- Toolbar -->
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
                 <div style="font-size:12px;color:#666">
                     Page <?php echo $page; ?> of <?php echo max(1, $total_pages); ?>
                     &nbsp;·&nbsp; Showing <?php echo count($rows); ?> of <?php echo number_format($total); ?> entries
@@ -220,7 +225,7 @@ class TA_Log_Viewer {
             </div>
 
             <!-- Log table -->
-            <table class="ta-log-table">
+            <div style="overflow-x:auto"><table class="ta-log-table">
                 <thead>
                     <tr>
                         <th style="width:40px">#</th>
@@ -238,7 +243,9 @@ class TA_Log_Viewer {
                 <tbody>
                 <?php
                 $m_colors = ['GET' => '#0a7a35', 'POST' => '#0073aa', 'PUT' => '#8b6914', 'DELETE' => '#b32d2e'];
-                foreach ($rows as $i => $row):
+                $row_num  = 0;
+                foreach ($rows as $row):
+                    $row_num++;
                     $is_err   = $row['status_code'] >= 400;
                     $status_cls = $row['status_code'] >= 500 ? 'ta-5xx' : ($row['status_code'] >= 400 ? 'ta-4xx' : 'ta-2xx');
                     $slow_cls   = $row['response_ms'] > 2000 ? 'ta-slow' : ($row['response_ms'] > 1000 ? 'color:#856404' : '');
@@ -248,7 +255,7 @@ class TA_Log_Viewer {
                     $user_url   = add_query_arg(['page' => 'toursapp-analytics', 'tab' => 'users', 'uuid' => $row['device_uuid']], admin_url('admin.php'));
                 ?>
                 <tr class="<?php echo $is_err ? 'ta-err-row' : ''; ?>">
-                    <td style="color:#999;font-size:10px"><?php echo esc_html(($page - 1) * $per_page + $i + 1); ?></td>
+                    <td style="color:#999;font-size:10px"><?php echo esc_html(($page - 1) * $per_page + $row_num); ?></td>
                     <td style="font-size:11px;color:#555;white-space:nowrap"><?php echo esc_html($row['created_at']); ?></td>
                     <td><span class="ta-method-badge" style="background:<?php echo esc_attr($mc); ?>"><?php echo esc_html($row['method']); ?></span></td>
                     <td style="font-size:11px"><code><?php echo esc_html($row['endpoint']); ?></code></td>
@@ -311,7 +318,7 @@ class TA_Log_Viewer {
                 <?php endif; ?>
                 <?php endforeach; ?>
                 </tbody>
-            </table>
+            </table></div>
 
             <!-- Pagination -->
             <?php if ($total_pages > 1): ?>

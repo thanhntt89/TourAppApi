@@ -43,10 +43,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final position = ref.watch(currentPositionProvider).asData?.value;
     // Phase 1: Ha Giang only — province ID is fixed
     final locationsAsync = ref.watch(
-      locationsProvider(provinceId: MapConstants.haGiangProvinceId),
+      featuredLocationsProvider(MapConstants.haGiangProvinceId),
     );
     final placesAsync = ref.watch(
-      placesByProvinceProvider(provinceId: MapConstants.haGiangProvinceId),
+      placesByProvinceProvider(MapConstants.haGiangProvinceId),
     );
 
     return Scaffold(
@@ -115,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   children: [
                     Expanded(
                       child: Text(
-                        'Explore Ha Giang',
+                        _tab.index == 0 ? 'Explore by Location' : 'Highlights — Places',
                         style:
                             Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: AppColors.deepBrown,

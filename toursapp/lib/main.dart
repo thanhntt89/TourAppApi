@@ -8,17 +8,26 @@ import 'package:stoneecho/core/config/env_config.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await FMTCObjectBoxBackend().initialise();
-  await FMTCStore('toursapp_tiles').manage.create();
+  try {
+    await FMTCObjectBoxBackend().initialise();
+    await FMTCStore('toursapp_tiles').manage.create();
+  } catch (e) {
+    debugPrint('FMTC init error: $e');
+  }
 
-  await SentryFlutter.init(
-    (options) {
-      options
-        ..dsn = EnvConfig.sentryDsn
-        ..tracesSampleRate = 0.3;
-    },
-    appRunner: () => runApp(
-      const ProviderScope(child: StoneEchoApp()),
-    ),
-  );
+  final dsn = EnvConfig.sentryDsn;
+  if (dsn.isNotEmpty) {
+    await SentryFlutter.init(
+      (options) {
+        options
+          ..dsn = dsn
+          ..tracesSampleRate = 0.3;
+      },
+      appRunner: () => runApp(
+        const ProviderScope(child: StoneEchoApp()),
+      ),
+    );
+  } else {
+    runApp(const ProviderScope(child: StoneEchoApp()));
+  }
 }
