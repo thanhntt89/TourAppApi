@@ -61,8 +61,8 @@ This file is the single source of truth. Every endpoint listed here must exist i
 | 46 | POST | `/user/downloads/start` | 🔒 Device UUID | class-ta-ep-downloads.php |
 | 47 | POST | `/user/downloads/complete` | 🔒 Device UUID | class-ta-ep-downloads.php |
 | 48 | GET | `/sync/check` | Public | class-ta-ep-sync.php |
-| 49 | GET | `/sync/package/{province_id}` | Public | class-ta-ep-sync.php |
-| 50 | GET | `/sync/media/{province_id}` | Public | class-ta-ep-sync.php |
+| 49 | GET | `/sync/package/{province_id}` | 🔒 Device UUID | class-ta-ep-sync.php |
+| 50 | GET | `/sync/media/{province_id}` | 🔒 Device UUID | class-ta-ep-sync.php |
 
 > **#38 POST `/user/journeys/{id}`** — từ `WP_REST_Server::EDITABLE` (= POST, PUT, PATCH). Dùng PUT trong thực tế, POST/PATCH là alias WordPress tự thêm.  
 > **`{type}`** trong `/content/{type}/...` = `place` | `story` | `sub_place` | `sub_item`

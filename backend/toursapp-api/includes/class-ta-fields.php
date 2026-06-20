@@ -259,7 +259,6 @@ $f[] = ['key' => self::k('place_lat'),                'label' => 'Latitude',    
         $f[] = ['key' => self::k('journey_province'),       'label' => 'Province',           'name' => 'journey_province',       'type' => 'post_object', 'post_type' => ['province'], 'return_format' => 'id', 'required' => 1];
         $f[] = ['key' => self::k('journey_feature_image'),  'label' => 'Feature Image',      'name' => 'journey_feature_image',  'type' => 'image',       'return_format' => 'id', 'preview_size' => 'medium'];
         $f[] = ['key' => self::k('journey_duration_days'),  'label' => 'Duration (days)',    'name' => 'journey_duration_days',  'type' => 'number',      'default_value' => 1];
-        $f[] = ['key' => self::k('journey_total_places'),   'label' => 'Total Places',       'name' => 'journey_total_places',   'type' => 'number'];
         $f[] = ['key' => self::k('journey_difficulty'),     'label' => 'Difficulty',         'name' => 'journey_difficulty',     'type' => 'select',      'choices' => ['easy' => 'Easy', 'medium' => 'Medium', 'hard' => 'Hard'], 'default_value' => 'easy'];
         $f[] = ['key' => self::k('journey_is_featured'),    'label' => 'Featured',           'name' => 'journey_is_featured',    'type' => 'true_false',  'ui' => 1];
         $f[] = ['key' => self::k('journey_sort_order'),     'label' => 'Sort Order',         'name' => 'journey_sort_order',     'type' => 'number',      'default_value' => 0];

@@ -29,6 +29,36 @@ class TA_Activator {
             self::create_tables();
             update_option('ta_db_version', '1.5.2');
         }
+<<<<<<< Updated upstream
+=======
+        if (version_compare($installed, '1.6.0', '<')) {
+            $col = $wpdb->get_results("SHOW COLUMNS FROM {$wpdb->prefix}ta_api_logs LIKE 'app_version'");
+            if (empty($col)) {
+                $wpdb->query("ALTER TABLE {$wpdb->prefix}ta_api_logs ADD COLUMN app_version VARCHAR(20) NULL AFTER ip_address");
+            }
+            update_option('ta_db_version', '1.6.0');
+        }
+        if (version_compare($installed, '1.7.0', '<')) {
+            self::create_tables();
+            update_option('ta_db_version', '1.7.0');
+        }
+        if (version_compare($installed, '1.7.8', '<')) {
+            $wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE meta_key IN (
+                'place_audio_duration',
+                'sub_place_audio_duration',
+                'journey_audio_duration',
+                'story_audio_duration'
+            )");
+            update_option('ta_db_version', '1.7.8');
+        }
+        if (version_compare($installed, '1.7.9', '<')) {
+            $wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE meta_key = 'journey_total_places'");
+            update_option('ta_db_version', '1.7.9');
+        }
+        if (version_compare($installed, '1.7.10', '<')) {
+            update_option('ta_db_version', '1.7.10');
+        }
+>>>>>>> Stashed changes
     }
 
     public static function deactivate() {

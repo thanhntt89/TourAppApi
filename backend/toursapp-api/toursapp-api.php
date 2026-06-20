@@ -11,7 +11,11 @@
 
 defined('ABSPATH') || exit;
 
+<<<<<<< Updated upstream
 define('TA_VERSION', '1.5.1');
+=======
+define('TA_VERSION', '1.7.10');
+>>>>>>> Stashed changes
 define('TA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TA_API_NAMESPACE', 'toursapp/v1');

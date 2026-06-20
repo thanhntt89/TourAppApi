@@ -1,0 +1,16 @@
+﻿Analyzing toursapp...                                           
+
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\journeys\widgets\route_map_widget.dart:12:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\services\service_detail_screen.dart:20:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\services\service_detail_screen.dart:23:28 - prefer_const_constructors
+   info - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication - lib\providers\download_providers.dart:50:5 - cascade_invocations
+   info - Dependencies not sorted alphabetically. Try sorting the dependencies alphabetically (A to Z) - pubspec.yaml:15:3 - sort_pub_dependencies
+   info - Dependencies not sorted alphabetically. Try sorting the dependencies alphabetically (A to Z) - pubspec.yaml:49:3 - sort_pub_dependencies
+
+flutter : 6 issues found. (ran in 6.8s)
+At line:1 char:1
++ flutter analyze 2>&1 | Out-File -Encoding utf8 analyze.txt
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (6 issues found. (ran in 6.8s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

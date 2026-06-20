@@ -103,12 +103,25 @@ class TA_EP_Journeys {
             'name'          => TA_Localize::get_field_localized($id, 'journey_name', $lang),
             'description'   => TA_Localize::get_field_localized($id, 'journey_desc', $lang),
             'feature_image' => TA_Localize::format_image(get_field('journey_feature_image', $id)),
+<<<<<<< Updated upstream
             'duration_days' => (int) get_field('journey_duration_days', $id),
             'total_places'  => (int) get_field('journey_total_places', $id),
             'difficulty'    => get_field('journey_difficulty', $id) ?: 'easy',
             'is_featured'   => (bool) get_field('journey_is_featured', $id),
             'sort_order'    => (int) get_field('journey_sort_order', $id),
             'stops'         => self::format_stops($id, $lang),
+=======
+            'passport_name' => get_field('journey_passport_name', $id) ?: '',
+            'stamp_image'   => TA_Localize::format_image(get_field('journey_stamp_image', $id)),
+            'audio'         => $audio ?: null,
+            'difficulty'    => get_field('journey_difficulty', $id) ?: 'easy',
+            'is_featured'    => (bool) get_field('journey_is_featured', $id),
+            'show_homepage'  => (bool) get_field('journey_show_homepage', $id),
+            'sort_order'     => (int) get_field('journey_sort_order', $id),
+            'duration_days' => (int) get_field('journey_duration_days', $id),
+            'stops'         => ($stops = self::format_stops($id, $lang)),
+            'total_places'  => count($stops),
+>>>>>>> Stashed changes
         ];
     }
 

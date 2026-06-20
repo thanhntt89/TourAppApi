@@ -1,0 +1,114 @@
+{
+  "/provinces": {
+    "status_code": 200,
+    "json": {
+      "success": true,
+      "data": [
+        {
+          "id": 144,
+          "name": "HÀ GIANG",
+          "feature_image": null,
+          "latitude": 0,
+          "longitude": 0,
+          "detection_radius_km": 50,
+          "is_active": true,
+          "total_locations": 6,
+          "total_places": 2,
+          "sort_order": 0
+        }
+      ],
+      "meta": {
+        "total": 1
+      }
+    }
+  },
+  "/places": {
+    "status_code": 200,
+    "json": {
+      "success": true,
+      "data": [
+        {
+          "id": 5236,
+          "order_number": 30,
+          "name": "Hmong King's Palace",
+          "info": "<h2><b>The Vương Family Mansion:</b></h2>\n<h3><b>A Journey Through Power, Change, and Legacy </b></h3>\n",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/Vuameo-palace.png",
+            "width": 1264,
+            "height": 841,
+            "alt": ""
+          },
+          "latitude": 23.256314329324645,
+          "longitude": 105.26212570031649,
+          "place_type": "attraction",
+          "is_featured": false,
+          "sort_order": 0,
+          "sub_places_count": 1,
+          "user_status": "unexplored",
+          "story_progress_pct": null,
+          "audio_progress_pct": null
+        },
+        {
+          "id": 4460,
+          "order_number": 4,
+          "name": "Nho quế",
+          "info": "<h3><b>SECTION 1: NHO QUẾ AT A GLANCE</b></h3>\n<p><span style=\"font-weight: 400;\">Located in Hà Giang Province, the Nho Quế River is the defining geographical feature of the Đồng Văn Karst Plateau. Originating from the Nghiem Son mountains in China, the river has a total length of 192 kilometres, with a 46-kilometre stretch winding through Việt Nam. Entering the country near the northernmost point of Lũng Cú, it travels through the rugged districts of Đồng Văn and Mèo Vạc before joining the Gâm River.</span></p>\n<p><span style=\"font-weight: 400;\">The river is most famous for its relationship with Tu Sản Canyon, carving a deep, dramatic path directly through the base of towering limestone cliffs. Its striking emerald-green water creates a sharp visual contrast against the surrounding grey mountains. When viewed from the Mã Pí Lèng Pass above, this vivid ribbon of water provides one of Việt Nam’s most iconic landscapes, serving as a vital geographical lifeline in an otherwise arid and rocky region.</span></p>\n<h3><b>SECTION 2: UNDERSTANDING THE NHO QUẾ RIVER</b></h3>\n<p><span style=\"font-weight: 400;\">Fed by mountain springs and surface runoff from the high-altitude limestone plateau, the Nho Quế River is defined by its extreme entrenchment. Rather than flowing through a broad, open valley, the river is confined within a steep, V-shaped gorge. For visitors, this means the river is rarely seen at eye level until completing a long descent; it is primarily experienced as a distant, winding feature far below the mountain roads.</span></p>\n<p><span style=\"font-weight: 400;\">The river’s character shifts distinctly with the seasons. During the rainy months (May to September), water volume increases and the flow turns muddy due to sediment washed down from the peaks. In the dry season (October to April), the flow slows and the sediment settles. This calmer environment allows the river to take on its famous emerald or turquoise hue—a result of high water clarity, specific mineral content, and algae reflecting the sunlight. This seasonal transformation means visitors in winter and spring experience a drastically different, much calmer river than those visiting during the summer rains.</span></p>\n<h3><b>SECTION 3: TU SẢN CANYON</b></h3>\n<p><span style=\"font-weight: 400;\">Situated between the Đồng Văn and Mèo Vạc districts, Tu Sản Canyon is a massive fault line and the most significant natural feature along the Nho Quế River. It holds the distinction of being the deepest canyon in Southeast Asia.</span></p>\n<p><span style=\"font-weight: 400;\">The scale of the canyon is extraordinary. It stretches for roughly 1.7 kilometres, flanked by sheer, near-vertical limestone walls. The depth of the gorge, measured from the highest mountain peaks down to the water surface, reaches between 700 and 800 metres. These towering cliffs slope at extreme angles, sometimes reaching 90 degrees, creating a highly enclosed, corridor-like environment. For visitors on the water, these dimensions mean that navigating the canyon feels remarkably isolating; the sheer height of the walls blocks out much of the sky and dramatically alters the sense of scale.</span></p>\n<p><span style=\"font-weight: 400;\">Geologically, Tu Sản Canyon is the centrepiece of the Đồng Văn UNESCO Global Geopark. While the specific geology is complex, its formation is essentially the result of two combined forces: the earth’s crust splitting apart millions of years ago, and the river continuously carving downward into that fracture ever since.</span></p>\n<p><span style=\"font-weight: 400;\">Because the canyon is so immense, the high mountain passes provide the best panoramic views. However, the true magnitude of Tu Sản is best understood from the water level. Looking up from a boat at the base of the gorge offers a humbling perspective, revealing the staggering height of the cliffs and the sheer power of the water that shaped them.</span></p>\n<h3><b>SECTION 4: HYDROPOWER AND THE MODERN RIVER</b></h3>\n<p><span style=\"font-weight: 400;\">The Nho Quế River as experienced by visitors today has been significantly altered by modern infrastructure. Beginning in 2007, a cascade of hydroelectric dams was constructed along the river&#8217;s route to harness its energy. The largest of the local facilities is the Nho Quế 3 Hydropower Project, completed in 2012 with an installed capacity of 110 megawatts (MW), which operates alongside other stations like Nho Quế 1 and Nho Quế 2.</span></p>\n<p><span style=\"font-weight: 400;\">This network of dams fundamentally changed the river’s natural behaviour. Historically, the Nho Quế was a swift, turbulent mountain river characterized by dangerous rapids. Today, the damming process has raised water levels and significantly reduced current speeds, transforming long stretches of the river into calm, deep reservoirs.</span></p>\n<p><span style=\"font-weight: 400;\">This environmental shift has directly shaped current tourism access. Before the hydropower projects, navigating the base of the river was hazardous and highly restricted. The calm waters created by the dams now make the river easily accessible year-round. This stabilized water level is precisely what allows modern visitors to safely take passenger boats and kayaks directly into the deepest sections of Tu Sản Canyon.</span></p>\n<h3><b>SECTION 5: VISITING THE NHO QUẾ RIVER</b></h3>\n<p><span style=\"font-weight: 400;\">To experience the river at water level, visitors typically take a guided boat tour. Most journeys begin from either the Tà Làng or Xín Cái boat piers. Reaching these starting points requires descending from the main towns of Đồng Văn or Mèo Vạc via steep, winding local roads that branch off the main highway.</span></p>\n<p><span style=\"font-weight: 400;\">Standard motorised boat tours take between 45 and 90 minutes, allowing ample time to travel through the canyon and back. Kayaks and small self-rowing boats are also available to rent for an independent pace. Because the canyon is exceptionally deep, direct sunlight only reaches the water level during the middle of the day. Visiting between mid-morning and early afternoon provides the best lighting for photography, avoiding the heavy shadows cast by the cliffs.</span></p>\n<p><span style=\"font-weight: 400;\">The dry season (October to April) offers the best overall conditions, as the water maintains its signature emerald colour. In February and March, blooming red Bombax ceiba trees along the banks provide an additional visual contrast. For an aerial perspective, the Mã Pí Lèng Pass remains the premier viewpoint for photography without descending to the water.</span></p>\n<h3><b>SECTION 6: PRACTICAL TIPS</b></h3>\n<ul>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Accessing the Piers:</b><span style=\"font-weight: 400;\"> The descent routes to the river are extremely narrow with sharp hairpin turns. It is highly recommended to hire an experienced local motorbike taxi (</span><i><span style=\"font-weight: 400;\">xe ôm</span></i><span style=\"font-weight: 400;\">) or a dedicated driver rather than self-driving.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Footwear:</b><span style=\"font-weight: 400;\"> Wear sturdy, slip-resistant shoes. The walking paths from the parking areas down to the boats can be uneven and wet.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Microclimate:</b><span style=\"font-weight: 400;\"> The canyon floor is often noticeably cooler and windier than the surrounding plateau; bringing a light jacket or windbreaker is advised.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Safety:</b><span style=\"font-weight: 400;\"> Standard safety regulations apply. Life jackets are provided at the piers and are mandatory for all boat and kayak trips.</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><b>Ticketing:</b><span style=\"font-weight: 400;\"> Purchase boat or kayak tickets directly at the official pier stations to ensure standard, regulated pricing.</span></li>\n</ul>\n",
+          "feature_image": {
+            "url": "https://hagiang.caremycars.com/wp-content/uploads/2026/06/NHO-QUE-RIVER.png",
+            "width": 1584,
+            "height": 672,
+            "alt": ""
+          },
+          "latitude": 23.23088156188252,
+          "longitude": 105.42660419193106,
+          "place_type": "attraction",
+          "is_featured": false,
+          "sort_order": 0,
+          "sub_places_count": 0,
+          "user_status": "unexplored",
+          "story_progress_pct": null,
+          "audio_progress_pct": null
+        }
+      ],
+      "meta": {
+        "total": 2,
+        "page": 1,
+        "per_page": 20,
+        "pages": 1
+      }
+    }
+  },
+  "/places/1": {
+    "status_code": 404,
+    "json": {
+      "success": false,
+      "error": {
+        "code": "place_not_found",
+        "message": "Place not found."
+      }
+    }
+  },
+  "/user/wallet": {
+    "status_code": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "balance": 0,
+        "total_earned": 0,
+        "total_spent": 0,
+        "referral_code": "HG-3603B7",
+        "transactions": []
+      }
+    }
+  },
+  "/user/journeys": {
+    "status_code": 200,
+    "json": {
+      "success": true,
+      "data": [],
+      "meta": {
+        "total": 0
+      }
+    }
+  }
+}
