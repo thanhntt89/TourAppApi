@@ -64,7 +64,7 @@ final class PlacesProvider
   }
 }
 
-String _$placesHash() => r'e664a72bcca15f9b194dacb11bc1b93860040e34';
+String _$placesHash() => r'37780d9890a629205a35ad930c3de5e1298b03a2';
 
 final class PlacesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<Place>>, int> {
@@ -133,7 +133,7 @@ final class PlaceDetailProvider
   }
 }
 
-String _$placeDetailHash() => r'136df156cf0e3a8aeea5b22ca76cb715ade657b3';
+String _$placeDetailHash() => r'c2f292f65a2bfca4a3601765ee65ae689708cbc0';
 
 final class PlaceDetailFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Place>, int> {
@@ -190,7 +190,82 @@ final class NearbyPlacesProvider
   }
 }
 
-String _$nearbyPlacesHash() => r'3eb7636b86a2324165f929087fd5d31a10cde5c4';
+String _$nearbyPlacesHash() => r'c85606a258bd2d06874dd8f3c095d9dc02c54db8';
+
+@ProviderFor(placesByProvince)
+const placesByProvinceProvider = PlacesByProvinceFamily._();
+
+final class PlacesByProvinceProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Place>>,
+          List<Place>,
+          FutureOr<List<Place>>
+        >
+    with $FutureModifier<List<Place>>, $FutureProvider<List<Place>> {
+  const PlacesByProvinceProvider._({
+    required PlacesByProvinceFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'placesByProvinceProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$placesByProvinceHash();
+
+  @override
+  String toString() {
+    return r'placesByProvinceProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Place>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Place>> create(Ref ref) {
+    final argument = this.argument as int;
+    return placesByProvince(ref, provinceId: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PlacesByProvinceProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$placesByProvinceHash() => r'ebf71999652b6c69fbe0c5295c1dbf68a2f0cf1f';
+
+final class PlacesByProvinceFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<Place>>, int> {
+  const PlacesByProvinceFamily._()
+    : super(
+        retry: null,
+        name: r'placesByProvinceProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  PlacesByProvinceProvider call({required int provinceId}) =>
+      PlacesByProvinceProvider._(argument: provinceId, from: this);
+
+  @override
+  String toString() => r'placesByProvinceProvider';
+}
 
 @ProviderFor(placeSearch)
 const placeSearchProvider = PlaceSearchFamily._();
@@ -247,7 +322,7 @@ final class PlaceSearchProvider
   }
 }
 
-String _$placeSearchHash() => r'527835706b2838ed0af314b9d593fa1d3dce8791';
+String _$placeSearchHash() => r'ff304356ea078748c901863f841ca8ec56fc477f';
 
 final class PlaceSearchFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<Place>>, String> {

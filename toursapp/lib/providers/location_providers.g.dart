@@ -64,7 +64,7 @@ final class LocationsProvider
   }
 }
 
-String _$locationsHash() => r'ef61f5ac525b0666610374022792d8a741bba6ca';
+String _$locationsHash() => r'1314ad10458183090f3fd796917ddf1223d3deb3';
 
 final class LocationsFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<Location>>, int> {
@@ -134,7 +134,7 @@ final class LocationDetailProvider
   }
 }
 
-String _$locationDetailHash() => r'6b18ab65668c6318b86db0438182ed1ad700dde3';
+String _$locationDetailHash() => r'ba1a2e7e70e31c24a8b01eb2e3e3454a00c5892e';
 
 final class LocationDetailFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Location>, int> {

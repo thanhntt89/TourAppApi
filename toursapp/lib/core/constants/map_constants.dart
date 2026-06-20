@@ -1,6 +1,8 @@
 import 'package:latlong2/latlong.dart';
 
 abstract final class MapConstants {
+  // Phase 1: Ha Giang only — province ID from backend
+  static const haGiangProvinceId = 144;
   // Ha Giang bounding box
   static const haGiangSouthLat = 22.5;
   static const haGiangNorthLat = 23.5;

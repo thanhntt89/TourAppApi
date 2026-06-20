@@ -19,7 +19,10 @@ class Provinces extends _$Provinces {
 
   Future<List<Province>> _fetchFromApi() async {
     final dio = ref.read(dioProvider);
-    final response = await dio.get<Map<String, dynamic>>(ApiConstants.provinces);
+    final response = await dio.get<Map<String, dynamic>>(
+      ApiConstants.provinces,
+      queryParameters: {'lang': 'vi'},
+    );
     final data = response.data!;
     return (data['data'] as List)
         .map((e) => Province.fromJson(e as Map<String, dynamic>))

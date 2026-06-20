@@ -89,7 +89,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPlacesNearby => 'No places nearby';
 
   @override
-  String get noPlacesNearbyDesc => 'You\'re not near any landmarks yet. Check the map or scan a QR code.';
+  String get noPlacesNearbyDesc =>
+      'You\'re not near any landmarks yet. Check the map or scan a QR code.';
 
   @override
   String get offlineTitle => 'You\'re offline';
@@ -120,7 +121,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanQrCode => 'Scan QR Code';
 
   @override
-  String get scanInstruction => 'Point camera at the QR code at any tourist location';
+  String get scanInstruction =>
+      'Point camera at the QR code at any tourist location';
 
   @override
   String get recentScans => 'Recent Scans';
@@ -237,7 +239,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetApp => 'Reset App';
 
   @override
-  String get resetAppConfirmation => 'Are you sure you want to reset the app? This will delete all your data.';
+  String get resetAppConfirmation =>
+      'Are you sure you want to reset the app? This will delete all your data.';
 
   @override
   String get reset => 'Reset';
@@ -255,7 +258,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contentLanguage => 'Content Language';
 
   @override
-  String get contentLanguageDescription => 'Language for audio guides and articles';
+  String get contentLanguageDescription =>
+      'Language for audio guides and articles';
 
   @override
   String get anonymousExplorer => 'Anonymous Explorer';
@@ -342,25 +346,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTitle1 => 'Your Personal Tour Guide';
 
   @override
-  String get onboardingBody1 => 'Arrive at any landmark in Ha Giang and automatically hear its story — in your language';
+  String get onboardingBody1 =>
+      'Arrive at any landmark in Ha Giang and automatically hear its story — in your language';
 
   @override
   String get onboardingTitle2 => 'Works Even on the Mountain Pass';
 
   @override
-  String get onboardingBody2 => 'Download maps, audio guides, and travel info before you go. Everything works without internet.';
+  String get onboardingBody2 =>
+      'Download maps, audio guides, and travel info before you go. Everything works without internet.';
 
   @override
   String get onboardingTitle3 => 'Collect Stories as You Travel';
 
   @override
-  String get onboardingBody3 => 'Earn flowers at each stop. Unlock hidden stories, local secrets, and premium audio guides.';
+  String get onboardingBody3 =>
+      'Earn flowers at each stop. Unlock hidden stories, local secrets, and premium audio guides.';
 
   @override
   String get onboardingTitle4 => 'Allow Location Access';
 
   @override
-  String get onboardingBody4 => 'We use your location to automatically play audio guides when you arrive at landmarks.';
+  String get onboardingBody4 =>
+      'We use your location to automatically play audio guides when you arrive at landmarks.';
 
   @override
   String get enableGps => 'Enable GPS (Recommended)';

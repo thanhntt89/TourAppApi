@@ -89,7 +89,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get noPlacesNearby => 'Chưa có điểm nào gần đây';
 
   @override
-  String get noPlacesNearbyDesc => 'Bạn chưa ở gần địa điểm nào. Xem bản đồ hoặc quét QR.';
+  String get noPlacesNearbyDesc =>
+      'Bạn chưa ở gần địa điểm nào. Xem bản đồ hoặc quét QR.';
 
   @override
   String get offlineTitle => 'Không có mạng';
@@ -174,7 +175,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get noSavedPlaces => 'Chưa Lưu Địa Điểm';
 
   @override
-  String get noSavedPlacesDescription => 'Các địa điểm bạn lưu sẽ xuất hiện ở đây';
+  String get noSavedPlacesDescription =>
+      'Các địa điểm bạn lưu sẽ xuất hiện ở đây';
 
   @override
   String get listenToArticle => 'Nghe Bài Viết';
@@ -237,7 +239,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get resetApp => 'Đặt Lại Ứng Dụng';
 
   @override
-  String get resetAppConfirmation => 'Bạn có chắc muốn đặt lại? Tất cả dữ liệu sẽ bị xóa.';
+  String get resetAppConfirmation =>
+      'Bạn có chắc muốn đặt lại? Tất cả dữ liệu sẽ bị xóa.';
 
   @override
   String get reset => 'Đặt Lại';
@@ -255,7 +258,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get contentLanguage => 'Ngôn Ngữ Nội Dung';
 
   @override
-  String get contentLanguageDescription => 'Ngôn ngữ cho hướng dẫn âm thanh và bài viết';
+  String get contentLanguageDescription =>
+      'Ngôn ngữ cho hướng dẫn âm thanh và bài viết';
 
   @override
   String get anonymousExplorer => 'Khám Phá Ẩn Danh';
@@ -342,25 +346,29 @@ class AppLocalizationsVi extends AppLocalizations {
   String get onboardingTitle1 => 'Hướng dẫn viên cá nhân';
 
   @override
-  String get onboardingBody1 => 'Đến bất kỳ danh thắng nào ở Hà Giang và tự động nghe câu chuyện — bằng ngôn ngữ của bạn';
+  String get onboardingBody1 =>
+      'Đến bất kỳ danh thắng nào ở Hà Giang và tự động nghe câu chuyện — bằng ngôn ngữ của bạn';
 
   @override
   String get onboardingTitle2 => 'Hoạt động cả trên đèo';
 
   @override
-  String get onboardingBody2 => 'Tải bản đồ, audio guide trước khi đi. Mọi thứ hoạt động không cần internet.';
+  String get onboardingBody2 =>
+      'Tải bản đồ, audio guide trước khi đi. Mọi thứ hoạt động không cần internet.';
 
   @override
   String get onboardingTitle3 => 'Thu thập câu chuyện';
 
   @override
-  String get onboardingBody3 => 'Nhận hoa tại mỗi điểm. Mở khóa câu chuyện ẩn và audio guide đặc biệt.';
+  String get onboardingBody3 =>
+      'Nhận hoa tại mỗi điểm. Mở khóa câu chuyện ẩn và audio guide đặc biệt.';
 
   @override
   String get onboardingTitle4 => 'Cho phép truy cập vị trí';
 
   @override
-  String get onboardingBody4 => 'Chúng tôi dùng vị trí để tự động phát audio khi bạn đến điểm tham quan.';
+  String get onboardingBody4 =>
+      'Chúng tôi dùng vị trí để tự động phát audio khi bạn đến điểm tham quan.';
 
   @override
   String get enableGps => 'Bật GPS (Khuyến nghị)';

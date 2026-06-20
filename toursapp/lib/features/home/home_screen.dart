@@ -7,30 +7,59 @@ import 'package:stoneecho/features/home/widgets/category_chips.dart';
 import 'package:stoneecho/features/home/widgets/flower_counter.dart';
 import 'package:stoneecho/features/home/widgets/home_map_section.dart';
 import 'package:stoneecho/features/home/widgets/home_search_bar.dart';
+import 'package:stoneecho/features/home/widgets/location_card.dart';
 import 'package:stoneecho/features/home/widgets/place_card.dart';
+import 'package:stoneecho/core/constants/map_constants.dart';
 import 'package:stoneecho/providers/gps_providers.dart';
+import 'package:stoneecho/providers/location_providers.dart';
 import 'package:stoneecho/providers/place_providers.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final nearbyAsync = ref.watch(nearbyPlacesProvider);
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tab;
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = TabController(length: 2, vsync: this);
+    _tab.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final position = ref.watch(currentPositionProvider).asData?.value;
+    // Phase 1: Ha Giang only — province ID is fixed
+    final locationsAsync = ref.watch(
+      locationsProvider(provinceId: MapConstants.haGiangProvinceId),
+    );
+    final placesAsync = ref.watch(
+      placesByProvinceProvider(provinceId: MapConstants.haGiangProvinceId),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Top bar: KM0 + Search + Flower counter
+            // Top bar
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Row(
                   children: [
-                    // KM0 badge
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -78,57 +107,110 @@ class HomeScreen extends ConsumerWidget {
             // Offline map
             const SliverToBoxAdapter(child: HomeMapSection()),
 
-            // Section title
+            // Section header + tab pills
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  nearbyAsync.maybeWhen(
-                    data: (places) => 'Nearby (${places.length})',
-                    orElse: () => 'Nearby Places',
-                  ),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppColors.deepBrown,
-                        fontWeight: FontWeight.bold,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Explore Ha Giang',
+                        style:
+                            Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  color: AppColors.deepBrown,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
+                    ),
+                    _TabPills(controller: _tab),
+                  ],
                 ),
               ),
             ),
 
-            // Place cards from API
-            nearbyAsync.when(
-              loading: () => const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              ),
-              error: (e, _) => SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: Text(
-                      'Could not load places.\nMake sure GPS is enabled.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.textSecondary),
+            // Locations tab: 2-column grid
+            if (_tab.index == 0) ...[
+              locationsAsync.when(
+                  loading: () => const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+                  error: (e, _) => SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Text(
+                          'Locations error: $e',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.errorRed,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  data: (locations) => SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    sliver: SliverGrid.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.2,
+                      ),
+                      itemCount: locations.length,
+                      itemBuilder: (context, i) => LocationCard(
+                        location: locations[i],
+                        onTap: () {},
+                      ),
                     ),
                   ),
                 ),
-              ),
-              data: (places) => places.isEmpty
-                  ? const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(
-                          child: Text('No places found nearby.'),
+            ],
+
+            // Places tab: list
+            if (_tab.index == 1) ...[
+              placesAsync.when(
+                loading: () => const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+                error: (e, _) => SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Text(
+                        'Places error: $e',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppColors.errorRed,
+                          fontSize: 12,
                         ),
                       ),
-                    )
-                  : SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, i) {
+                    ),
+                  ),
+                ),
+                data: (places) => places.isEmpty
+                    ? const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Center(
+                            child: Text('No places found nearby.'),
+                          ),
+                        ),
+                      )
+                    : SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        sliver: SliverList.builder(
+                          itemCount: places.length,
+                          itemBuilder: (context, i) {
                             final place = places[i];
                             final distText = position == null
                                 ? '...'
@@ -153,11 +235,10 @@ class HomeScreen extends ConsumerWidget {
                               ),
                             );
                           },
-                          childCount: places.length,
                         ),
                       ),
-                    ),
-            ),
+              ),
+            ],
           ],
         ),
       ),
@@ -167,5 +248,85 @@ class HomeScreen extends ConsumerWidget {
   String _formatDistance(double km) {
     if (km < 1) return '${(km * 1000).round()} m';
     return '${km.toStringAsFixed(1)} km';
+  }
+}
+
+class _TabPills extends StatelessWidget {
+  const _TabPills({required this.controller});
+  final TabController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.creamDark,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(3),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _Pill(
+                label: 'Locations',
+                selected: controller.index == 0,
+                onTap: () => controller.animateTo(0),
+              ),
+              _Pill(
+                label: 'Places',
+                selected: controller.index == 1,
+                onTap: () => controller.animateTo(1),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(17),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight:
+                selected ? FontWeight.w600 : FontWeight.w400,
+            color: selected ? AppColors.deepBrown : AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
   }
 }
