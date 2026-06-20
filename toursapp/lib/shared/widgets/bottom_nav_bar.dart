@@ -10,10 +10,10 @@ class BottomNavBar extends StatelessWidget {
 
   static const _tabs = [
     _NavTab(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home', route: '/home'),
-    _NavTab(icon: Icons.landscape_outlined, activeIcon: Icons.landscape, label: 'Journey', route: '/journeys'),
+    _NavTab(icon: Icons.map_outlined, activeIcon: Icons.map, label: 'Journeys', route: '/journeys'),
     _NavTab(icon: Icons.qr_code_scanner, activeIcon: Icons.qr_code_scanner, label: 'QR', route: '/scanner'),
-    _NavTab(icon: Icons.reorder, activeIcon: Icons.reorder, label: 'Library', route: '/library'),
-    _NavTab(icon: Icons.menu, activeIcon: Icons.menu, label: 'More', route: '/settings'),
+    _NavTab(icon: Icons.library_books_outlined, activeIcon: Icons.library_books, label: 'Library', route: '/library'),
+    _NavTab(icon: Icons.more_horiz, activeIcon: Icons.more_horiz, label: 'More', route: '/settings'),
   ];
 
   int _currentIndex(BuildContext context) {
@@ -96,15 +96,7 @@ class _NavBarItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (label == 'Library')
-              RotatedBox(
-                quarterTurns: 1,
-                child: Icon(icon, color: color, size: 26),
-              )
-            else if (label == 'Journey')
-              Icon(icon, color: color, size: 28)
-            else
-              Icon(icon, color: color, size: 24),
+            Icon(icon, color: color, size: 24),
             const SizedBox(height: 4),
             Text(
               label,
@@ -131,46 +123,24 @@ class _QrCenterButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 62,
-        height: 62,
-        margin: const EdgeInsets.only(bottom: 12),
+        width: 56,
+        height: 56,
+        margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF3B6B1D), // forestGreen lighter
-              Color(0xFF1A3009), // forestGreenDarker
-            ],
-          ),
+          color: AppColors.forestGreen,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF2D5016).withValues(alpha: 0.3),
-              blurRadius: 10,
+              color: AppColors.forestGreen.withValues(alpha: 0.3),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'QR',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-          ],
+        child: const Icon(
+          Icons.qr_code_scanner,
+          color: Colors.white,
+          size: 28,
         ),
       ),
     );

@@ -29,7 +29,7 @@ class PlaceCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 100,
+        constraints: const BoxConstraints(minHeight: 100),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -41,98 +41,109 @@ class PlaceCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          children: [
-            // Image with index badge
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                  child: SizedBox(
-                    width: 100,
-                    height: 100,
-                    child: imageUrl != null
-                        ? CachedImage(imageUrl: imageUrl!)
-                        : const ColoredBox(
-                            color: AppColors.creamDark,
-                            child: Icon(
-                              Icons.landscape,
-                              color: AppColors.textLight,
-                              size: 40,
-                            ),
-                          ),
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: const BoxDecoration(
-                      color: AppColors.forestGreen,
-                      shape: BoxShape.circle,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Image with index badge
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
                     ),
-                    child: Center(
-                      child: Text(
-                        '$index',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                    child: SizedBox(
+                      width: 100,
+                      child: imageUrl != null
+                          ? CachedImage(imageUrl: imageUrl!)
+                          : const ColoredBox(
+                              color: AppColors.creamDark,
+                              child: Center(
+                                child: Icon(
+                                  Icons.landscape,
+                                  color: AppColors.textLight,
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                        color: AppColors.forestGreen,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$index',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            // Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      name,
-                      style: AppTextStyles.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: AppColors.textLight,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(distance, style: AppTextStyles.caption),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    StatusBadge(status: status),
-                  ],
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        name,
+                        style: AppTextStyles.titleMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            size: 14,
+                            color: AppColors.textLight,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              distance,
+                              style: AppTextStyles.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      StatusBadge(status: status),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Chevron
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Icon(
-                Icons.chevron_right,
-                color: AppColors.textLight,
+              // Chevron
+              const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textLight,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

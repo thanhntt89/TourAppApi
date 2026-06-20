@@ -348,15 +348,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get onboardingTitle2 => '산길에서도 작동합니다';
 
   @override
-  String get onboardingBody2 =>
-      '출발 전에 지도와 오디오 가이드를 다운로드하세요. 인터넷 없이도 모든 것이 작동합니다.';
+  String get onboardingBody2 => '출발 전에 지도와 오디오 가이드를 다운로드하세요. 인터넷 없이도 모든 것이 작동합니다.';
 
   @override
   String get onboardingTitle3 => '여행하며 이야기를 수집하세요';
 
   @override
-  String get onboardingBody3 =>
-      '각 정거장에서 꽃을 받으세요. 숨겨진 이야기와 프리미엄 오디오 가이드를 잠금해제하세요.';
+  String get onboardingBody3 => '각 정거장에서 꽃을 받으세요. 숨겨진 이야기와 프리미엄 오디오 가이드를 잠금해제하세요.';
 
   @override
   String get onboardingTitle4 => '위치 접근 허용';

@@ -95,6 +95,8 @@ class UserJourneyProgress {
     required this.exploredCount,
     required this.totalLocations,
     this.lastVisitedPlace,
+    this.stampCollected = 0,
+    this.totalStamps = 0,
   });
 
   final int journeyId;
@@ -103,9 +105,14 @@ class UserJourneyProgress {
   final int exploredCount;
   final int totalLocations;
   final String? lastVisitedPlace;
+  final int stampCollected;
+  final int totalStamps;
 
   double get progress =>
       totalLocations > 0 ? exploredCount / totalLocations : 0;
+
+  bool get isCompleted =>
+      totalLocations > 0 && exploredCount >= totalLocations;
 
   factory UserJourneyProgress.fromJson(Map<String, dynamic> json) {
     return UserJourneyProgress(
@@ -116,6 +123,8 @@ class UserJourneyProgress {
       exploredCount: json['explored_count'] as int? ?? 0,
       totalLocations: json['total_locations'] as int? ?? 0,
       lastVisitedPlace: json['last_visited_place'] as String?,
+      stampCollected: json['stamp_collected'] as int? ?? 0,
+      totalStamps: json['total_stamps'] as int? ?? 0,
     );
   }
 }
