@@ -608,7 +608,8 @@ class TA_Admin {
             'GET /stories'                                 => 'List stories. Filter by province, place, type, featured.',
             'GET /stories/{id}'                            => 'Story detail: content, audio (per-lang), related places/provinces, paywall info.',
             // News
-            'GET /news'                                    => 'List news and alerts for a province.',
+            'GET /news'                                    => 'List news/alerts for a province. Filtered by active date range (start_date ≤ today ≤ end_date). Supports type filter (news, alert, warning, event) and pinned filter (true = only pinned items). Sorted: pinned first, then newest.',
+            'GET /news/{id}'                               => 'Single news/alert detail by ID.',
             // User actions (auth required)
             'POST /user/checkin'                           => 'Check in at a place via GPS (geofence validated) or QR code. Earns flowers.',
             'POST /user/unlock'                            => 'Unlock paid article or audio content by spending flowers.',
@@ -707,7 +708,8 @@ class TA_Admin {
             // Stories
             'GET /stories'          => '{"success":true,"data":[{"id":3,"type":"legend","name":"Truyền thuyết Mã Pí Lèng","summary":"...","feature_image":{"url":"https://cdn.../story.jpg","alt":""},"is_featured":true,"sort_order":1}],"meta":{"total":15,"page":1,"per_page":20,"pages":1}}',
             // News
-            'GET /news'             => '{"success":true,"data":[{"id":7,"type":"news","title":"Thông báo mùa mưa lũ","content":"...","icon":null,"is_pinned":true,"start_date":"2026-06-01","end_date":"2026-09-30","created_at":"2026-06-01 08:00:00"}],"meta":{"total":3}}',
+            'GET /news'             => '{"success":true,"data":[{"id":7,"type":"warning","title":"Thông báo mùa mưa lũ","content":"Cảnh báo sạt lở đất tại khu vực Mã Pí Lèng...","icon":"warning","is_pinned":true,"start_date":"2026-06-01","end_date":"2026-09-30","created_at":"2026-06-01 08:00:00"},{"id":12,"type":"news","title":"Lễ hội hoa tam giác mạch 2026","content":"...","icon":"info","is_pinned":false,"start_date":"2026-10-01","end_date":"2026-11-30","created_at":"2026-05-20 10:00:00"}],"meta":{"total":5,"page":1,"per_page":10,"total_pages":1}}',
+            'GET /news/{id}'        => '{"success":true,"data":{"id":7,"type":"warning","title":"Thông báo mùa mưa lũ","content":"Cảnh báo sạt lở đất tại khu vực Mã Pí Lèng. Du khách hạn chế di chuyển vào ban đêm và theo dõi thông tin từ chính quyền địa phương.","icon":"warning","is_pinned":true,"start_date":"2026-06-01","end_date":"2026-09-30","created_at":"2026-06-01 08:00:00"}}',
             // User
             'GET /user/history'     => '{"success":true,"data":[{"checkin_id":42,"place_id":5,"place_name":"Mã Pí Lèng","method":"gps","reward":10,"created_at":"2026-06-13 10:00:00"}],"meta":{"total":6,"total_flowers_earned":60,"page":1,"per_page":20}}',
             'GET /user/features/{feature}' => '{"feature":"cross_province","label":"Cross-Province Journeys","enabled":true,"mode":"achievement","has_access":false,"achievement":{"required":10,"current":6,"progress":60}}',

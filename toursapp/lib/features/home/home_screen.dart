@@ -12,6 +12,7 @@ import 'package:stoneecho/features/home/widgets/place_card.dart';
 import 'package:stoneecho/core/constants/map_constants.dart';
 import 'package:stoneecho/providers/gps_providers.dart';
 import 'package:stoneecho/providers/location_providers.dart';
+import 'package:stoneecho/providers/news_providers.dart';
 import 'package:stoneecho/providers/place_providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -31,10 +32,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _tab = TabController(length: 2, vsync: this);
     _tab.addListener(() {
       if (_tab.indexIsChanging) return;
-      ref.invalidate(featuredLocationsProvider(MapConstants.haGiangProvinceId));
-      ref.invalidate(placesByProvinceProvider(MapConstants.haGiangProvinceId));
-      setState(() {});
+      _refreshAll();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshAll());
+  }
+
+  void _refreshAll() {
+    ref.invalidate(featuredLocationsProvider(MapConstants.haGiangProvinceId));
+    ref.invalidate(placesByProvinceProvider(MapConstants.haGiangProvinceId));
+    ref.invalidate(pinnedNewsProvider(MapConstants.haGiangProvinceId));
+    setState(() {});
   }
 
   @override

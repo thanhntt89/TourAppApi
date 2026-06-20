@@ -28,6 +28,7 @@ abstract final class ApiConstants {
   static const userFeatures = '/user/features';
   static const userDownloads = '/user/downloads';
   static const userPassport = '/user/passport';
+  static const newsDetail = '/news'; // append /{id}
   static const syncCheck = '/sync/check';
   static const syncPackage = '/sync/package';
   static const syncMedia = '/sync/media';

@@ -15,6 +15,22 @@ class TA_API {
     public static function normalize_error_response($response, $server, $request) {
         if (!($response instanceof WP_REST_Response)) return $response;
 
+        $route = $request->get_route();
+        if (strpos($route, '/' . TA_API_NAMESPACE) === 0) {
+            $data = $response->get_data();
+            if (is_array($data) && isset($data['namespace']) && isset($data['routes'])) {
+                $response->set_data([
+                    'success' => false,
+                    'error'   => [
+                        'code'    => 'ENDPOINT_NOT_FOUND',
+                        'message' => 'The requested endpoint does not exist.',
+                    ],
+                ]);
+                $response->set_status(404);
+                return $response;
+            }
+        }
+
         $status = $response->get_status();
         if (!in_array($status, [401, 403], true)) return $response;
 

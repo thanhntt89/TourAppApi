@@ -7,6 +7,7 @@ import 'package:stoneecho/features/home/home_screen.dart';
 import 'package:stoneecho/features/journeys/journey_detail_screen.dart';
 import 'package:stoneecho/features/journeys/journey_list_screen.dart';
 import 'package:stoneecho/features/library/library_screen.dart';
+import 'package:stoneecho/features/news/news_detail_screen.dart';
 import 'package:stoneecho/features/onboarding/onboarding_screen.dart';
 import 'package:stoneecho/features/place_detail/place_detail_screen.dart';
 import 'package:stoneecho/features/scanner/qr_scanner_screen.dart';
@@ -100,6 +101,15 @@ GoRouter router(Ref ref) {
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return ServiceDetailScreen(serviceId: id);
+        },
+      ),
+      GoRoute(
+        path: '/news/:id',
+        name: RouteNames.newsDetail,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return NewsDetailScreen(newsId: id);
         },
       ),
     ],

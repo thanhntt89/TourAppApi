@@ -82,6 +82,7 @@ class TA_API_Docs {
             'name' => 'Display name', 'description' => 'Description text',
             'status' => 'Status value', 'stops' => 'Array of journey stops',
             'type' => 'Type filter',
+            'pinned' => 'Filter pinned items only (true/false)',
         ];
         $parts = [];
         if (isset($hints[$p['name']])) $parts[] = $hints[$p['name']];
@@ -117,6 +118,7 @@ class TA_API_Docs {
             'event_type'        => 'page_view',
             'method'            => 'gps',
             'type'              => 'news',
+            'pinned'            => 'true',
             'feature'           => 'cross_province',
             'since'             => '2026-01-01T00:00:00Z',
             'app_version'       => '1.0.0',

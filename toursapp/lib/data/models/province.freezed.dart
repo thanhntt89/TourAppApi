@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Province {
 
- int get id; String get name; double get lat; double get lng; String? get nameEn; String? get nameKo; String? get nameZh; String? get description; String? get descriptionEn; String? get imageUrl; bool get isActive;
+ int get id; String get name; double get lat; double get lng; String? get imageUrl; bool get isActive; int get totalLocations; int get totalPlaces; int get sortOrder; int get detectionRadiusKm;
 /// Create a copy of Province
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ProvinceCopyWith<Province> get copyWith => _$ProvinceCopyWithImpl<Province>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Province&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.nameEn, nameEn) || other.nameEn == nameEn)&&(identical(other.nameKo, nameKo) || other.nameKo == nameKo)&&(identical(other.nameZh, nameZh) || other.nameZh == nameZh)&&(identical(other.description, description) || other.description == description)&&(identical(other.descriptionEn, descriptionEn) || other.descriptionEn == descriptionEn)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Province&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.totalLocations, totalLocations) || other.totalLocations == totalLocations)&&(identical(other.totalPlaces, totalPlaces) || other.totalPlaces == totalPlaces)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.detectionRadiusKm, detectionRadiusKm) || other.detectionRadiusKm == detectionRadiusKm));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,lat,lng,nameEn,nameKo,nameZh,description,descriptionEn,imageUrl,isActive);
+int get hashCode => Object.hash(runtimeType,id,name,lat,lng,imageUrl,isActive,totalLocations,totalPlaces,sortOrder,detectionRadiusKm);
 
 @override
 String toString() {
-  return 'Province(id: $id, name: $name, lat: $lat, lng: $lng, nameEn: $nameEn, nameKo: $nameKo, nameZh: $nameZh, description: $description, descriptionEn: $descriptionEn, imageUrl: $imageUrl, isActive: $isActive)';
+  return 'Province(id: $id, name: $name, lat: $lat, lng: $lng, imageUrl: $imageUrl, isActive: $isActive, totalLocations: $totalLocations, totalPlaces: $totalPlaces, sortOrder: $sortOrder, detectionRadiusKm: $detectionRadiusKm)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ProvinceCopyWith<$Res>  {
   factory $ProvinceCopyWith(Province value, $Res Function(Province) _then) = _$ProvinceCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, double lat, double lng, String? nameEn, String? nameKo, String? nameZh, String? description, String? descriptionEn, String? imageUrl, bool isActive
+ int id, String name, double lat, double lng, String? imageUrl, bool isActive, int totalLocations, int totalPlaces, int sortOrder, int detectionRadiusKm
 });
 
 
@@ -65,20 +65,19 @@ class _$ProvinceCopyWithImpl<$Res>
 
 /// Create a copy of Province
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? lat = null,Object? lng = null,Object? nameEn = freezed,Object? nameKo = freezed,Object? nameZh = freezed,Object? description = freezed,Object? descriptionEn = freezed,Object? imageUrl = freezed,Object? isActive = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? lat = null,Object? lng = null,Object? imageUrl = freezed,Object? isActive = null,Object? totalLocations = null,Object? totalPlaces = null,Object? sortOrder = null,Object? detectionRadiusKm = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,lat: null == lat ? _self.lat : lat // ignore: cast_nullable_to_non_nullable
 as double,lng: null == lng ? _self.lng : lng // ignore: cast_nullable_to_non_nullable
-as double,nameEn: freezed == nameEn ? _self.nameEn : nameEn // ignore: cast_nullable_to_non_nullable
-as String?,nameKo: freezed == nameKo ? _self.nameKo : nameKo // ignore: cast_nullable_to_non_nullable
-as String?,nameZh: freezed == nameZh ? _self.nameZh : nameZh // ignore: cast_nullable_to_non_nullable
-as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,descriptionEn: freezed == descriptionEn ? _self.descriptionEn : descriptionEn // ignore: cast_nullable_to_non_nullable
-as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as double,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,totalLocations: null == totalLocations ? _self.totalLocations : totalLocations // ignore: cast_nullable_to_non_nullable
+as int,totalPlaces: null == totalPlaces ? _self.totalPlaces : totalPlaces // ignore: cast_nullable_to_non_nullable
+as int,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
+as int,detectionRadiusKm: null == detectionRadiusKm ? _self.detectionRadiusKm : detectionRadiusKm // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -163,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  double lat,  double lng,  String? nameEn,  String? nameKo,  String? nameZh,  String? description,  String? descriptionEn,  String? imageUrl,  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  double lat,  double lng,  String? imageUrl,  bool isActive,  int totalLocations,  int totalPlaces,  int sortOrder,  int detectionRadiusKm)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Province() when $default != null:
-return $default(_that.id,_that.name,_that.lat,_that.lng,_that.nameEn,_that.nameKo,_that.nameZh,_that.description,_that.descriptionEn,_that.imageUrl,_that.isActive);case _:
+return $default(_that.id,_that.name,_that.lat,_that.lng,_that.imageUrl,_that.isActive,_that.totalLocations,_that.totalPlaces,_that.sortOrder,_that.detectionRadiusKm);case _:
   return orElse();
 
 }
@@ -184,10 +183,10 @@ return $default(_that.id,_that.name,_that.lat,_that.lng,_that.nameEn,_that.nameK
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  double lat,  double lng,  String? nameEn,  String? nameKo,  String? nameZh,  String? description,  String? descriptionEn,  String? imageUrl,  bool isActive)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  double lat,  double lng,  String? imageUrl,  bool isActive,  int totalLocations,  int totalPlaces,  int sortOrder,  int detectionRadiusKm)  $default,) {final _that = this;
 switch (_that) {
 case _Province():
-return $default(_that.id,_that.name,_that.lat,_that.lng,_that.nameEn,_that.nameKo,_that.nameZh,_that.description,_that.descriptionEn,_that.imageUrl,_that.isActive);case _:
+return $default(_that.id,_that.name,_that.lat,_that.lng,_that.imageUrl,_that.isActive,_that.totalLocations,_that.totalPlaces,_that.sortOrder,_that.detectionRadiusKm);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +203,10 @@ return $default(_that.id,_that.name,_that.lat,_that.lng,_that.nameEn,_that.nameK
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  double lat,  double lng,  String? nameEn,  String? nameKo,  String? nameZh,  String? description,  String? descriptionEn,  String? imageUrl,  bool isActive)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  double lat,  double lng,  String? imageUrl,  bool isActive,  int totalLocations,  int totalPlaces,  int sortOrder,  int detectionRadiusKm)?  $default,) {final _that = this;
 switch (_that) {
 case _Province() when $default != null:
-return $default(_that.id,_that.name,_that.lat,_that.lng,_that.nameEn,_that.nameKo,_that.nameZh,_that.description,_that.descriptionEn,_that.imageUrl,_that.isActive);case _:
+return $default(_that.id,_that.name,_that.lat,_that.lng,_that.imageUrl,_that.isActive,_that.totalLocations,_that.totalPlaces,_that.sortOrder,_that.detectionRadiusKm);case _:
   return null;
 
 }
@@ -219,20 +218,19 @@ return $default(_that.id,_that.name,_that.lat,_that.lng,_that.nameEn,_that.nameK
 @JsonSerializable()
 
 class _Province implements Province {
-  const _Province({required this.id, required this.name, required this.lat, required this.lng, this.nameEn, this.nameKo, this.nameZh, this.description, this.descriptionEn, this.imageUrl, this.isActive = true});
+  const _Province({required this.id, required this.name, required this.lat, required this.lng, this.imageUrl, this.isActive = true, this.totalLocations = 0, this.totalPlaces = 0, this.sortOrder = 0, this.detectionRadiusKm = 50});
   factory _Province.fromJson(Map<String, dynamic> json) => _$ProvinceFromJson(json);
 
 @override final  int id;
 @override final  String name;
 @override final  double lat;
 @override final  double lng;
-@override final  String? nameEn;
-@override final  String? nameKo;
-@override final  String? nameZh;
-@override final  String? description;
-@override final  String? descriptionEn;
 @override final  String? imageUrl;
 @override@JsonKey() final  bool isActive;
+@override@JsonKey() final  int totalLocations;
+@override@JsonKey() final  int totalPlaces;
+@override@JsonKey() final  int sortOrder;
+@override@JsonKey() final  int detectionRadiusKm;
 
 /// Create a copy of Province
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Province&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.nameEn, nameEn) || other.nameEn == nameEn)&&(identical(other.nameKo, nameKo) || other.nameKo == nameKo)&&(identical(other.nameZh, nameZh) || other.nameZh == nameZh)&&(identical(other.description, description) || other.description == description)&&(identical(other.descriptionEn, descriptionEn) || other.descriptionEn == descriptionEn)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Province&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.totalLocations, totalLocations) || other.totalLocations == totalLocations)&&(identical(other.totalPlaces, totalPlaces) || other.totalPlaces == totalPlaces)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.detectionRadiusKm, detectionRadiusKm) || other.detectionRadiusKm == detectionRadiusKm));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,lat,lng,nameEn,nameKo,nameZh,description,descriptionEn,imageUrl,isActive);
+int get hashCode => Object.hash(runtimeType,id,name,lat,lng,imageUrl,isActive,totalLocations,totalPlaces,sortOrder,detectionRadiusKm);
 
 @override
 String toString() {
-  return 'Province(id: $id, name: $name, lat: $lat, lng: $lng, nameEn: $nameEn, nameKo: $nameKo, nameZh: $nameZh, description: $description, descriptionEn: $descriptionEn, imageUrl: $imageUrl, isActive: $isActive)';
+  return 'Province(id: $id, name: $name, lat: $lat, lng: $lng, imageUrl: $imageUrl, isActive: $isActive, totalLocations: $totalLocations, totalPlaces: $totalPlaces, sortOrder: $sortOrder, detectionRadiusKm: $detectionRadiusKm)';
 }
 
 
@@ -267,7 +265,7 @@ abstract mixin class _$ProvinceCopyWith<$Res> implements $ProvinceCopyWith<$Res>
   factory _$ProvinceCopyWith(_Province value, $Res Function(_Province) _then) = __$ProvinceCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, double lat, double lng, String? nameEn, String? nameKo, String? nameZh, String? description, String? descriptionEn, String? imageUrl, bool isActive
+ int id, String name, double lat, double lng, String? imageUrl, bool isActive, int totalLocations, int totalPlaces, int sortOrder, int detectionRadiusKm
 });
 
 
@@ -284,20 +282,19 @@ class __$ProvinceCopyWithImpl<$Res>
 
 /// Create a copy of Province
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? lat = null,Object? lng = null,Object? nameEn = freezed,Object? nameKo = freezed,Object? nameZh = freezed,Object? description = freezed,Object? descriptionEn = freezed,Object? imageUrl = freezed,Object? isActive = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? lat = null,Object? lng = null,Object? imageUrl = freezed,Object? isActive = null,Object? totalLocations = null,Object? totalPlaces = null,Object? sortOrder = null,Object? detectionRadiusKm = null,}) {
   return _then(_Province(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,lat: null == lat ? _self.lat : lat // ignore: cast_nullable_to_non_nullable
 as double,lng: null == lng ? _self.lng : lng // ignore: cast_nullable_to_non_nullable
-as double,nameEn: freezed == nameEn ? _self.nameEn : nameEn // ignore: cast_nullable_to_non_nullable
-as String?,nameKo: freezed == nameKo ? _self.nameKo : nameKo // ignore: cast_nullable_to_non_nullable
-as String?,nameZh: freezed == nameZh ? _self.nameZh : nameZh // ignore: cast_nullable_to_non_nullable
-as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,descriptionEn: freezed == descriptionEn ? _self.descriptionEn : descriptionEn // ignore: cast_nullable_to_non_nullable
-as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as double,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,totalLocations: null == totalLocations ? _self.totalLocations : totalLocations // ignore: cast_nullable_to_non_nullable
+as int,totalPlaces: null == totalPlaces ? _self.totalPlaces : totalPlaces // ignore: cast_nullable_to_non_nullable
+as int,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
+as int,detectionRadiusKm: null == detectionRadiusKm ? _self.detectionRadiusKm : detectionRadiusKm // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

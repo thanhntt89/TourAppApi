@@ -11,4 +11,5 @@ abstract final class RouteNames {
   static const articleDetail = 'article-detail';
   static const serviceDetail = 'service-detail';
   static const wallet = 'wallet';
+  static const newsDetail = 'news-detail';
 }

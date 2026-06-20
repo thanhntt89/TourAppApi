@@ -29,7 +29,7 @@ class PlaceCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 100,
+        height: 105, // Slightly increased to fit status badge
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -52,16 +52,18 @@ class PlaceCard extends StatelessWidget {
                     bottomLeft: Radius.circular(16),
                   ),
                   child: SizedBox(
-                    width: 100,
-                    height: 100,
+                    width: 105,
+                    height: 105,
                     child: imageUrl != null
                         ? CachedImage(imageUrl: imageUrl!)
                         : const ColoredBox(
                             color: AppColors.creamDark,
-                            child: Icon(
-                              Icons.landscape,
-                              color: AppColors.textLight,
-                              size: 40,
+                            child: Center(
+                              child: Icon(
+                                Icons.landscape,
+                                color: AppColors.textLight,
+                                size: 40,
+                              ),
                             ),
                           ),
                   ),

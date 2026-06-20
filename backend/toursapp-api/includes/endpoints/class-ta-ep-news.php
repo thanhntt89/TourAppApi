@@ -17,8 +17,20 @@ class TA_EP_News {
                 'lang'        => ['type' => 'string', 'default' => TA_DEFAULT_LANG],
                 'page'        => ['type' => 'integer', 'default' => 1, 'minimum' => 1],
                 'per_page'    => ['type' => 'integer', 'default' => 10, 'minimum' => 1, 'maximum' => 100],
+                'pinned'      => ['type' => 'boolean'],
             ],
         ]);
+
+        register_rest_route(TA_API_NAMESPACE, '/news/(?P<id>\d+)', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [self::class, 'get_news'],
+            'permission_callback' => '__return_true',
+            'args'                => [
+                'id'   => ['type' => 'integer', 'required' => true],
+                'lang' => ['type' => 'string', 'default' => TA_DEFAULT_LANG],
+            ],
+        ]);
+
     }
 
     // ──────────────────────────────────────────────
@@ -83,6 +95,16 @@ class TA_EP_News {
             ];
         }
 
+        // Optional pinned filter.
+        $pinned = $request->get_param('pinned');
+        if ($pinned !== null) {
+            $meta_query[] = [
+                'key'     => 'news_is_pinned',
+                'value'   => $pinned ? '1' : '0',
+                'compare' => '=',
+            ];
+        }
+
         // First, query all matching posts to get total count and handle sorting.
         $all_posts = get_posts([
             'post_type'      => 'news_alert',
@@ -121,6 +143,21 @@ class TA_EP_News {
             'per_page'    => $per_page,
             'total_pages' => $total_pages,
         ]);
+    }
+
+    // ──────────────────────────────────────────────
+    // GET /news/{id}
+    // ──────────────────────────────────────────────
+    public static function get_news(WP_REST_Request $request): WP_REST_Response {
+        $id   = (int) $request->get_param('id');
+        $lang = TA_Localize::get_lang($request);
+        $post = get_post($id);
+
+        if (!$post || $post->post_type !== 'news_alert' || $post->post_status !== 'publish') {
+            return TA_API::error('NOT_FOUND', 'News item not found.', 404);
+        }
+
+        return TA_API::success(self::format_news($post, $lang));
     }
 
     // ──────────────────────────────────────────────

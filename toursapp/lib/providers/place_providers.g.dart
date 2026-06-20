@@ -64,7 +64,7 @@ final class PlacesProvider
   }
 }
 
-String _$placesHash() => r'be31fef298b46c9f93ce55d4ca917bd7fc0e56d9';
+String _$placesHash() => r'e664a72bcca15f9b194dacb11bc1b93860040e34';
 
 final class PlacesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<Place>>, int> {
@@ -133,7 +133,7 @@ final class PlaceDetailProvider
   }
 }
 
-String _$placeDetailHash() => r'c2f292f65a2bfca4a3601765ee65ae689708cbc0';
+String _$placeDetailHash() => r'136df156cf0e3a8aeea5b22ca76cb715ade657b3';
 
 final class PlaceDetailFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Place>, int> {
@@ -190,7 +190,7 @@ final class NearbyPlacesProvider
   }
 }
 
-String _$nearbyPlacesHash() => r'daffc91cd96704dae18025660241ade5348eeb90';
+String _$nearbyPlacesHash() => r'3eb7636b86a2324165f929087fd5d31a10cde5c4';
 
 @ProviderFor(placeSearch)
 const placeSearchProvider = PlaceSearchFamily._();
@@ -247,7 +247,7 @@ final class PlaceSearchProvider
   }
 }
 
-String _$placeSearchHash() => r'06c96346e6e33c9da17bb95099686a29b51a99a5';
+String _$placeSearchHash() => r'527835706b2838ed0af314b9d593fa1d3dce8791';
 
 final class PlaceSearchFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<Place>>, String> {
