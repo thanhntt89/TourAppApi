@@ -29,7 +29,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     super.initState();
     _tab = TabController(length: 2, vsync: this);
-    _tab.addListener(() => setState(() {}));
+    _tab.addListener(() {
+      if (_tab.indexIsChanging) return;
+      ref.invalidate(featuredLocationsProvider(MapConstants.haGiangProvinceId));
+      ref.invalidate(placesByProvinceProvider(MapConstants.haGiangProvinceId));
+      setState(() {});
+    });
   }
 
   @override
